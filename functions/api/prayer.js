@@ -5,7 +5,7 @@
  * Saves prayer requests to D1 database and optionally forwards to Google Sheets.
  * Set GOOGLE_SHEETS_WEBHOOK secret in Cloudflare Dashboard for Google Sheets integration.
  */
-export async function onRequestPost({ request, env }: { request: Request; env: any }) {
+export async function onRequestPost({ request, env }) {
   try {
     const body = await request.json();
     const { name, anonymous, email, request: prayerRequest, lang, timestamp } = body;
@@ -57,7 +57,7 @@ export async function onRequestPost({ request, env }: { request: Request; env: a
       status: 200,
       headers: { 'Content-Type': 'application/json' },
     });
-  } catch (err: any) {
+  } catch (err) {
     console.error('Prayer request error:', err);
     return new Response(JSON.stringify({ error: 'Internal server error' }), {
       status: 500,
