@@ -1,0 +1,96 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400;1,600&family=Inter:wght@300;400;500;600&family=Noto+Serif+SC:wght@400;600;700&family=Noto+Sans+SC:wght@300;400;500&display=swap');
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+  body {
+    @apply bg-cream-50 text-clay-800 font-sans antialiased;
+  }
+}
+
+@layer components {
+  .btn-primary {
+    @apply inline-flex items-center justify-center px-8 py-3 bg-clay-700 hover:bg-clay-800 text-cream-50 font-medium rounded-full transition-all duration-300;
+  }
+  .btn-outline {
+    @apply inline-flex items-center justify-center px-8 py-3 border border-clay-400 text-clay-600 hover:bg-clay-100 rounded-full transition-all duration-300;
+  }
+  .section-title {
+    @apply text-3xl md:text-4xl lg:text-5xl font-serif font-bold text-center;
+  }
+  .section-subtitle {
+    @apply text-clay-500 text-center max-w-2xl mx-auto mt-4 text-lg;
+  }
+}
+
+/* Swiper custom styles */
+.swiper-pagination-bullet {
+  @apply bg-clay-400 opacity-50 !important;
+}
+.swiper-pagination-bullet-active {
+  @apply bg-clay-700 opacity-100 !important;
+}
+
+/* 3D Carousel */
+.scripture-3d {
+  perspective: 1200px;
+  perspective-origin: center center;
+}
+
+.scripture-card {
+  position: absolute;
+  width: 100%;
+  max-width: 560px;
+  transition: transform 0.7s cubic-bezier(0.23, 1, 0.32, 1), opacity 0.7s ease;
+  cursor: pointer;
+}
+
+.scripture-card[data-position="center"] {
+  transform: translateX(-50%) translateZ(0);
+  opacity: 1;
+  z-index: 3;
+}
+
+.scripture-card[data-position="left"] {
+  transform: translateX(-80%) rotateY(20deg) translateZ(-100px) scale(0.88);
+  opacity: 0.5;
+  z-index: 2;
+}
+
+.scripture-card[data-position="right"] {
+  transform: translateX(-20%) rotateY(-20deg) translateZ(-100px) scale(0.88);
+  opacity: 0.5;
+  z-index: 2;
+}
+
+.scripture-card[data-position="far-left"] {
+  transform: translateX(-100%) rotateY(30deg) translateZ(-200px) scale(0.76);
+  opacity: 0.2;
+  z-index: 1;
+  pointer-events: none;
+}
+
+.scripture-card[data-position="far-right"] {
+  transform: translateX(0%) rotateY(-30deg) translateZ(-200px) scale(0.76);
+  opacity: 0.2;
+  z-index: 1;
+  pointer-events: none;
+}
+
+/* Photo carousel fade */
+.photo-fade-enter {
+  opacity: 0;
+}
+.photo-fade-active {
+  opacity: 1;
+  transition: opacity 1.2s ease-in-out;
+}
+.photo-fade-exit {
+  opacity: 0;
+  transition: opacity 0.8s ease-in-out;
+}

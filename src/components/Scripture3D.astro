@@ -1,0 +1,113 @@
+---
+import scriptures from '../content/scriptures.json';
+interface Props { lang: 'en' | 'zh' }
+const { lang } = Astro.props;
+const labels = {
+  en: { title: 'Words of Life', subtitle: 'Scriptures that sustain us through every season' },
+  zh: { title: '生命的话语', subtitle: '陪伴我们走过每个季节的经文' },
+};
+const t = labels[lang];
+---
+
+<section id="scriptures" class="py-24 lg:py-32 px-6 bg-gradient-to-b from-white to-cream-100">
+  <div class="max-w-5xl mx-auto">
+    <h2 class="section-title text-clay-900">{t.title}</h2>
+    <p class="section-subtitle">{t.subtitle}</p>
+
+    <div class="scripture-3d relative mt-16" style="height: 340px;">
+      <div id="scripture-track" class="relative w-full h-full flex items-center justify-center">
+        {scriptures.map((s, i) => {
+          const positions = ['far-left', 'left', 'center', 'right', 'far-right'];
+          const pos = positions[Math.min(i, positions.length - 1)] || 'far-right';
+          return (
+            <div
+              class={`scripture-card bg-white rounded-2xl shadow-xl p-10 md:p-12 border border-cream-200 ${i === 2 ? '' : 'hidden md:block'}`}
+              data-position={i < scriptures.length ? pos : 'far-right'}
+              data-index={i}
+              style="left: 50%; top: 0;"
+            >
+              <p class="text-lg md:text-xl leading-relaxed font-serif italic text-clay-700 mb-4">
+                {s[lang]}
+              </p>
+              <p class="text-sm text-clay-400 font-medium tracking-wide">— {s.ref}</p>
+            </div>
+          );
+        })}
+      </div>
+
+      <!-- Controls -->
+      <div class="flex justify-center gap-4 mt-8">
+        <button id="scripture-prev" class="w-12 h-12 rounded-full border border-clay-300 flex items-center justify-center text-clay-500 hover:bg-clay-100 hover:text-clay-700 transition-colors" aria-label="Previous">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
+        </button>
+        <div class="flex items-center gap-2">
+          {scriptures.map((_, i) => (
+            <span class={`w-2 h-2 rounded-full transition-all duration-300 ${i === 0 ? 'bg-clay-700 w-4' : 'bg-clay-300'}`} data-sdot={i}></span>
+          ))}
+        </div>
+        <button id="scripture-next" class="w-12 h-12 rounded-full border border-clay-300 flex items-center justify-center text-clay-500 hover:bg-clay-100 hover:text-clay-700 transition-colors" aria-label="Next">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+        </button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<script>
+  function initScriptureCarousel() {
+    const cards = document.querySelectorAll<HTMLElement>('.scripture-card');
+    if (cards.length < 3) return;
+
+    const dots = document.querySelectorAll<HTMLElement>('[data-sdot]');
+    let current = 0;
+    const total = cards.length;
+
+    const positionClasses = ['far-left', 'left', 'center', 'right', 'far-right'];
+
+    function update() {
+      cards.forEach((card, i) => {
+        // Calculate relative position
+        let relPos = i - current;
+        // Wrap around for circular carousel
+        if (relPos < -2) relPos += total;
+        if (relPos > 2) relPos -= total;
+
+        const posIdx = relPos + 2; // Map -2..2 to 0..4
+        const pos = positionClasses[Math.max(0, Math.min(4, posIdx))] || 'far-right';
+        card.setAttribute('data-position', pos);
+      });
+
+      dots.forEach((dot, i) => {
+        dot.classList.toggle('bg-clay-700', i === current);
+        dot.classList.toggle('bg-clay-300', i !== current);
+        dot.classList.toggle('w-4', i === current);
+        dot.classList.toggle('w-2', i !== current);
+      });
+    }
+
+    function next() { current = (current + 1) % total; update(); }
+    function prev() { current = (current - 1 + total) % total; update(); }
+
+    document.getElementById('scripture-next')?.addEventListener('click', next);
+    document.getElementById('scripture-prev')?.addEventListener('click', prev);
+
+    dots.forEach((dot) => {
+      dot.addEventListener('click', () => {
+        current = parseInt(dot.getAttribute('data-sdot') || '0');
+        update();
+      });
+    });
+
+    // Auto-rotate
+    let interval = setInterval(next, 6000);
+    const track = document.getElementById('scripture-track');
+    track?.addEventListener('mouseenter', () => clearInterval(interval));
+    track?.addEventListener('mouseleave', () => { interval = setInterval(next, 6000); });
+
+    // Initialize
+    update();
+  }
+
+  initScriptureCarousel();
+  document.addEventListener('astro:page-load', initScriptureCarousel);
+</script>

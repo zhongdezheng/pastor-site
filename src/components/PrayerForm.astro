@@ -1,0 +1,155 @@
+---
+interface Props { lang: 'en' | 'zh' }
+const { lang } = Astro.props;
+
+const labels = {
+  en: {
+    title: 'Prayer Requests',
+    subtitle: 'We would be honored to pray for you. Every request is read and prayed over with care.',
+    name: 'Name',
+    namePlaceholder: 'Your name (optional)',
+    anonymous: 'Pray anonymously',
+    email: 'Email',
+    emailPlaceholder: 'your@email.com',
+    request: 'Prayer Request',
+    requestPlaceholder: 'Share what\'s on your heart...',
+    submit: 'Submit Prayer Request',
+    submitting: 'Sending...',
+    successTitle: 'Thank You 🙏',
+    successMsg: 'Your prayer request has been received. We are praying for you.',
+    errorMsg: 'Something went wrong. Please try again or contact us directly via WhatsApp.',
+    required: 'Please fill in your prayer request.',
+  },
+  zh: {
+    title: '代祷需求',
+    subtitle: '我们很荣幸为你代祷。每一条需求都会被认真阅读和祷告。',
+    name: '姓名',
+    namePlaceholder: '你的名字（选填）',
+    anonymous: '匿名代祷',
+    email: '邮箱',
+    emailPlaceholder: '你的邮箱',
+    request: '代祷事项',
+    requestPlaceholder: '分享你心中所想...',
+    submit: '提交代祷需求',
+    submitting: '发送中...',
+    successTitle: '感谢你 🙏',
+    successMsg: '你的代祷需求已收到。我们在为你祷告。',
+    errorMsg: '提交失败，请重试或直接通过 WhatsApp 联系我们。',
+    required: '请填写代祷事项。',
+  },
+};
+const t = labels[lang];
+---
+
+<section id="prayer" class="py-24 lg:py-32 px-6 bg-cream-100">
+  <div class="max-w-2xl mx-auto">
+    <h2 class="section-title text-clay-900">{t.title}</h2>
+    <p class="section-subtitle mb-12">{t.subtitle}</p>
+
+    <form id="prayer-form" class="bg-white rounded-2xl shadow-lg p-8 md:p-10 space-y-6 border border-cream-200">
+      <!-- Name -->
+      <div>
+        <label class="block text-sm font-medium text-clay-600 mb-2">{t.name}</label>
+        <input
+          type="text" name="name" placeholder={t.namePlaceholder}
+          class="w-full px-4 py-3 rounded-xl border border-cream-300 bg-cream-50 focus:outline-none focus:ring-2 focus:ring-clay-400 focus:border-transparent transition-all text-clay-800"
+        />
+      </div>
+
+      <!-- Anonymous -->
+      <label class="flex items-center gap-3 cursor-pointer">
+        <input type="checkbox" name="anonymous" class="w-4 h-4 rounded border-cream-300 text-clay-700 focus:ring-clay-400" />
+        <span class="text-sm text-clay-500">{t.anonymous}</span>
+      </label>
+
+      <!-- Email -->
+      <div>
+        <label class="block text-sm font-medium text-clay-600 mb-2">{t.email}</label>
+        <input
+          type="email" name="email" required placeholder={t.emailPlaceholder}
+          class="w-full px-4 py-3 rounded-xl border border-cream-300 bg-cream-50 focus:outline-none focus:ring-2 focus:ring-clay-400 focus:border-transparent transition-all text-clay-800"
+        />
+      </div>
+
+      <!-- Prayer Request -->
+      <div>
+        <label class="block text-sm font-medium text-clay-600 mb-2">{t.request} *</label>
+        <textarea
+          name="request" rows="5" required placeholder={t.requestPlaceholder}
+          class="w-full px-4 py-3 rounded-xl border border-cream-300 bg-cream-50 focus:outline-none focus:ring-2 focus:ring-clay-400 focus:border-transparent transition-all text-clay-800 resize-none"
+        ></textarea>
+      </div>
+
+      <button
+        type="submit"
+        class="w-full py-4 bg-clay-800 hover:bg-clay-700 text-cream-50 font-medium rounded-xl transition-colors text-lg"
+      >{t.submit}</button>
+    </form>
+
+    <!-- Success / Error messages -->
+    <div id="prayer-success" class="hidden mt-8 bg-green-50 border border-green-200 rounded-2xl p-8 text-center">
+      <p class="text-4xl mb-4">🙏</p>
+      <h3 class="font-serif text-xl font-bold text-green-800 mb-2">{t.successTitle}</h3>
+      <p class="text-green-600">{t.successMsg}</p>
+    </div>
+    <div id="prayer-error" class="hidden mt-8 bg-red-50 border border-red-200 rounded-2xl p-8 text-center">
+      <p class="text-red-600">{t.errorMsg}</p>
+    </div>
+  </div>
+</section>
+
+<script>
+  function initPrayerForm() {
+    const form = document.getElementById('prayer-form') as HTMLFormElement;
+    const success = document.getElementById('prayer-success')!;
+    const error = document.getElementById('prayer-error')!;
+    const btn = form?.querySelector('button')!;
+
+    form?.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const formData = new FormData(form);
+      const data = {
+        name: formData.get('name') || '',
+        anonymous: formData.get('anonymous') === 'on',
+        email: formData.get('email') || '',
+        request: formData.get('request') || '',
+        lang: '{lang}',
+        timestamp: new Date().toISOString(),
+      };
+
+      if (!data.request.trim()) {
+        alert('{t.required}');
+        return;
+      }
+
+      btn.textContent = '{t.submitting}';
+      btn.classList.add('opacity-70', 'pointer-events-none');
+
+      try {
+        const res = await fetch('/api/prayer', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(data),
+        });
+
+        if (res.ok) {
+          form.classList.add('hidden');
+          success.classList.remove('hidden');
+          error.classList.add('hidden');
+        } else {
+          throw new Error('Failed');
+        }
+      } catch (err) {
+        error.classList.remove('hidden');
+        success.classList.add('hidden');
+        console.error(err);
+      } finally {
+        btn.textContent = '{t.submit}';
+        btn.classList.remove('opacity-70', 'pointer-events-none');
+      }
+    });
+  }
+
+  initPrayerForm();
+  document.addEventListener('astro:page-load', initPrayerForm);
+</script>

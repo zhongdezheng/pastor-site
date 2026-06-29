@@ -1,0 +1,86 @@
+[
+  {
+    "id": "tee-grace-white",
+    "name": { "en": "Grace Tee — White", "zh": "恩典T恤 — 白色" },
+    "price": 29,
+    "currency": "USD",
+    "sizes": ["S", "M", "L", "XL", "XXL"],
+    "weight": "180g / 6.3oz",
+    "description": {
+      "en": "Premium cotton crewneck tee featuring an original 'Grace' typography design. Comfortable everyday wear that carries a message of hope.",
+      "zh": "高品质纯棉圆领T恤，原创「Grace」字体设计。舒适的日常穿着，传递盼望的信息。"
+    },
+    "images": ["tee-grace-white-1.jpg", "tee-grace-white-2.jpg"],
+    "stock": 50
+  },
+  {
+    "id": "tee-grace-black",
+    "name": { "en": "Grace Tee — Black", "zh": "恩典T恤 — 黑色" },
+    "price": 29,
+    "currency": "USD",
+    "sizes": ["S", "M", "L", "XL", "XXL"],
+    "weight": "180g / 6.3oz",
+    "description": {
+      "en": "Classic black tee with a gold foil-inspired cross design. Subtle yet bold — perfect for any occasion.",
+      "zh": "经典黑色T恤，金色箔感十字架设计。低调而有力量——适合任何场合。"
+    },
+    "images": ["tee-grace-black-1.jpg", "tee-grace-black-2.jpg"],
+    "stock": 40
+  },
+  {
+    "id": "hoodie-faith-grey",
+    "name": { "en": "Faith Over Fear Hoodie — Grey", "zh": "信心卫衣 — 灰色" },
+    "price": 49,
+    "currency": "USD",
+    "sizes": ["M", "L", "XL", "XXL"],
+    "weight": "420g / 14.8oz",
+    "description": {
+      "en": "Cozy fleece-lined hoodie with 'Faith Over Fear' embroidered across the chest. Warmth for body and soul.",
+      "zh": "舒适加绒卫衣，胸前刺绣「Faith Over Fear」。温暖身体，也温暖灵魂。"
+    },
+    "images": ["hoodie-faith-grey-1.jpg", "hoodie-faith-grey-2.jpg"],
+    "stock": 35
+  },
+  {
+    "id": "hoodie-faith-cream",
+    "name": { "en": "Faith Over Fear Hoodie — Cream", "zh": "信心卫衣 — 米白色" },
+    "price": 49,
+    "currency": "USD",
+    "sizes": ["M", "L", "XL", "XXL"],
+    "weight": "420g / 14.8oz",
+    "description": {
+      "en": "Warm cream hoodie with a minimalist cross logo on the left chest. Understated elegance for daily devotion.",
+      "zh": "温暖米白卫衣，左胸简约十字标志。低调优雅，日常灵修最佳伴侣。"
+    },
+    "images": ["hoodie-faith-cream-1.jpg", "hoodie-faith-cream-2.jpg"],
+    "stock": 30
+  },
+  {
+    "id": "tee-scripture-navy",
+    "name": { "en": "Scripture Tee — Navy", "zh": "经文T恤 — 深蓝色" },
+    "price": 29,
+    "currency": "USD",
+    "sizes": ["S", "M", "L", "XL", "XXL"],
+    "weight": "180g / 6.3oz",
+    "description": {
+      "en": "Navy tee featuring John 3:16 on the back in elegant serif type. Premium ringspun cotton that holds its shape.",
+      "zh": "深蓝色T恤，后背印有约翰福音3:16优雅衬线字体。优质精梳棉，不易变形。"
+    },
+    "images": ["tee-scripture-navy-1.jpg", "tee-scripture-navy-2.jpg"],
+    "stock": 45
+  },
+  {
+    "id": "cap-cross-embroidered",
+    "name": { "en": "Cross Embroidered Cap", "zh": "十字刺绣棒球帽" },
+    "price": 19,
+    "currency": "USD",
+    "sizes": ["One Size"],
+    "weight": "90g / 3.2oz",
+    "description": {
+      "en": "Adjustable dad cap with a finely embroidered cross. The perfect finishing touch to any outfit.",
+      "zh": "可调节棒球帽，精致十字刺绣。为任何穿搭画龙点睛。"
+    },
+    "images": ["cap-cross-1.jpg", "cap-cross-2.jpg"],
+    "stock": 60
+  }
+]

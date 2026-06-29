@@ -1,0 +1,113 @@
+---
+import heroData from '../content/hero.json';
+interface Props { lang: 'en' | 'zh' }
+const { lang } = Astro.props;
+const t = heroData[lang];
+const photos = [
+  { src: '/images/hero-1.svg', alt: 'Pastor David' },
+  { src: '/images/hero-2.svg', alt: 'Worship' },
+  { src: '/images/hero-3.svg', alt: 'Ministry' },
+];
+---
+
+<section id="hero" class="min-h-screen pt-16 flex items-center">
+  <div class="max-w-7xl mx-auto px-6 w-full">
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-20 items-center py-16 lg:py-24">
+      <!-- Left: Text -->
+      <div class="order-2 lg:order-1">
+        <p class="text-sm uppercase tracking-[0.2em] text-clay-400 mb-4 font-medium">{t.greeting}</p>
+        <h1 class="text-4xl md:text-5xl lg:text-6xl font-serif font-bold text-clay-900 leading-tight mb-6">
+          {t.name}
+        </h1>
+        <p class="text-lg text-clay-500 font-serif italic mb-8">{t.title}</p>
+        <div class="space-y-4 text-clay-600 leading-relaxed max-w-lg mb-10">
+          <p>{t.testimony}</p>
+          <p>{t.testimony2}</p>
+        </div>
+        <blockquote class="border-l-2 border-cream-400 pl-6 mb-8">
+          <p class="text-clay-500 italic font-serif">{t.verse}</p>
+          <cite class="text-sm text-clay-400 not-italic mt-2 block">{t.verseRef}</cite>
+        </blockquote>
+        <div class="flex flex-col sm:flex-row gap-4">
+          <a href={`/${lang}/#scriptures`} class="btn-primary">{t.cta1}</a>
+          <a href={`/${lang}/#products`} class="btn-outline">{t.cta2}</a>
+        </div>
+      </div>
+
+      <!-- Right: Photo Carousel -->
+      <div class="order-1 lg:order-2">
+        <photo-carousel class="block relative w-full aspect-[4/5] rounded-2xl overflow-hidden bg-cream-200 shadow-xl">
+          {photos.map((photo, i) => (
+            <img
+              src={photo.src}
+              alt={photo.alt}
+              class={`absolute inset-0 w-full h-full object-cover transition-opacity duration-[1200ms] ease-in-out ${i === 0 ? 'opacity-100' : 'opacity-0'}`}
+              data-photo-index={i}
+              loading={i === 0 ? 'eager' : 'lazy'}
+            />
+          ))}
+          <!-- Dots -->
+          <div class="absolute bottom-6 left-1/2 -translate-x-1/2 flex gap-2 z-10">
+            {photos.map((_, i) => (
+              <button
+                class={`w-2.5 h-2.5 rounded-full transition-all duration-300 ${i === 0 ? 'bg-white w-6' : 'bg-white/50'}`}
+                data-dot={i}
+                aria-label={`Photo ${i + 1}`}
+              ></button>
+            ))}
+          </div>
+        </photo-carousel>
+      </div>
+    </div>
+  </div>
+</section>
+
+<script>
+  // Photo carousel — inline script, no framework needed
+  function initPhotoCarousel() {
+    const container = document.querySelector('photo-carousel');
+    if (!container) return;
+    const photos = container.querySelectorAll('[data-photo-index]');
+    const dots = container.querySelectorAll('[data-dot]');
+    if (photos.length < 2) return;
+
+    let current = 0;
+    let interval: ReturnType<typeof setInterval>;
+
+    function show(index: number) {
+      photos.forEach((p, i) => {
+        (p as HTMLElement).classList.toggle('opacity-100', i === index);
+        (p as HTMLElement).classList.toggle('opacity-0', i !== index);
+      });
+      dots.forEach((d, i) => {
+        d.classList.toggle('bg-white', i === index);
+        d.classList.toggle('bg-white/50', i !== index);
+        d.classList.toggle('w-6', i === index);
+        d.classList.toggle('w-2.5', i !== index);
+      });
+      current = index;
+    }
+
+    function next() {
+      show((current + 1) % photos.length);
+    }
+
+    dots.forEach((dot) => {
+      dot.addEventListener('click', () => {
+        const idx = parseInt(dot.getAttribute('data-dot') || '0');
+        show(idx);
+        clearInterval(interval);
+        interval = setInterval(next, 5000);
+      });
+    });
+
+    interval = setInterval(next, 5000);
+
+    // Pause on hover
+    container.addEventListener('mouseenter', () => clearInterval(interval));
+    container.addEventListener('mouseleave', () => { interval = setInterval(next, 5000); });
+  }
+
+  initPhotoCarousel();
+  document.addEventListener('astro:page-load', initPhotoCarousel);
+</script>

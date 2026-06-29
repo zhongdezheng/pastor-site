@@ -1,0 +1,363 @@
+---
+import products from '../content/products.json';
+import siteData from '../content/site.json';
+const { site } = siteData;
+
+interface Props { lang: 'en' | 'zh' }
+const { lang } = Astro.props;
+
+const labels = {
+  en: {
+    title: 'Faith-Inspired Apparel',
+    subtitle: 'Wear your faith. Every piece designed to carry a message of hope and grace.',
+    addToCart: 'Add to Cart',
+    sizes: 'Sizes',
+    weight: 'Weight',
+    stock: 'In Stock',
+    viewDetail: 'View Details',
+    cart: 'Cart',
+    empty: 'Your cart is empty',
+    checkoutWA: 'Order via WhatsApp',
+    sizeGuide: 'Size Guide',
+    close: 'Close',
+    outOfStock: 'Out of Stock',
+  },
+  zh: {
+    title: '信仰主题服饰',
+    subtitle: '穿出你的信仰。每件设计都承载着盼望与恩典的信息。',
+    addToCart: '加入购物车',
+    sizes: '尺码',
+    weight: '重量',
+    stock: '库存',
+    viewDetail: '查看详情',
+    cart: '购物车',
+    empty: '购物车是空的',
+    checkoutWA: '通过 WhatsApp 下单',
+    sizeGuide: '尺码指南',
+    close: '关闭',
+    outOfStock: '已售罄',
+  },
+};
+const t = labels[lang];
+
+const sizeGuideData = {
+  en: {
+    S: 'Chest 36-38"',
+    M: 'Chest 38-40"',
+    L: 'Chest 40-42"',
+    XL: 'Chest 42-44"',
+    XXL: 'Chest 44-46"',
+  },
+  zh: {
+    S: '胸围 91-96cm',
+    M: '胸围 96-102cm',
+    L: '胸围 102-107cm',
+    XL: '胸围 107-112cm',
+    XXL: '胸围 112-117cm',
+  },
+};
+---
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
+
+<section id="products" class="py-24 lg:py-32 px-6 bg-white">
+  <div class="max-w-7xl mx-auto">
+    <h2 class="section-title text-clay-900">{t.title}</h2>
+    <p class="section-subtitle mb-16">{t.subtitle}</p>
+
+    <!-- Cart toggle -->
+    <div class="flex justify-end mb-8">
+      <button id="cart-toggle" class="relative px-5 py-2.5 bg-clay-800 text-cream-50 rounded-full text-sm font-medium hover:bg-clay-700 transition-colors">
+        🛒 {t.cart} <span id="cart-badge" class="ml-1 bg-cream-400 text-clay-900 px-1.5 py-0.5 rounded-full text-xs hidden">0</span>
+      </button>
+    </div>
+
+    <!-- Product Grid (desktop) / Swiper (mobile) -->
+    <div class="hidden md:grid grid-cols-2 lg:grid-cols-3 gap-8">
+      {products.map((p) => (
+        <div class="group bg-white rounded-2xl overflow-hidden border border-cream-200 shadow-sm hover:shadow-xl transition-all duration-300">
+          <div class="aspect-square bg-cream-100 overflow-hidden relative">
+            <div class="absolute inset-0 flex items-center justify-center text-6xl">
+              {p.id.includes('hoodie') ? '🧥' : p.id.includes('cap') ? '🧢' : '👕'}
+            </div>
+          </div>
+          <div class="p-6">
+            <h3 class="font-serif font-bold text-lg text-clay-800 mb-1">{p.name[lang]}</h3>
+            <p class="text-clay-700 font-semibold text-xl mb-1">${p.price}</p>
+            <p class="text-sm text-clay-400 mb-4">{t.weight}: {p.weight}</p>
+
+            <!-- Size selector -->
+            <div class="mb-3">
+              <label class="text-xs text-clay-400 uppercase tracking-wide">{t.sizes}</label>
+              <div class="flex flex-wrap gap-1.5 mt-1">
+                {p.sizes.map((s) => (
+                  <button
+                    class="size-btn px-2.5 py-1 text-xs border border-clay-300 rounded-md hover:border-clay-500 hover:bg-clay-100 transition-colors"
+                    data-product={p.id}
+                    data-size={s}
+                  >{s}</button>
+                ))}
+              </div>
+            </div>
+
+            <div class="flex items-center justify-between">
+              <span class="text-xs text-green-600 font-medium">
+                {p.stock > 0 ? `${t.stock}: ${p.stock}` : t.outOfStock}
+              </span>
+              <button
+                class="add-to-cart px-4 py-2 bg-clay-800 text-cream-50 text-sm rounded-lg hover:bg-clay-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                data-product={p.id}
+                data-name={p.name[lang]}
+                data-price={p.price}
+                data-image={p.images[0]}
+                disabled={p.stock === 0}
+              >{t.addToCart}</button>
+            </div>
+          </div>
+        </div>
+      ))}
+    </div>
+
+    <!-- Mobile Swiper -->
+    <div class="md:hidden">
+      <div class="swiper product-swiper">
+        <div class="swiper-wrapper">
+          {products.map((p) => (
+            <div class="swiper-slide">
+              <div class="bg-white rounded-2xl overflow-hidden border border-cream-200 shadow-sm">
+                <div class="aspect-square bg-cream-100 flex items-center justify-center text-6xl">
+                  {p.id.includes('hoodie') ? '🧥' : p.id.includes('cap') ? '🧢' : '👕'}
+                </div>
+                <div class="p-5">
+                  <h3 class="font-serif font-bold text-base text-clay-800 mb-1">{p.name[lang]}</h3>
+                  <p class="text-clay-700 font-semibold text-lg mb-3">${p.price}</p>
+                  <div class="flex flex-wrap gap-1.5 mb-3">
+                    {p.sizes.map((s) => (
+                      <button
+                        class="size-btn-mobile px-2.5 py-1 text-xs border border-clay-300 rounded-md"
+                        data-product={p.id}
+                        data-size={s}
+                      >{s}</button>
+                    ))}
+                  </div>
+                  <button
+                    class="add-to-cart-mobile w-full py-2.5 bg-clay-800 text-cream-50 text-sm rounded-lg hover:bg-clay-700 transition-colors disabled:opacity-50"
+                    data-product={p.id}
+                    data-name={p.name[lang]}
+                    data-price={p.price}
+                    data-image={p.images[0]}
+                    disabled={p.stock === 0}
+                  >{t.addToCart}</button>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+        <div class="swiper-pagination !relative mt-6"></div>
+      </div>
+    </div>
+
+    <!-- Cart Drawer -->
+    <div id="cart-drawer" class="fixed inset-0 z-50 hidden">
+      <div class="absolute inset-0 bg-black/30 backdrop-blur-sm" id="cart-overlay"></div>
+      <div class="absolute right-0 top-0 h-full w-full max-w-md bg-white shadow-2xl p-6 flex flex-col">
+        <div class="flex items-center justify-between mb-6">
+          <h3 class="font-serif text-xl font-bold text-clay-800">🛒 {t.cart}</h3>
+          <button id="cart-close" class="text-clay-400 hover:text-clay-600 text-2xl">&times;</button>
+        </div>
+        <div id="cart-items" class="flex-1 overflow-y-auto space-y-4 mb-6">
+          <p class="text-clay-400 text-center py-12">{t.empty}</p>
+        </div>
+        <div class="border-t border-cream-200 pt-4">
+          <div class="flex justify-between text-clay-800 font-semibold mb-4">
+            <span>Total</span>
+            <span id="cart-total">$0</span>
+          </div>
+          <button id="checkout-wa" class="w-full py-3 bg-green-600 text-white rounded-xl font-medium hover:bg-green-500 transition-colors">
+            {t.checkoutWA}
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Size Guide Modal -->
+    <div id="size-guide-modal" class="fixed inset-0 z-50 hidden bg-black/30 backdrop-blur-sm flex items-center justify-center">
+      <div class="bg-white rounded-2xl p-8 max-w-md w-full mx-4 shadow-2xl">
+        <div class="flex justify-between items-center mb-6">
+          <h3 class="font-serif text-xl font-bold text-clay-800">{t.sizeGuide}</h3>
+          <button id="size-guide-close" class="text-clay-400 hover:text-clay-600 text-2xl">&times;</button>
+        </div>
+        <table class="w-full text-sm">
+          <thead>
+            <tr class="border-b border-cream-200 text-clay-500">
+              <th class="py-2 text-left">Size</th>
+              <th class="py-2 text-right">{lang === 'en' ? 'Chest' : '胸围'}</th>
+            </tr>
+          </thead>
+          <tbody>
+            {Object.entries(sizeGuideData[lang]).map(([size, measure]) => (
+              <tr class="border-b border-cream-100">
+                <td class="py-2 font-medium text-clay-800">{size}</td>
+                <td class="py-2 text-right text-clay-500">{measure}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+        <p class="text-xs text-clay-400 mt-4">
+          {lang === 'en' ? 'US sizes. Runs slightly larger than Asian sizing.' : '美码偏大，比亚洲尺码大一号。建议选小一码。'}
+        </p>
+      </div>
+    </div>
+
+    <div class="text-center mt-8">
+      <button id="size-guide-trigger" class="text-sm text-clay-500 underline hover:text-clay-700">{t.sizeGuide}</button>
+    </div>
+  </div>
+</section>
+
+<script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
+<script>
+  // Wait for DOM
+  function initProducts() {
+    // Swiper for mobile
+    const swiperEl = document.querySelector('.product-swiper');
+    if (swiperEl && typeof Swiper !== 'undefined') {
+      new (window as any).Swiper('.product-swiper', {
+        slidesPerView: 1.15,
+        spaceBetween: 16,
+        centeredSlides: true,
+        pagination: { el: '.swiper-pagination', clickable: true },
+      });
+    }
+
+    const cartItems: any[] = [];
+    const cartBadge = document.getElementById('cart-badge')!;
+    const cartDrawer = document.getElementById('cart-drawer')!;
+    const cartOverlay = document.getElementById('cart-overlay')!;
+    const cartClose = document.getElementById('cart-close')!;
+    const cartToggle = document.getElementById('cart-toggle')!;
+    const cartContainer = document.getElementById('cart-items')!;
+    const cartTotalEl = document.getElementById('cart-total')!;
+    const checkoutBtn = document.getElementById('checkout-wa') as HTMLAnchorElement;
+    const sizeGuideModal = document.getElementById('size-guide-modal')!;
+    const sizeGuideTrigger = document.getElementById('size-guide-trigger')!;
+    const sizeGuideClose = document.getElementById('size-guide-close')!;
+
+    const whatsapp = '{site.whatsapp}';
+
+    function updateCartUI() {
+      const count = cartItems.reduce((s, i) => s + i.quantity, 0);
+      const total = cartItems.reduce((s, i) => s + i.price * i.quantity, 0);
+
+      if (count > 0) {
+        cartBadge.textContent = String(count);
+        cartBadge.classList.remove('hidden');
+      } else {
+        cartBadge.classList.add('hidden');
+      }
+
+      cartTotalEl.textContent = `$${total}`;
+
+      if (cartItems.length === 0) {
+        cartContainer.innerHTML = '<p class="text-clay-400 text-center py-12">{t.empty}</p>';
+      } else {
+        cartContainer.innerHTML = cartItems.map((item, idx) => `
+          <div class="flex gap-3 items-center bg-cream-50 rounded-xl p-3">
+            <div class="w-16 h-16 bg-cream-200 rounded-lg flex items-center justify-center text-2xl flex-shrink-0">
+              ${item.name.includes('Hoodie') || item.name.includes('卫衣') ? '🧥' : item.name.includes('Cap') || item.name.includes('帽') ? '🧢' : '👕'}
+            </div>
+            <div class="flex-1 min-w-0">
+              <p class="text-sm font-medium text-clay-800 truncate">${item.name}</p>
+              <p class="text-xs text-clay-400">Size: ${item.size} × ${item.quantity}</p>
+              <p class="text-sm font-semibold text-clay-700">$${item.price * item.quantity}</p>
+            </div>
+            <button onclick="this.closest('[data-cart-item]')?.dispatchEvent(new CustomEvent('remove', {detail:${idx}}))" class="text-clay-400 hover:text-red-500 text-lg">&times;</button>
+          </div>
+        `).join('');
+      }
+    }
+
+    function addToCart(name: string, price: number, size: string, image: string) {
+      if (!size) {
+        alert('{lang === "en" ? "Please select a size first" : "请先选择尺码"}');
+        return;
+      }
+      const existing = cartItems.find(i => i.name === name && i.size === size);
+      if (existing) {
+        existing.quantity++;
+      } else {
+        cartItems.push({ name, price, size, image, quantity: 1 });
+      }
+      updateCartUI();
+      // Brief flash
+      cartToggle.classList.add('scale-110');
+      setTimeout(() => cartToggle.classList.remove('scale-110'), 200);
+    }
+
+    function checkout() {
+      if (cartItems.length === 0) return;
+      const lines = cartItems.map(i => `• ${i.name} (${i.size}) ×${i.quantity} — $${i.price * i.quantity}`);
+      const total = cartItems.reduce((s, i) => s + i.price * i.quantity, 0);
+      const text = `Hi! I'd like to order:%0A%0A${lines.join('%0A')}%0A%0ATotal: $${total}%0A%0A`;
+      window.open(`https://wa.me/${whatsapp}?text=${text}`, '_blank');
+    }
+
+    // Event listeners
+    document.querySelectorAll('.add-to-cart, .add-to-cart-mobile').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const el = btn as HTMLElement;
+        const productId = el.dataset.product!;
+        const parent = el.closest('.swiper-slide, .group')!;
+        const sizeBtn = parent.querySelector(`.size-btn[data-product="${productId}"].border-clay-600, .size-btn-mobile[data-product="${productId}"].border-clay-600`);
+        const size = sizeBtn?.getAttribute('data-size') || '';
+        addToCart(el.dataset.name!, Number(el.dataset.price!), size, el.dataset.image!);
+      });
+    });
+
+    // Size selection
+    document.querySelectorAll('.size-btn, .size-btn-mobile').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const el = btn as HTMLElement;
+        const productId = el.dataset.product!;
+        document.querySelectorAll(`.size-btn[data-product="${productId}"], .size-btn-mobile[data-product="${productId}"]`).forEach(b => {
+          b.classList.remove('border-clay-600', 'bg-clay-100');
+          b.classList.add('border-clay-300');
+        });
+        el.classList.add('border-clay-600', 'bg-clay-100');
+        el.classList.remove('border-clay-300');
+      });
+    });
+
+    cartToggle.addEventListener('click', () => cartDrawer.classList.remove('hidden'));
+    cartClose.addEventListener('click', () => cartDrawer.classList.add('hidden'));
+    cartOverlay.addEventListener('click', () => cartDrawer.classList.add('hidden'));
+    checkoutBtn.addEventListener('click', checkout);
+
+    sizeGuideTrigger.addEventListener('click', () => sizeGuideModal.classList.remove('hidden'));
+    sizeGuideClose.addEventListener('click', () => sizeGuideModal.classList.add('hidden'));
+    sizeGuideModal.addEventListener('click', (e) => {
+      if (e.target === sizeGuideModal) sizeGuideModal.classList.add('hidden');
+    });
+
+    // Load cart from localStorage
+    try {
+      const saved = localStorage.getItem('pastor-site-cart');
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        cartItems.push(...parsed);
+      }
+    } catch(e) {}
+
+    // Save cart
+    function saveCart() {
+      localStorage.setItem('pastor-site-cart', JSON.stringify(cartItems));
+    }
+    const origUpdate = updateCartUI;
+    updateCartUI = () => { origUpdate(); saveCart(); };
+
+    updateCartUI();
+  }
+
+  initProducts();
+  document.addEventListener('astro:page-load', initProducts);
+</script>
