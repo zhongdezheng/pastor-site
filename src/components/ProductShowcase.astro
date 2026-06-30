@@ -69,7 +69,7 @@ const sizeGuideData = {
     </div>
 
     <!-- Product Carousel -->
-    <div id="product-carousel" class="product-carousel relative select-none" style="height: 520px;">
+    <div id="product-carousel" class="product-carousel relative select-none" style="height: 350px;">
       <div id="product-track" class="product-track flex items-start justify-center h-full transition-transform duration-600 ease-out">
         {products.map((p, i) => (
           <div
@@ -200,12 +200,12 @@ const sizeGuideData = {
 <style>
   /* ── Fixed card dimensions ── */
   .product-card {
-    width: 280px;
-    min-height: 480px;
+    width: 190px;
+    min-height: 320px;
   }
   @media (min-width: 768px) {
     .product-card {
-      width: 320px;
+      width: 215px;
     }
   }
 
@@ -237,10 +237,10 @@ const sizeGuideData = {
   }
 
   #product-track {
-    gap: 12px;
+    gap: 8px;
   }
   @media (min-width: 768px) {
-    #product-track { gap: 20px; }
+    #product-track { gap: 14px; }
   }
 
   .prod-dot.active {
@@ -263,10 +263,10 @@ const sizeGuideData = {
     const total = cards.length;
 
     function getCardWidth(): number {
-      return window.innerWidth >= 768 ? 320 : 280;
+      return window.innerWidth >= 768 ? 215 : 190;
     }
     function getGap(): number {
-      return window.innerWidth >= 768 ? 20 : 12;
+      return window.innerWidth >= 768 ? 14 : 8;
     }
 
     function render() {
