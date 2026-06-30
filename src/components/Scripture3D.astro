@@ -128,7 +128,6 @@ const t = labels[lang];
 
     if (!track || cards.length === 0) return;
 
-    let current = 0;
     const total = cards.length;
 
     // ── Calculate card width for centering ──
@@ -140,82 +139,120 @@ const t = labels[lang];
       return window.innerWidth >= 768 ? 24 : 16;
     }
 
-    // ── Render positions ──
-    function render(animate = true) {
+
+
+    // ── Continuous auto-scroll animation ──
+    let animFrame: number | null = null;
+    let scrollPos = 0;               // current scroll offset in px (fractional, for smooth animation)
+    let targetCard = 0;             // which card index is closest to center
+    let paused = false;
+    let lastTime = 0;
+    const SCROLL_SPEED = 30;        // px per second
+
+    function getCardUnit(): number {
+      return getCardWidth() + getGap();
+    }
+
+    function animate(timestamp: number) {
+      if (paused) {
+        animFrame = null;
+        return;
+      }
+
+      if (!lastTime) lastTime = timestamp;
+      const dt = Math.min(timestamp - lastTime, 100); // cap to avoid jump after tab switch
+      lastTime = timestamp;
+
+      // Advance scroll position (right-to-left flow: cards move left, so offset decreases)
+      scrollPos += SCROLL_SPEED * (dt / 1000);
+
+      const unit = getCardUnit();
+      const totalWidth = total * unit;
+
+      // Wrap around
+      while (scrollPos >= totalWidth) scrollPos -= totalWidth;
+
+      // Determine which card is closest to center
+      // scrollPos / unit = floating-point card index offset
+      const floatIdx = (scrollPos / unit) % total;
+      targetCard = Math.round(floatIdx) % total;
+
+      // Render with fractional offset for smooth sub-pixel positioning
+      renderSmooth(floatIdx);
+
+      animFrame = requestAnimationFrame(animate);
+    }
+
+    function renderSmooth(floatIdx: number) {
       const cw = getCardWidth();
       const gap = getGap();
-      // Total visible range: show cards at offsets -2,-1,0,1,2
-      const startOffset = Math.max(-2, -current);   // how many before center we can show
-      const endOffset = Math.min(2, total - 1 - current);
+      const unit = cw + gap;
 
-      let translateX = 0; // px to shift the track so current card is centered
-
+      // Set data-offset for each card based on distance from floatIdx
       cards.forEach((card, i) => {
-        const offset = i - current;
-        card.setAttribute('data-offset', String(offset));
-
-        if (offset >= -2 && offset <= 2) {
+        let dist = i - floatIdx;
+        // Wrap around for circular
+        if (dist < -total / 2) dist += total;
+        if (dist > total / 2) dist -= total;
+        const rounded = Math.round(dist);
+        card.setAttribute('data-offset', String(Math.max(-3, Math.min(3, rounded))));
+        if (Math.abs(rounded) <= 2) {
           card.style.display = '';
-          card.style.position = '';
         } else {
           card.style.display = 'none';
         }
       });
 
-      // Center the track: shift it so the current card is in the middle
-      // Each card is at position i * (cw + gap). We want card[current] at center.
-      // Track starts at x=0. So translateX = -(current * (cw + gap)) + halfContainer
-      // But simpler: just set transform on each card directly.
-      // Actually let's use the track's translateX approach for smooth animation.
-
+      // Smooth translateX: center the floatIdx position
       const containerCenter = track.parentElement!.clientWidth / 2;
-      const cardCenterOffset = current * (cw + gap);
-      translateX = containerCenter - (cw / 2) - cardCenterOffset;
-
+      const offsetPx = floatIdx * unit;
+      const translateX = containerCenter - (cw / 2) - offsetPx;
       track.style.transform = `translateX(${translateX}px)`;
 
       // Update dots
       dots.forEach((dot, i) => {
-        dot.classList.toggle('active', i === current);
+        dot.classList.toggle('active', i === targetCard);
       });
     }
 
-    function go(dir: 1 | -1) {
-      stopAuto();
-      current = (current + dir + total) % total;
-      render(true);
-      resumeAuto();
-    }
-
-    function goTo(idx: number) {
-      stopAuto();
-      current = idx;
-      render(true);
-      resumeAuto();
-    }
-
-    // ── Auto-rotate ──
-    let autoTimer: ReturnType<typeof setInterval> | null = null;
-    let pausedByUser = false;
-
+    // ── Pause/resume ──
+    function pauseAuto() { paused = true; if (animFrame) { cancelAnimationFrame(animFrame); animFrame = null; } }
     function resumeAuto() {
-      if (pausedByUser) return;
-      autoTimer = setInterval(() => {
-        current = (current + 1) % total;
-        render(true);
-      }, 4500);
+      if (paused) { paused = false; lastTime = 0; animFrame = requestAnimationFrame(animate); }
+      else if (!animFrame) { lastTime = 0; animFrame = requestAnimationFrame(animate); }
     }
-    function stopAuto() {
-      if (autoTimer) { clearInterval(autoTimer); autoTimer = null; }
+
+    // Snap to a specific card index
+    function jumpTo(idx: number) {
+      const unit = getCardUnit();
+      const totalWidth = total * unit;
+      // Position so that idx is at center: scrollPos should be idx * unit (mod totalWidth)
+      scrollPos = idx * unit;
+      // Ensure within [0, totalWidth)
+      while (scrollPos < 0) scrollPos += totalWidth;
+      while (scrollPos >= totalWidth) scrollPos -= totalWidth;
+      targetCard = idx;
+      renderSmooth(idx);
     }
 
     // ── Events ──
+    function go(dir: 1 | -1) {
+      pauseAuto();
+      const idx = (targetCard + dir + total) % total;
+      jumpTo(idx);
+      // Resume after a short pause so user can see the result
+      setTimeout(resumeAuto, 1500);
+    }
+
     prevBtn?.addEventListener('click', () => go(-1));
     nextBtn?.addEventListener('click', () => go(1));
 
     dots.forEach(dot => {
       dot.addEventListener('click', () => {
-        goTo(parseInt(dot.getAttribute('data-sdot') || '0'));
+        const idx = parseInt(dot.getAttribute('data-sdot') || '0');
+        pauseAuto();
+        jumpTo(idx);
+        setTimeout(resumeAuto, 1500);
       });
     });
 
@@ -223,24 +260,26 @@ const t = labels[lang];
     cards.forEach(card => {
       card.addEventListener('click', () => {
         const idx = parseInt(card.getAttribute('data-index') || '0');
-        if (idx !== current) goTo(idx);
+        if (idx !== targetCard) {
+          pauseAuto();
+          jumpTo(idx);
+          setTimeout(resumeAuto, 1500);
+        }
       });
     });
 
     // Pause on hover
-    track.addEventListener('mouseenter', () => stopAuto());
-    track.addEventListener('mouseleave', () => resumeAuto());
+    track.addEventListener('mouseenter', pauseAuto);
+    track.addEventListener('mouseleave', resumeAuto);
 
     // Touch swipe
     let touchStartX = 0;
-    let touchEndX = 0;
     track.addEventListener('touchstart', (e: TouchEvent) => {
       touchStartX = e.changedTouches[0].screenX;
-      stopAuto();
+      pauseAuto();
     }, { passive: true });
     track.addEventListener('touchend', (e: TouchEvent) => {
-      touchEndX = e.changedTouches[0].screenX;
-      const diff = touchStartX - touchEndX;
+      const diff = touchStartX - e.changedTouches[0].screenX;
       if (Math.abs(diff) > 40) {
         go(diff > 0 ? 1 : -1);
       } else {
@@ -249,7 +288,7 @@ const t = labels[lang];
     }, { passive: true });
 
     // Resize handler
-    window.addEventListener('resize', () => render(false));
+    window.addEventListener('resize', () => renderSmooth(targetCard));
 
     // Keyboard
     document.addEventListener('keydown', (e) => {
@@ -257,8 +296,10 @@ const t = labels[lang];
       if (e.key === 'ArrowRight') go(1);
     });
 
-    // Init
-    render(false);
+    // Init: start at card 0 with smooth auto-scroll
+    scrollPos = 0;
+    targetCard = 0;
+    renderSmooth(0);
     resumeAuto();
   }
 
