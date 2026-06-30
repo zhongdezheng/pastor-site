@@ -14,7 +14,6 @@ const labels = {
     sizes: 'Sizes',
     weight: 'Weight',
     stock: 'In Stock',
-    viewDetail: 'View Details',
     cart: 'Cart',
     empty: 'Your cart is empty',
     checkoutWA: 'Order via WhatsApp',
@@ -29,7 +28,6 @@ const labels = {
     sizes: '尺码',
     weight: '重量',
     stock: '库存',
-    viewDetail: '查看详情',
     cart: '购物车',
     empty: '购物车是空的',
     checkoutWA: '通过 WhatsApp 下单',
@@ -58,178 +56,305 @@ const sizeGuideData = {
 };
 ---
 
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
-
-<section id="products" class="py-24 lg:py-32 px-6 bg-white">
-  <div class="max-w-7xl mx-auto">
+<section id="products" class="py-24 lg:py-32 px-4 sm:px-6 bg-white overflow-hidden">
+  <div class="max-w-5xl mx-auto">
     <h2 class="section-title text-clay-900">{t.title}</h2>
-    <p class="section-subtitle mb-16">{t.subtitle}</p>
+    <p class="section-subtitle">{t.subtitle}</p>
 
     <!-- Cart toggle -->
-    <div class="flex justify-end mb-8">
+    <div class="flex justify-end mb-8 mt-8">
       <button id="cart-toggle" class="relative px-5 py-2.5 bg-clay-800 text-cream-50 rounded-full text-sm font-medium hover:bg-clay-700 transition-colors">
-        🛒 {t.cart} <span id="cart-badge" class="ml-1 bg-cream-400 text-clay-900 px-1.5 py-0.5 rounded-full text-xs hidden">0</span>
+        &#x1F6D2; {t.cart} <span id="cart-badge" class="ml-1 bg-cream-400 text-clay-900 px-1.5 py-0.5 rounded-full text-xs hidden">0</span>
       </button>
     </div>
 
-    <!-- Product Grid (desktop) / Swiper (mobile) -->
-    <div class="hidden md:grid grid-cols-2 lg:grid-cols-3 gap-8">
-      {products.map((p) => (
-        <div class="group bg-white rounded-2xl overflow-hidden border border-cream-200 shadow-sm hover:shadow-xl transition-all duration-300">
-          <div class="aspect-square bg-cream-100 overflow-hidden relative">
-            <div class="absolute inset-0 flex items-center justify-center text-6xl">
+    <!-- Product Carousel -->
+    <div id="product-carousel" class="product-carousel relative select-none" style="height: 520px;">
+      <div id="product-track" class="product-track flex items-start justify-center h-full transition-transform duration-600 ease-out">
+        {products.map((p, i) => (
+          <div
+            class="product-card shrink-0 bg-white rounded-2xl border border-cream-200 shadow-sm transition-all duration-600 ease-out flex flex-col"
+            data-index={i}
+          >
+            <!-- Product image placeholder -->
+            <div class="aspect-square bg-cream-100 rounded-t-2xl flex items-center justify-center text-5xl flex-shrink-0 relative overflow-hidden">
               {p.id.includes('hoodie') ? '🧥' : p.id.includes('cap') ? '🧢' : '👕'}
             </div>
-          </div>
-          <div class="p-6">
-            <h3 class="font-serif font-bold text-lg text-clay-800 mb-1">{p.name[lang]}</h3>
-            <p class="text-clay-700 font-semibold text-xl mb-1">${p.price}</p>
-            <p class="text-sm text-clay-400 mb-4">{t.weight}: {p.weight}</p>
 
-            <!-- Size selector -->
-            <div class="mb-3">
-              <label class="text-xs text-clay-400 uppercase tracking-wide">{t.sizes}</label>
-              <div class="flex flex-wrap gap-1.5 mt-1">
-                {p.sizes.map((s) => (
-                  <button
-                    class="size-btn px-2.5 py-1 text-xs border border-clay-300 rounded-md hover:border-clay-500 hover:bg-clay-100 transition-colors"
-                    data-product={p.id}
-                    data-size={s}
-                  >{s}</button>
-                ))}
+            <div class="p-5 flex flex-col flex-1">
+              <h3 class="font-serif font-bold text-base text-clay-800 mb-0.5">{p.name[lang]}</h3>
+              <p class="text-clay-700 font-semibold text-lg mb-0.5">${p.price}</p>
+              <p class="text-xs text-clay-400 mb-3">{t.weight}: {p.weight}</p>
+
+              <!-- Size selector -->
+              <div class="mb-3">
+                <label class="text-xs text-clay-400 uppercase tracking-wide">{t.sizes}</label>
+                <div class="flex flex-wrap gap-1 mt-1">
+                  {p.sizes.map((s) => (
+                    <button
+                      class="size-btn px-2 py-0.5 text-xs border border-clay-300 rounded hover:border-clay-500 transition-colors"
+                      data-product={p.id}
+                      data-size={s}
+                    >{s}</button>
+                  ))}
+                </div>
+              </div>
+
+              <div class="mt-auto flex items-center justify-between">
+                <span class={`text-xs font-medium ${p.stock > 0 ? 'text-green-600' : 'text-red-400'}`}>
+                  {p.stock > 0 ? `${t.stock}: ${p.stock}` : t.outOfStock}
+                </span>
+                <button
+                  class="add-to-cart px-3 py-2 bg-clay-800 text-cream-50 text-xs rounded-lg hover:bg-clay-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap"
+                  data-product={p.id}
+                  data-name={p.name[lang]}
+                  data-price={p.price}
+                  data-image={p.images[0]}
+                  disabled={p.stock === 0}
+                >{t.addToCart}</button>
               </div>
             </div>
-
-            <div class="flex items-center justify-between">
-              <span class="text-xs text-green-600 font-medium">
-                {p.stock > 0 ? `${t.stock}: ${p.stock}` : t.outOfStock}
-              </span>
-              <button
-                class="add-to-cart px-4 py-2 bg-clay-800 text-cream-50 text-sm rounded-lg hover:bg-clay-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                data-product={p.id}
-                data-name={p.name[lang]}
-                data-price={p.price}
-                data-image={p.images[0]}
-                disabled={p.stock === 0}
-              >{t.addToCart}</button>
-            </div>
           </div>
-        </div>
+        ))}
+      </div>
+
+      <!-- Fade overlays -->
+      <div class="absolute inset-y-0 left-0 w-12 md:w-24 pointer-events-none bg-gradient-to-r from-white/95 to-transparent z-10 rounded-l-2xl"></div>
+      <div class="absolute inset-y-0 right-0 w-12 md:w-24 pointer-events-none bg-gradient-to-l from-white/95 to-transparent z-10 rounded-r-2xl"></div>
+
+      <!-- Arrow buttons -->
+      <button id="prod-prev" class="prod-btn absolute left-1 md:left-3 top-1/2 -translate-y-1/2 w-11 h-11 rounded-full bg-white/85 backdrop-blur-sm shadow-md border border-cream-300 flex items-center justify-center text-clay-500 hover:bg-white hover:text-clay-800 hover:shadow-lg transition-all z-20" aria-label="Previous">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/></svg>
+      </button>
+      <button id="prod-next" class="prod-btn absolute right-1 md:right-3 top-1/2 -translate-y-1/2 w-11 h-11 rounded-full bg-white/85 backdrop-blur-sm shadow-md border border-cream-300 flex items-center justify-center text-clay-500 hover:bg-white hover:text-clay-800 hover:shadow-lg transition-all z-20" aria-label="Next">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
+      </button>
+    </div>
+
+    <!-- Dots -->
+    <div class="flex justify-center gap-2 mt-6">
+      {products.map((_, i) => (
+        <span class={`prod-dot w-2.5 h-2.5 rounded-full cursor-pointer transition-all duration-400 ${i === 0 ? 'bg-clay-700 scale-125' : 'bg-clay-300 hover:bg-clay-400'}`} data-pdot={i}></span>
       ))}
     </div>
 
-    <!-- Mobile Swiper -->
-    <div class="md:hidden">
-      <div class="swiper product-swiper">
-        <div class="swiper-wrapper">
-          {products.map((p) => (
-            <div class="swiper-slide">
-              <div class="bg-white rounded-2xl overflow-hidden border border-cream-200 shadow-sm">
-                <div class="aspect-square bg-cream-100 flex items-center justify-center text-6xl">
-                  {p.id.includes('hoodie') ? '🧥' : p.id.includes('cap') ? '🧢' : '👕'}
-                </div>
-                <div class="p-5">
-                  <h3 class="font-serif font-bold text-base text-clay-800 mb-1">{p.name[lang]}</h3>
-                  <p class="text-clay-700 font-semibold text-lg mb-3">${p.price}</p>
-                  <div class="flex flex-wrap gap-1.5 mb-3">
-                    {p.sizes.map((s) => (
-                      <button
-                        class="size-btn-mobile px-2.5 py-1 text-xs border border-clay-300 rounded-md"
-                        data-product={p.id}
-                        data-size={s}
-                      >{s}</button>
-                    ))}
-                  </div>
-                  <button
-                    class="add-to-cart-mobile w-full py-2.5 bg-clay-800 text-cream-50 text-sm rounded-lg hover:bg-clay-700 transition-colors disabled:opacity-50"
-                    data-product={p.id}
-                    data-name={p.name[lang]}
-                    data-price={p.price}
-                    data-image={p.images[0]}
-                    disabled={p.stock === 0}
-                  >{t.addToCart}</button>
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
-        <div class="swiper-pagination !relative mt-6"></div>
-      </div>
-    </div>
-
-    <!-- Cart Drawer -->
-    <div id="cart-drawer" class="fixed inset-0 z-50 hidden">
-      <div class="absolute inset-0 bg-black/30 backdrop-blur-sm" id="cart-overlay"></div>
-      <div class="absolute right-0 top-0 h-full w-full max-w-md bg-white shadow-2xl p-6 flex flex-col">
-        <div class="flex items-center justify-between mb-6">
-          <h3 class="font-serif text-xl font-bold text-clay-800">🛒 {t.cart}</h3>
-          <button id="cart-close" class="text-clay-400 hover:text-clay-600 text-2xl">&times;</button>
-        </div>
-        <div id="cart-items" class="flex-1 overflow-y-auto space-y-4 mb-6">
-          <p class="text-clay-400 text-center py-12">{t.empty}</p>
-        </div>
-        <div class="border-t border-cream-200 pt-4">
-          <div class="flex justify-between text-clay-800 font-semibold mb-4">
-            <span>Total</span>
-            <span id="cart-total">$0</span>
-          </div>
-          <button id="checkout-wa" class="w-full py-3 bg-green-600 text-white rounded-xl font-medium hover:bg-green-500 transition-colors">
-            {t.checkoutWA}
-          </button>
-        </div>
-      </div>
-    </div>
-
-    <!-- Size Guide Modal -->
-    <div id="size-guide-modal" class="fixed inset-0 z-50 hidden bg-black/30 backdrop-blur-sm flex items-center justify-center">
-      <div class="bg-white rounded-2xl p-8 max-w-md w-full mx-4 shadow-2xl">
-        <div class="flex justify-between items-center mb-6">
-          <h3 class="font-serif text-xl font-bold text-clay-800">{t.sizeGuide}</h3>
-          <button id="size-guide-close" class="text-clay-400 hover:text-clay-600 text-2xl">&times;</button>
-        </div>
-        <table class="w-full text-sm">
-          <thead>
-            <tr class="border-b border-cream-200 text-clay-500">
-              <th class="py-2 text-left">Size</th>
-              <th class="py-2 text-right">{lang === 'en' ? 'Chest' : '胸围'}</th>
-            </tr>
-          </thead>
-          <tbody>
-            {Object.entries(sizeGuideData[lang]).map(([size, measure]) => (
-              <tr class="border-b border-cream-100">
-                <td class="py-2 font-medium text-clay-800">{size}</td>
-                <td class="py-2 text-right text-clay-500">{measure}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-        <p class="text-xs text-clay-400 mt-4">
-          {lang === 'en' ? 'US sizes. Runs slightly larger than Asian sizing.' : '美码偏大，比亚洲尺码大一号。建议选小一码。'}
-        </p>
-      </div>
-    </div>
-
+    <!-- Size Guide trigger -->
     <div class="text-center mt-8">
-      <button id="size-guide-trigger" class="text-sm text-clay-500 underline hover:text-clay-700">{t.sizeGuide}</button>
+      <button id="size-guide-trigger" class="text-sm text-clay-500 underline hover:text-clay-700 transition-colors">{t.sizeGuide}</button>
+    </div>
+  </div>
+
+  <!-- Cart Drawer -->
+  <div id="cart-drawer" class="fixed inset-0 z-50 hidden">
+    <div class="absolute inset-0 bg-black/30 backdrop-blur-sm" id="cart-overlay"></div>
+    <div class="absolute right-0 top-0 h-full w-full max-w-md bg-white shadow-2xl p-6 flex flex-col">
+      <div class="flex items-center justify-between mb-6">
+        <h3 class="font-serif text-xl font-bold text-clay-800">&#x1F6D2; {t.cart}</h3>
+        <button id="cart-close" class="text-clay-400 hover:text-clay-600 text-2xl">&times;</button>
+      </div>
+      <div id="cart-items" class="flex-1 overflow-y-auto space-y-4 mb-6">
+        <p class="text-clay-400 text-center py-12">{t.empty}</p>
+      </div>
+      <div class="border-t border-cream-200 pt-4">
+        <div class="flex justify-between text-clay-800 font-semibold mb-4">
+          <span>Total</span>
+          <span id="cart-total">$0</span>
+        </div>
+        <button id="checkout-wa" class="w-full py-3 bg-green-600 text-white rounded-xl font-medium hover:bg-green-500 transition-colors">
+          {t.checkoutWA}
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Size Guide Modal -->
+  <div id="size-guide-modal" class="fixed inset-0 z-50 hidden bg-black/30 backdrop-blur-sm flex items-center justify-center">
+    <div class="bg-white rounded-2xl p-8 max-w-md w-full mx-4 shadow-2xl">
+      <div class="flex justify-between items-center mb-6">
+        <h3 class="font-serif text-xl font-bold text-clay-800">{t.sizeGuide}</h3>
+        <button id="size-guide-close" class="text-clay-400 hover:text-clay-600 text-2xl">&times;</button>
+      </div>
+      <table class="w-full text-sm">
+        <thead>
+          <tr class="border-b border-cream-200 text-clay-500">
+            <th class="py-2 text-left">Size</th>
+            <th class="py-2 text-right">{lang === 'en' ? 'Chest' : '胸围'}</th>
+          </tr>
+        </thead>
+        <tbody>
+          {Object.entries(sizeGuideData[lang]).map(([size, measure]) => (
+            <tr class="border-b border-cream-100">
+              <td class="py-2 font-medium text-clay-800">{size}</td>
+              <td class="py-2 text-right text-clay-500">{measure}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+      <p class="text-xs text-clay-400 mt-4">
+        {lang === 'en' ? 'US sizes. Runs slightly larger than Asian sizing.' : '美码偏大，比亚洲尺码大一号。建议选小一码。'}
+      </p>
     </div>
   </div>
 </section>
 
-<script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
+<style>
+  /* ── Fixed card dimensions ── */
+  .product-card {
+    width: 280px;
+    min-height: 480px;
+  }
+  @media (min-width: 768px) {
+    .product-card {
+      width: 320px;
+    }
+  }
+
+  /* ── Card states by offset from center ── */
+  .product-card[data-offset="-3"],
+  .product-card[data-offset="3"] {
+    opacity: 0;
+    transform: scale(0.72);
+    pointer-events: none;
+  }
+  .product-card[data-offset="-2"],
+  .product-card[data-offset="2"] {
+    opacity: 0.3;
+    transform: scale(0.80);
+    filter: blur(1px);
+    pointer-events: none;
+  }
+  .product-card[data-offset="-1"],
+  .product-card[data-offset="1"] {
+    opacity: 0.6;
+    transform: scale(0.88);
+    cursor: pointer;
+  }
+  .product-card[data-offset="0"] {
+    opacity: 1;
+    transform: scale(1);
+    box-shadow: 0 16px 48px rgba(120,100,80,0.12), 0 6px 16px rgba(120,100,80,0.06);
+    z-index: 5;
+  }
+
+  #product-track {
+    gap: 12px;
+  }
+  @media (min-width: 768px) {
+    #product-track { gap: 20px; }
+  }
+
+  .prod-dot.active {
+    background-color: #5c4d3c;
+    transform: scale(1.25);
+  }
+</style>
+
 <script>
-  // Wait for DOM
-  function initProducts() {
-    // Swiper for mobile
-    const swiperEl = document.querySelector('.product-swiper');
-    if (swiperEl && typeof Swiper !== 'undefined') {
-      new (window as any).Swiper('.product-swiper', {
-        slidesPerView: 1.15,
-        spaceBetween: 16,
-        centeredSlides: true,
-        pagination: { el: '.swiper-pagination', clickable: true },
+  function initProductCarousel() {
+    const track = document.getElementById('product-track');
+    const cards = document.querySelectorAll<HTMLElement>('.product-card');
+    const dots = document.querySelectorAll<HTMLElement>('.prod-dot');
+    const prevBtn = document.getElementById('prod-prev');
+    const nextBtn = document.getElementById('prod-next');
+
+    if (!track || cards.length === 0) return;
+
+    let current = 0;
+    const total = cards.length;
+
+    function getCardWidth(): number {
+      return window.innerWidth >= 768 ? 320 : 280;
+    }
+    function getGap(): number {
+      return window.innerWidth >= 768 ? 20 : 12;
+    }
+
+    function render() {
+      const cw = getCardWidth();
+      const gap = getGap();
+
+      cards.forEach((card, i) => {
+        const offset = i - current;
+        card.setAttribute('data-offset', String(offset));
+        if (Math.abs(offset) <= 2) {
+          card.style.display = '';
+        } else {
+          card.style.display = 'none';
+        }
+      });
+
+      const containerCenter = track.parentElement!.clientWidth / 2;
+      const cardCenterOffset = current * (cw + gap);
+      const translateX = containerCenter - (cw / 2) - cardCenterOffset;
+      track.style.transform = `translateX(${translateX}px)`;
+
+      dots.forEach((dot, i) => {
+        dot.classList.toggle('active', i === current);
       });
     }
 
+    // ── Navigation ──
+    function go(dir: 1 | -1) {
+      current = (current + dir + total) % total;
+      render();
+    }
+
+    function goTo(idx: number) {
+      current = idx;
+      render();
+    }
+
+    prevBtn?.addEventListener('click', () => go(-1));
+    nextBtn?.addEventListener('click', () => go(1));
+
+    dots.forEach(dot => {
+      dot.addEventListener('click', () => {
+        goTo(parseInt(dot.getAttribute('data-pdot') || '0'));
+      });
+    });
+
+    // Click side cards to jump
+    cards.forEach(card => {
+      card.addEventListener('click', (e) => {
+        // Don't trigger when clicking buttons inside the card
+        if ((e.target as HTMLElement).closest('button')) return;
+        const idx = parseInt(card.getAttribute('data-index') || '0');
+        if (idx !== current) goTo(idx);
+      });
+    });
+
+    // Touch swipe
+    let touchStartX = 0;
+    let touchEndX = 0;
+    track.addEventListener('touchstart', (e: TouchEvent) => {
+      touchStartX = e.changedTouches[0].screenX;
+    }, { passive: true });
+    track.addEventListener('touchend', (e: TouchEvent) => {
+      touchEndX = e.changedTouches[0].screenX;
+      const diff = touchStartX - touchEndX;
+      if (Math.abs(diff) > 40) {
+        go(diff > 0 ? 1 : -1);
+      }
+    }, { passive: true });
+
+    // Keyboard
+    document.addEventListener('keydown', (e) => {
+      const section = document.getElementById('products');
+      if (!section) return;
+      const rect = section.getBoundingClientRect();
+      const isVisible = rect.top < window.innerHeight && rect.bottom > 0;
+      if (!isVisible) return;
+      if (e.key === 'ArrowLeft') go(-1);
+      if (e.key === 'ArrowRight') go(1);
+    });
+
+    // Resize
+    window.addEventListener('resize', () => render());
+
+    // Init
+    render();
+
+    // ── Cart logic (unchanged from original) ──
     const cartItems: any[] = [];
     const cartBadge = document.getElementById('cart-badge')!;
     const cartDrawer = document.getElementById('cart-drawer')!;
@@ -238,7 +363,7 @@ const sizeGuideData = {
     const cartToggle = document.getElementById('cart-toggle')!;
     const cartContainer = document.getElementById('cart-items')!;
     const cartTotalEl = document.getElementById('cart-total')!;
-    const checkoutBtn = document.getElementById('checkout-wa') as HTMLAnchorElement;
+    const checkoutBtn = document.getElementById('checkout-wa')!;
     const sizeGuideModal = document.getElementById('size-guide-modal')!;
     const sizeGuideTrigger = document.getElementById('size-guide-trigger')!;
     const sizeGuideClose = document.getElementById('size-guide-close')!;
@@ -246,8 +371,8 @@ const sizeGuideData = {
     const whatsapp = '{site.whatsapp}';
 
     function updateCartUI() {
-      const count = cartItems.reduce((s, i) => s + i.quantity, 0);
-      const total = cartItems.reduce((s, i) => s + i.price * i.quantity, 0);
+      const count = cartItems.reduce((s: number, i: any) => s + i.quantity, 0);
+      const total = cartItems.reduce((s: number, i: any) => s + i.price * i.quantity, 0);
 
       if (count > 0) {
         cartBadge.textContent = String(count);
@@ -259,22 +384,32 @@ const sizeGuideData = {
       cartTotalEl.textContent = `$${total}`;
 
       if (cartItems.length === 0) {
-        cartContainer.innerHTML = '<p class="text-clay-400 text-center py-12">{t.empty}</p>';
+        cartContainer.innerHTML = `<p class="text-clay-400 text-center py-12">${t.empty}</p>`;
       } else {
-        cartContainer.innerHTML = cartItems.map((item, idx) => `
+        cartContainer.innerHTML = cartItems.map((item: any, idx: number) => `
           <div class="flex gap-3 items-center bg-cream-50 rounded-xl p-3">
             <div class="w-16 h-16 bg-cream-200 rounded-lg flex items-center justify-center text-2xl flex-shrink-0">
-              ${item.name.includes('Hoodie') || item.name.includes('卫衣') ? '🧥' : item.name.includes('Cap') || item.name.includes('帽') ? '🧢' : '👕'}
+              ${item.name.includes('Hoodie') || item.name.includes('卫衣') ? '\uD83E\uDDE5' : item.name.includes('Cap') || item.name.includes('帽') ? '\uD83E\uDDE2' : '\uD83D\uDC55'}
             </div>
             <div class="flex-1 min-w-0">
               <p class="text-sm font-medium text-clay-800 truncate">${item.name}</p>
-              <p class="text-xs text-clay-400">Size: ${item.size} × ${item.quantity}</p>
+              <p class="text-xs text-clay-400">Size: ${item.size} &times; ${item.quantity}</p>
               <p class="text-sm font-semibold text-clay-700">$${item.price * item.quantity}</p>
             </div>
-            <button onclick="this.closest('[data-cart-item]')?.dispatchEvent(new CustomEvent('remove', {detail:${idx}}))" class="text-clay-400 hover:text-red-500 text-lg">&times;</button>
+            <button data-remove="${idx}" class="text-clay-400 hover:text-red-500 text-lg">&times;</button>
           </div>
         `).join('');
       }
+
+      // Bind remove buttons
+      document.querySelectorAll('[data-remove]').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const idx = parseInt((btn as HTMLElement).getAttribute('data-remove')!);
+          cartItems.splice(idx, 1);
+          updateCartUI();
+          saveCart();
+        });
+      });
     }
 
     function addToCart(name: string, price: number, size: string, image: string) {
@@ -282,44 +417,36 @@ const sizeGuideData = {
         alert('{lang === "en" ? "Please select a size first" : "请先选择尺码"}');
         return;
       }
-      const existing = cartItems.find(i => i.name === name && i.size === size);
+      const existing = cartItems.find((i: any) => i.name === name && i.size === size);
       if (existing) {
         existing.quantity++;
       } else {
         cartItems.push({ name, price, size, image, quantity: 1 });
       }
       updateCartUI();
-      // Brief flash
+      saveCart();
       cartToggle.classList.add('scale-110');
       setTimeout(() => cartToggle.classList.remove('scale-110'), 200);
     }
 
+    function saveCart() {
+      localStorage.setItem('pastor-site-cart', JSON.stringify(cartItems));
+    }
+
     function checkout() {
       if (cartItems.length === 0) return;
-      const lines = cartItems.map(i => `• ${i.name} (${i.size}) ×${i.quantity} — $${i.price * i.quantity}`);
-      const total = cartItems.reduce((s, i) => s + i.price * i.quantity, 0);
+      const lines = cartItems.map((i: any) => `\u2022 ${i.name} (${i.size}) \u00d7${i.quantity} \u2014 $${i.price * i.quantity}`);
+      const total = cartItems.reduce((s: number, i: any) => s + i.price * i.quantity, 0);
       const text = `Hi! I'd like to order:%0A%0A${lines.join('%0A')}%0A%0ATotal: $${total}%0A%0A`;
       window.open(`https://wa.me/${whatsapp}?text=${text}`, '_blank');
     }
 
-    // Event listeners
-    document.querySelectorAll('.add-to-cart, .add-to-cart-mobile').forEach(btn => {
-      btn.addEventListener('click', () => {
-        const el = btn as HTMLElement;
-        const productId = el.dataset.product!;
-        const parent = el.closest('.swiper-slide, .group')!;
-        const sizeBtn = parent.querySelector(`.size-btn[data-product="${productId}"].border-clay-600, .size-btn-mobile[data-product="${productId}"].border-clay-600`);
-        const size = sizeBtn?.getAttribute('data-size') || '';
-        addToCart(el.dataset.name!, Number(el.dataset.price!), size, el.dataset.image!);
-      });
-    });
-
     // Size selection
-    document.querySelectorAll('.size-btn, .size-btn-mobile').forEach(btn => {
+    document.querySelectorAll('.size-btn').forEach(btn => {
       btn.addEventListener('click', () => {
         const el = btn as HTMLElement;
         const productId = el.dataset.product!;
-        document.querySelectorAll(`.size-btn[data-product="${productId}"], .size-btn-mobile[data-product="${productId}"]`).forEach(b => {
+        document.querySelectorAll(`.size-btn[data-product="${productId}"]`).forEach(b => {
           b.classList.remove('border-clay-600', 'bg-clay-100');
           b.classList.add('border-clay-300');
         });
@@ -328,18 +455,31 @@ const sizeGuideData = {
       });
     });
 
+    // Add to cart
+    document.querySelectorAll('.add-to-cart').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const el = btn as HTMLElement;
+        const productId = el.dataset.product!;
+        const sizeBtn = document.querySelector(`.size-btn[data-product="${productId}"].border-clay-600`);
+        const size = sizeBtn?.getAttribute('data-size') || '';
+        addToCart(el.dataset.name!, Number(el.dataset.price!), size, el.dataset.image!);
+      });
+    });
+
+    // Cart UI
     cartToggle.addEventListener('click', () => cartDrawer.classList.remove('hidden'));
     cartClose.addEventListener('click', () => cartDrawer.classList.add('hidden'));
     cartOverlay.addEventListener('click', () => cartDrawer.classList.add('hidden'));
     checkoutBtn.addEventListener('click', checkout);
 
+    // Size guide modal
     sizeGuideTrigger.addEventListener('click', () => sizeGuideModal.classList.remove('hidden'));
     sizeGuideClose.addEventListener('click', () => sizeGuideModal.classList.add('hidden'));
     sizeGuideModal.addEventListener('click', (e) => {
       if (e.target === sizeGuideModal) sizeGuideModal.classList.add('hidden');
     });
 
-    // Load cart from localStorage
+    // Load saved cart
     try {
       const saved = localStorage.getItem('pastor-site-cart');
       if (saved) {
@@ -348,16 +488,9 @@ const sizeGuideData = {
       }
     } catch(e) {}
 
-    // Save cart
-    function saveCart() {
-      localStorage.setItem('pastor-site-cart', JSON.stringify(cartItems));
-    }
-    const origUpdate = updateCartUI;
-    updateCartUI = () => { origUpdate(); saveCart(); };
-
     updateCartUI();
   }
 
-  initProducts();
-  document.addEventListener('astro:page-load', initProducts);
+  initProductCarousel();
+  document.addEventListener('astro:page-load', initProductCarousel);
 </script>
