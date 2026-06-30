@@ -9,103 +9,257 @@ const labels = {
 const t = labels[lang];
 ---
 
-<section id="scriptures" class="py-24 lg:py-32 px-6 bg-gradient-to-b from-white to-cream-100">
+<section id="scriptures" class="py-24 lg:py-32 px-4 sm:px-6 bg-gradient-to-b from-white to-cream-100 overflow-hidden">
   <div class="max-w-5xl mx-auto">
     <h2 class="section-title text-clay-900">{t.title}</h2>
     <p class="section-subtitle">{t.subtitle}</p>
 
-    <div class="scripture-3d relative mt-16" style="height: 340px;">
-      <div id="scripture-track" class="relative w-full h-full flex items-center justify-center">
-        {scriptures.map((s, i) => {
-          const positions = ['far-left', 'left', 'center', 'right', 'far-right'];
-          const pos = positions[Math.min(i, positions.length - 1)] || 'far-right';
-          return (
-            <div
-              class={`scripture-card bg-white rounded-2xl shadow-xl p-10 md:p-12 border border-cream-200 ${i === 2 ? '' : 'hidden md:block'}`}
-              data-position={i < scriptures.length ? pos : 'far-right'}
-              data-index={i}
-              style="left: 50%; top: 0;"
-            >
-              <p class="text-lg md:text-xl leading-relaxed font-serif italic text-clay-700 mb-4">
-                {s[lang]}
-              </p>
-              <p class="text-sm text-clay-400 font-medium tracking-wide">— {s.ref}</p>
-            </div>
-          );
-        })}
+    <!-- Carousel Container -->
+    <div id="scripture-carousel" class="scripture-carousel mt-16 relative select-none" style="height: 380px;">
+      <!-- Track -->
+      <div id="scripture-track" class="scripture-track flex items-center justify-center h-full transition-transform duration-700 ease-out">
+        {scriptures.map((s, i) => (
+          <div
+            class="scripture-card shrink-0 bg-white rounded-2xl shadow-lg border border-cream-200 p-8 md:p-10 transition-all duration-700 ease-out"
+            data-index={i}
+          >
+            <p class="text-base md:text-xl leading-relaxed font-serif italic text-clay-700 mb-5 line-clamp-6">
+              {s[lang]}
+            </p>
+            <p class="text-sm text-clay-400 font-medium tracking-wide border-t border-cream-200 pt-4">— {s.ref}</p>
+          </div>
+        ))}
       </div>
 
-      <!-- Controls -->
-      <div class="flex justify-center gap-4 mt-8">
-        <button id="scripture-prev" class="w-12 h-12 rounded-full border border-clay-300 flex items-center justify-center text-clay-500 hover:bg-clay-100 hover:text-clay-700 transition-colors" aria-label="Previous">
-          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
-        </button>
-        <div class="flex items-center gap-2">
-          {scriptures.map((_, i) => (
-            <span class={`w-2 h-2 rounded-full transition-all duration-300 ${i === 0 ? 'bg-clay-700 w-4' : 'bg-clay-300'}`} data-sdot={i}></span>
-          ))}
-        </div>
-        <button id="scripture-next" class="w-12 h-12 rounded-full border border-clay-300 flex items-center justify-center text-clay-500 hover:bg-clay-100 hover:text-clay-700 transition-colors" aria-label="Next">
-          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
-        </button>
-      </div>
+      <!-- Left/Right fade overlays -->
+      <div class="absolute inset-y-0 left-0 w-16 md:w-28 pointer-events-none bg-gradient-to-r from-white/90 to-transparent z-10"></div>
+      <div class="absolute inset-y-0 right-0 w-16 md:w-28 pointer-events-none bg-gradient-to-l from-white/90 to-transparent z-10"></div>
+
+      <!-- Arrow buttons -->
+      <button id="scr-prev" class="scr-btn scr-prev absolute left-1 md:left-4 top-1/2 -translate-y-1/2 w-11 h-11 rounded-full bg-white/80 backdrop-blur-sm shadow-md border border-cream-300 flex items-center justify-center text-clay-500 hover:bg-white hover:text-clay-800 hover:shadow-lg hover:border-clay-300 transition-all z-20" aria-label="Previous">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/></svg>
+      </button>
+      <button id="scr-next" class="scr-btn scr-next absolute right-1 md:right-4 top-1/2 -translate-y-1/2 w-11 h-11 rounded-full bg-white/80 backdrop-blur-sm shadow-md border border-cream-300 flex items-center justify-center text-clay-500 hover:bg-white hover:text-clay-800 hover:shadow-lg hover:border-clay-300 transition-all z-20" aria-label="Next">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
+      </button>
+    </div>
+
+    <!-- Dots -->
+    <div class="flex justify-center gap-2 mt-8">
+      {scriptures.map((_, i) => (
+        <span class={`scr-dot w-2.5 h-2.5 rounded-full cursor-pointer transition-all duration-400 ${i === 0 ? 'bg-clay-700 scale-125' : 'bg-clay-300 hover:bg-clay-400'}`} data-sdot={i}></span>
+      ))}
     </div>
   </div>
 </section>
 
+<style>
+  /* ── Fixed card dimensions ── */
+  .scripture-card {
+    width: 280px;
+    height: 320px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+  @media (min-width: 768px) {
+    .scripture-card {
+      width: 340px;
+      height: 360px;
+    }
+  }
+
+  /* ── Card states by offset from center ── */
+  .scripture-card[data-offset="-3"],
+  .scripture-card[data-offset="3"] {
+    opacity: 0;
+    transform: scale(0.7);
+    pointer-events: none;
+  }
+  .scripture-card[data-offset="-2"],
+  .scripture-card[data-offset="2"] {
+    opacity: 0.25;
+    transform: scale(0.78);
+    filter: blur(1px);
+    pointer-events: none;
+  }
+  .scripture-card[data-offset="-1"],
+  .scripture-card[data-offset="1"] {
+    opacity: 0.55;
+    transform: scale(0.86);
+    cursor: pointer;
+  }
+  .scripture-card[data-offset="0"] {
+    opacity: 1;
+    transform: scale(1);
+    box-shadow: 0 20px 50px rgba(120,100,80,0.12), 0 8px 20px rgba(120,100,80,0.06);
+    z-index: 5;
+  }
+
+  /* ── Gap between cards ── */
+  #scripture-track {
+    gap: 16px;
+  }
+  @media (min-width: 768px) {
+    #scripture-track { gap: 24px; }
+  }
+
+  /* ── Dot active state ── */
+  .scr-dot.active {
+    @apply bg-clay-700 scale-125;
+  }
+
+  /* ── Button hide on small screens when not needed ── */
+  .scr-btn {
+    opacity: 0.9;
+  }
+  .scr-btn:hover {
+    opacity: 1;
+  }
+</style>
+
 <script>
   function initScriptureCarousel() {
+    const track = document.getElementById('scripture-track');
     const cards = document.querySelectorAll<HTMLElement>('.scripture-card');
-    if (cards.length < 3) return;
+    const dots = document.querySelectorAll<HTMLElement>('.scr-dot');
+    const prevBtn = document.getElementById('scr-prev');
+    const nextBtn = document.getElementById('scr-next');
 
-    const dots = document.querySelectorAll<HTMLElement>('[data-sdot]');
+    if (!track || cards.length === 0) return;
+
     let current = 0;
     const total = cards.length;
 
-    const positionClasses = ['far-left', 'left', 'center', 'right', 'far-right'];
+    // ── Calculate card width for centering ──
+    function getCardWidth(): number {
+      const w = window.innerWidth;
+      return w >= 768 ? 340 : 280;
+    }
+    function getGap(): number {
+      return window.innerWidth >= 768 ? 24 : 16;
+    }
 
-    function update() {
+    // ── Render positions ──
+    function render(animate = true) {
+      const cw = getCardWidth();
+      const gap = getGap();
+      // Total visible range: show cards at offsets -2,-1,0,1,2
+      const startOffset = Math.max(-2, -current);   // how many before center we can show
+      const endOffset = Math.min(2, total - 1 - current);
+
+      let translateX = 0; // px to shift the track so current card is centered
+
       cards.forEach((card, i) => {
-        // Calculate relative position
-        let relPos = i - current;
-        // Wrap around for circular carousel
-        if (relPos < -2) relPos += total;
-        if (relPos > 2) relPos -= total;
+        const offset = i - current;
+        card.setAttribute('data-offset', String(offset));
 
-        const posIdx = relPos + 2; // Map -2..2 to 0..4
-        const pos = positionClasses[Math.max(0, Math.min(4, posIdx))] || 'far-right';
-        card.setAttribute('data-position', pos);
+        if (offset >= -2 && offset <= 2) {
+          card.style.display = '';
+          card.style.position = '';
+        } else {
+          card.style.display = 'none';
+        }
       });
 
+      // Center the track: shift it so the current card is in the middle
+      // Each card is at position i * (cw + gap). We want card[current] at center.
+      // Track starts at x=0. So translateX = -(current * (cw + gap)) + halfContainer
+      // But simpler: just set transform on each card directly.
+      // Actually let's use the track's translateX approach for smooth animation.
+
+      const containerCenter = track.parentElement!.clientWidth / 2;
+      const cardCenterOffset = current * (cw + gap);
+      translateX = containerCenter - (cw / 2) - cardCenterOffset;
+
+      track.style.transform = `translateX(${translateX}px)`;
+
+      // Update dots
       dots.forEach((dot, i) => {
-        dot.classList.toggle('bg-clay-700', i === current);
-        dot.classList.toggle('bg-clay-300', i !== current);
-        dot.classList.toggle('w-4', i === current);
-        dot.classList.toggle('w-2', i !== current);
+        dot.classList.toggle('active', i === current);
       });
     }
 
-    function next() { current = (current + 1) % total; update(); }
-    function prev() { current = (current - 1 + total) % total; update(); }
+    function go(dir: 1 | -1) {
+      stopAuto();
+      current = (current + dir + total) % total;
+      render(true);
+      resumeAuto();
+    }
 
-    document.getElementById('scripture-next')?.addEventListener('click', next);
-    document.getElementById('scripture-prev')?.addEventListener('click', prev);
+    function goTo(idx: number) {
+      stopAuto();
+      current = idx;
+      render(true);
+      resumeAuto();
+    }
 
-    dots.forEach((dot) => {
+    // ── Auto-rotate ──
+    let autoTimer: ReturnType<typeof setInterval> | null = null;
+    let pausedByUser = false;
+
+    function resumeAuto() {
+      if (pausedByUser) return;
+      autoTimer = setInterval(() => {
+        current = (current + 1) % total;
+        render(true);
+      }, 4500);
+    }
+    function stopAuto() {
+      if (autoTimer) { clearInterval(autoTimer); autoTimer = null; }
+    }
+
+    // ── Events ──
+    prevBtn?.addEventListener('click', () => go(-1));
+    nextBtn?.addEventListener('click', () => go(1));
+
+    dots.forEach(dot => {
       dot.addEventListener('click', () => {
-        current = parseInt(dot.getAttribute('data-sdot') || '0');
-        update();
+        goTo(parseInt(dot.getAttribute('data-sdot') || '0'));
       });
     });
 
-    // Auto-rotate
-    let interval = setInterval(next, 6000);
-    const track = document.getElementById('scripture-track');
-    track?.addEventListener('mouseenter', () => clearInterval(interval));
-    track?.addEventListener('mouseleave', () => { interval = setInterval(next, 6000); });
+    // Click a side card → jump to it
+    cards.forEach(card => {
+      card.addEventListener('click', () => {
+        const idx = parseInt(card.getAttribute('data-index') || '0');
+        if (idx !== current) goTo(idx);
+      });
+    });
 
-    // Initialize
-    update();
+    // Pause on hover
+    track.addEventListener('mouseenter', () => stopAuto());
+    track.addEventListener('mouseleave', () => resumeAuto());
+
+    // Touch swipe
+    let touchStartX = 0;
+    let touchEndX = 0;
+    track.addEventListener('touchstart', (e: TouchEvent) => {
+      touchStartX = e.changedTouches[0].screenX;
+      stopAuto();
+    }, { passive: true });
+    track.addEventListener('touchend', (e: TouchEvent) => {
+      touchEndX = e.changedTouches[0].screenX;
+      const diff = touchStartX - touchEndX;
+      if (Math.abs(diff) > 40) {
+        go(diff > 0 ? 1 : -1);
+      } else {
+        resumeAuto();
+      }
+    }, { passive: true });
+
+    // Resize handler
+    window.addEventListener('resize', () => render(false));
+
+    // Keyboard
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'ArrowLeft') go(-1);
+      if (e.key === 'ArrowRight') go(1);
+    });
+
+    // Init
+    render(false);
+    resumeAuto();
   }
 
   initScriptureCarousel();
