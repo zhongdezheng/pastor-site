@@ -32,10 +32,10 @@ const t = labels[lang];
         ✝ {site.name[lang]}
       </a>
       <div class="hidden md:flex items-center gap-8 text-sm font-medium text-clay-500">
-        <a href={`/${lang}/#hero`} class="hover:text-clay-800 transition-colors">{t.home}</a>
-        <a href={`/${lang}/#products`} class="hover:text-clay-800 transition-colors">{t.products}</a>
-        <a href={`/${lang}/#prayer`} class="hover:text-clay-800 transition-colors">{t.prayer}</a>
-        <a href={`/${lang}/#contact`} class="hover:text-clay-800 transition-colors">{t.contact}</a>
+        <a href={`/${lang}/`} class="hover:text-clay-800 transition-colors">{t.home}</a>
+        <a href={`/${lang}/products/`} class="hover:text-clay-800 transition-colors">{t.products}</a>
+        <a href={`/${lang}/prayer/`} class="hover:text-clay-800 transition-colors">{t.prayer}</a>
+        <a href={`/${lang}/contact/`} class="hover:text-clay-800 transition-colors">{t.contact}</a>
         <a href={otherPath} class="ml-4 px-4 py-1.5 border border-clay-300 rounded-full text-xs text-clay-500 hover:text-clay-700 hover:border-clay-400 transition-colors">
           {t.langSwitch}
         </a>
@@ -53,9 +53,10 @@ const t = labels[lang];
       <p class="font-serif text-2xl font-bold text-cream-100 mb-2">✝ {site.name[lang]}</p>
       <p class="text-sm text-cream-500 mb-8">{site.tagline[lang]}</p>
       <div class="flex justify-center gap-8 text-sm mb-8">
-        <a href={`/${lang}/#hero`} class="hover:text-cream-100 transition-colors">{t.home}</a>
-        <a href={`/${lang}/#products`} class="hover:text-cream-100 transition-colors">{t.products}</a>
-        <a href={`/${lang}/#prayer`} class="hover:text-cream-100 transition-colors">{t.prayer}</a>
+        <a href={`/${lang}/`} class="hover:text-cream-100 transition-colors">{t.home}</a>
+        <a href={`/${lang}/products/`} class="hover:text-cream-100 transition-colors">{t.products}</a>
+        <a href={`/${lang}/prayer/`} class="hover:text-cream-100 transition-colors">{t.prayer}</a>
+        <a href={`/${lang}/contact/`} class="hover:text-cream-100 transition-colors">{t.contact}</a>
       </div>
       <p class="text-xs text-cream-600">
         &copy; {new Date().getFullYear()} {site.name.en}. {

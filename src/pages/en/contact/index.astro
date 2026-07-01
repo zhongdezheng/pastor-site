@@ -1,0 +1,47 @@
+---
+import BaseLayout from '../../../layouts/BaseLayout.astro';
+import siteData from '../../../content/site.json';
+const { site } = siteData;
+---
+
+<BaseLayout lang="en" title="Contact — Light & Grace">
+  <section class="py-24 lg:py-32 px-6 bg-cream-50 min-h-screen">
+    <div class="max-w-2xl mx-auto text-center">
+      <h2 class="section-title text-clay-900">Get in Touch</h2>
+      <p class="section-subtitle mb-16">We'd love to hear from you. Reach out anytime.</p>
+
+      <div class="space-y-8">
+        <!-- WhatsApp -->
+        <a href={`https://wa.me/${site.whatsapp}?text=Hi! I visited your website and would like to connect.`}
+           target="_blank" rel="noopener"
+           class="block bg-white rounded-2xl shadow-lg border border-cream-200 p-8 hover:shadow-xl transition-all group">
+          <div class="w-16 h-16 mx-auto mb-4 bg-green-100 rounded-full flex items-center justify-center text-3xl group-hover:scale-110 transition-transform">
+            💬
+          </div>
+          <h3 class="font-serif text-xl font-bold text-clay-800 mb-2">WhatsApp</h3>
+          <p class="text-clay-500 text-sm">Fastest way to reach us — chat directly on WhatsApp</p>
+        </a>
+
+        <!-- Email -->
+        <a href={`mailto:${site.email}`}
+           class="block bg-white rounded-2xl shadow-lg border border-cream-200 p-8 hover:shadow-xl transition-all group">
+          <div class="w-16 h-16 mx-auto mb-4 bg-clay-100 rounded-full flex items-center justify-center text-3xl group-hover:scale-110 transition-transform">
+            ✉️
+          </div>
+          <h3 class="font-serif text-xl font-bold text-clay-800 mb-2">Email</h3>
+          <p class="text-clay-500 text-sm">{site.email}</p>
+        </a>
+
+        <!-- Prayer -->
+        <a href="/en/prayer/"
+           class="block bg-white rounded-2xl shadow-lg border border-cream-200 p-8 hover:shadow-xl transition-all group">
+          <div class="w-16 h-16 mx-auto mb-4 bg-clay-100 rounded-full flex items-center justify-center text-3xl group-hover:scale-110 transition-transform">
+            🙏
+          </div>
+          <h3 class="font-serif text-xl font-bold text-clay-800 mb-2">Prayer Requests</h3>
+          <p class="text-clay-500 text-sm">Submit a prayer request — we pray for every one</p>
+        </a>
+      </div>
+    </div>
+  </section>
+</BaseLayout>
