@@ -69,7 +69,7 @@ const sizeGuideData = {
     </div>
 
     <!-- Product Carousel -->
-    <div id="product-carousel" class="product-carousel relative select-none" style="height: 350px;">
+    <div id="product-carousel" class="product-carousel relative select-none" style="height: 280px;">
       <div id="product-track" class="product-track flex items-start justify-center h-full transition-transform duration-600 ease-out">
         {products.map((p, i) => (
           <div
@@ -77,22 +77,22 @@ const sizeGuideData = {
             data-index={i}
           >
             <!-- Product image placeholder -->
-            <div class="aspect-square bg-cream-100 rounded-t-2xl flex items-center justify-center text-5xl flex-shrink-0 relative overflow-hidden">
+            <div class="aspect-square bg-cream-100 rounded-t-2xl flex items-center justify-center text-3xl flex-shrink-0 relative overflow-hidden">
               {p.id.includes('hoodie') ? '🧥' : p.id.includes('cap') ? '🧢' : '👕'}
             </div>
 
-            <div class="p-5 flex flex-col flex-1">
-              <h3 class="font-serif font-bold text-base text-clay-800 mb-0.5">{p.name[lang]}</h3>
-              <p class="text-clay-700 font-semibold text-lg mb-0.5">${p.price}</p>
-              <p class="text-xs text-clay-400 mb-3">{t.weight}: {p.weight}</p>
+            <div class="p-3 flex flex-col flex-1">
+              <h3 class="font-serif font-bold text-xs text-clay-800 mb-0.5 leading-tight">{p.name[lang]}</h3>
+              <p class="text-clay-700 font-semibold text-sm mb-0.5">${p.price}</p>
+              <p class="text-[10px] text-clay-400 mb-2">{t.weight}: {p.weight}</p>
 
               <!-- Size selector -->
-              <div class="mb-3">
-                <label class="text-xs text-clay-400 uppercase tracking-wide">{t.sizes}</label>
-                <div class="flex flex-wrap gap-1 mt-1">
+              <div class="mb-2">
+                <label class="text-[10px] text-clay-400 uppercase tracking-wide">{t.sizes}</label>
+                <div class="flex flex-wrap gap-0.5 mt-0.5">
                   {p.sizes.map((s) => (
                     <button
-                      class="size-btn px-2 py-0.5 text-xs border border-clay-300 rounded hover:border-clay-500 transition-colors"
+                      class="size-btn px-1.5 py-0 text-[10px] border border-clay-300 rounded hover:border-clay-500 transition-colors"
                       data-product={p.id}
                       data-size={s}
                     >{s}</button>
@@ -101,11 +101,11 @@ const sizeGuideData = {
               </div>
 
               <div class="mt-auto flex items-center justify-between">
-                <span class={`text-xs font-medium ${p.stock > 0 ? 'text-green-600' : 'text-red-400'}`}>
+                <span class={`text-[10px] font-medium ${p.stock > 0 ? 'text-green-600' : 'text-red-400'}`}>
                   {p.stock > 0 ? `${t.stock}: ${p.stock}` : t.outOfStock}
                 </span>
                 <button
-                  class="add-to-cart px-3 py-2 bg-clay-800 text-cream-50 text-xs rounded-lg hover:bg-clay-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap"
+                  class="add-to-cart px-2 py-1.5 bg-clay-800 text-cream-50 text-[10px] rounded-lg hover:bg-clay-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap"
                   data-product={p.id}
                   data-name={p.name[lang]}
                   data-price={p.price}
@@ -200,12 +200,12 @@ const sizeGuideData = {
 <style>
   /* ── Fixed card dimensions ── */
   .product-card {
-    width: 190px;
-    min-height: 320px;
+    width: 140px;
+    min-height: 250px;
   }
   @media (min-width: 768px) {
     .product-card {
-      width: 215px;
+      width: 160px;
     }
   }
 
@@ -240,7 +240,7 @@ const sizeGuideData = {
     gap: 8px;
   }
   @media (min-width: 768px) {
-    #product-track { gap: 14px; }
+    #product-track { gap: 12px; }
   }
 
   .prod-dot.active {
@@ -263,10 +263,10 @@ const sizeGuideData = {
     const total = cards.length;
 
     function getCardWidth(): number {
-      return window.innerWidth >= 768 ? 215 : 190;
+      return window.innerWidth >= 768 ? 160 : 140;
     }
     function getGap(): number {
-      return window.innerWidth >= 768 ? 14 : 8;
+      return window.innerWidth >= 768 ? 12 : 8;
     }
 
     function render() {
