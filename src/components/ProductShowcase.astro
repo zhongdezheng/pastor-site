@@ -58,13 +58,13 @@ const sizeGuideData = {
 
 <section id="products" class="py-24 lg:py-32 px-4 sm:px-6 bg-white overflow-hidden">
   <div class="max-w-5xl mx-auto">
-    <h2 class="section-title text-clay-900">{t.title}</h2>
+    <h2 class="section-title text-charcoal-900">{t.title}</h2>
     <p class="section-subtitle">{t.subtitle}</p>
 
     <!-- Cart toggle -->
     <div class="flex justify-end mb-8 mt-8">
-      <button id="cart-toggle" class="relative px-5 py-2.5 bg-clay-800 text-cream-50 rounded-full text-sm font-medium hover:bg-clay-700 transition-colors">
-        &#x1F6D2; {t.cart} <span id="cart-badge" class="ml-1 bg-cream-400 text-clay-900 px-1.5 py-0.5 rounded-full text-xs hidden">0</span>
+      <button id="cart-toggle" class="relative px-5 py-2.5 px-5 py-2.5 bg-sage-500 hover:bg-sage-600 text-white rounded-full text-sm font-medium transition-colors transition-colors">
+        &#x1F6D2; {t.cart} <span id="cart-badge" class="ml-1 bg-sage-200 text-sage-900 px-1.5 py-0.5 rounded-full text-xs hidden">0</span>
       </button>
     </div>
 
@@ -73,26 +73,26 @@ const sizeGuideData = {
       <div id="product-track" class="product-track flex items-start justify-center h-full transition-transform duration-600 ease-out">
         {products.map((p, i) => (
           <div
-            class="product-card shrink-0 bg-white rounded-2xl border border-cream-200 shadow-sm transition-all duration-600 ease-out flex flex-col"
+            class="product-card shrink-0 bg-white rounded-2xl border border-beige-200 shadow-sm transition-all duration-600 ease-out flex flex-col"
             data-index={i}
           >
             <!-- Product image placeholder -->
-            <div class="aspect-square bg-cream-100 rounded-t-2xl flex items-center justify-center text-3xl flex-shrink-0 relative overflow-hidden">
+            <div class="aspect-square bg-beige-100 rounded-t-2xl flex items-center justify-center text-3xl flex-shrink-0 relative overflow-hidden">
               {p.id.includes('hoodie') ? '🧥' : p.id.includes('cap') ? '🧢' : '👕'}
             </div>
 
             <div class="p-3 flex flex-col flex-1">
-              <h3 class="font-serif font-bold text-xs text-clay-800 mb-0.5 leading-tight">{p.name[lang]}</h3>
-              <p class="text-clay-700 font-semibold text-sm mb-0.5">${p.price}</p>
-              <p class="text-[10px] text-clay-400 mb-2">{t.weight}: {p.weight}</p>
+              <h3 class="font-serif font-bold text-xs text-charcoal-800 mb-0.5 leading-tight">{p.name[lang]}</h3>
+              <p class="text-charcoal-700 font-semibold text-sm mb-0.5">${p.price}</p>
+              <p class="text-[10px] text-charcoal-400 mb-2">{t.weight}: {p.weight}</p>
 
               <!-- Size selector -->
               <div class="mb-2">
-                <label class="text-[10px] text-clay-400 uppercase tracking-wide">{t.sizes}</label>
+                <label class="text-[10px] text-charcoal-400 uppercase tracking-wide">{t.sizes}</label>
                 <div class="flex flex-wrap gap-0.5 mt-0.5">
                   {p.sizes.map((s) => (
                     <button
-                      class="size-btn px-1.5 py-0 text-[10px] border border-clay-300 rounded hover:border-clay-500 transition-colors"
+                      class="size-btn px-1.5 py-0 text-[10px] border border-charcoal-300 rounded hover:border-charcoal-500 transition-colors"
                       data-product={p.id}
                       data-size={s}
                     >{s}</button>
@@ -105,7 +105,7 @@ const sizeGuideData = {
                   {p.stock > 0 ? `${t.stock}: ${p.stock}` : t.outOfStock}
                 </span>
                 <button
-                  class="add-to-cart px-2 py-1.5 bg-clay-800 text-cream-50 text-[10px] rounded-lg hover:bg-clay-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap"
+                  class="add-to-cart px-2 py-1.5 bg-charcoal-800 text-beige-50 text-[10px] rounded-lg hover:bg-charcoal-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap"
                   data-product={p.id}
                   data-name={p.name[lang]}
                   data-price={p.price}
@@ -123,10 +123,10 @@ const sizeGuideData = {
       <div class="absolute inset-y-0 right-0 w-12 md:w-24 pointer-events-none bg-gradient-to-l from-white/95 to-transparent z-10 rounded-r-2xl"></div>
 
       <!-- Arrow buttons -->
-      <button id="prod-prev" class="prod-btn absolute left-1 md:left-3 top-1/2 -translate-y-1/2 w-11 h-11 rounded-full bg-white/85 backdrop-blur-sm shadow-md border border-cream-300 flex items-center justify-center text-clay-500 hover:bg-white hover:text-clay-800 hover:shadow-lg transition-all z-20" aria-label="Previous">
+      <button id="prod-prev" class="prod-btn absolute left-1 md:left-3 top-1/2 -translate-y-1/2 w-11 h-11 rounded-full bg-white/85 backdrop-blur-sm shadow-md border border-beige-300 flex items-center justify-center text-charcoal-500 hover:bg-white hover:text-charcoal-800 hover:shadow-lg transition-all z-20" aria-label="Previous">
         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/></svg>
       </button>
-      <button id="prod-next" class="prod-btn absolute right-1 md:right-3 top-1/2 -translate-y-1/2 w-11 h-11 rounded-full bg-white/85 backdrop-blur-sm shadow-md border border-cream-300 flex items-center justify-center text-clay-500 hover:bg-white hover:text-clay-800 hover:shadow-lg transition-all z-20" aria-label="Next">
+      <button id="prod-next" class="prod-btn absolute right-1 md:right-3 top-1/2 -translate-y-1/2 w-11 h-11 rounded-full bg-white/85 backdrop-blur-sm shadow-md border border-beige-300 flex items-center justify-center text-charcoal-500 hover:bg-white hover:text-charcoal-800 hover:shadow-lg transition-all z-20" aria-label="Next">
         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
       </button>
     </div>
@@ -134,13 +134,13 @@ const sizeGuideData = {
     <!-- Dots -->
     <div class="flex justify-center gap-2 mt-6">
       {products.map((_, i) => (
-        <span class={`prod-dot w-2.5 h-2.5 rounded-full cursor-pointer transition-all duration-400 ${i === 0 ? 'bg-clay-700 scale-125' : 'bg-clay-300 hover:bg-clay-400'}`} data-pdot={i}></span>
+        <span class={`prod-dot w-2.5 h-2.5 rounded-full cursor-pointer transition-all duration-400 ${i === 0 ? 'bg-charcoal-700 scale-125' : 'bg-charcoal-300 hover:bg-charcoal-400'}`} data-pdot={i}></span>
       ))}
     </div>
 
     <!-- Size Guide trigger -->
     <div class="text-center mt-8">
-      <button id="size-guide-trigger" class="text-sm text-clay-500 underline hover:text-clay-700 transition-colors">{t.sizeGuide}</button>
+      <button id="size-guide-trigger" class="text-sm text-charcoal-500 underline hover:text-charcoal-700 transition-colors">{t.sizeGuide}</button>
     </div>
   </div>
 
@@ -149,14 +149,14 @@ const sizeGuideData = {
     <div class="absolute inset-0 bg-black/30 backdrop-blur-sm" id="cart-overlay"></div>
     <div class="absolute right-0 top-0 h-full w-full max-w-md bg-white shadow-2xl p-6 flex flex-col">
       <div class="flex items-center justify-between mb-6">
-        <h3 class="font-serif text-xl font-bold text-clay-800">&#x1F6D2; {t.cart}</h3>
-        <button id="cart-close" class="text-clay-400 hover:text-clay-600 text-2xl">&times;</button>
+        <h3 class="font-serif text-xl font-bold text-charcoal-800">&#x1F6D2; {t.cart}</h3>
+        <button id="cart-close" class="text-charcoal-400 hover:text-charcoal-600 text-2xl">&times;</button>
       </div>
       <div id="cart-items" class="flex-1 overflow-y-auto space-y-4 mb-6">
-        <p class="text-clay-400 text-center py-12">{t.empty}</p>
+        <p class="text-charcoal-400 text-center py-12">{t.empty}</p>
       </div>
-      <div class="border-t border-cream-200 pt-4">
-        <div class="flex justify-between text-clay-800 font-semibold mb-4">
+      <div class="border-t border-beige-200 pt-4">
+        <div class="flex justify-between text-charcoal-800 font-semibold mb-4">
           <span>Total</span>
           <span id="cart-total">$0</span>
         </div>
@@ -171,26 +171,26 @@ const sizeGuideData = {
   <div id="size-guide-modal" class="fixed inset-0 z-50 hidden bg-black/30 backdrop-blur-sm flex items-center justify-center">
     <div class="bg-white rounded-2xl p-8 max-w-md w-full mx-4 shadow-2xl">
       <div class="flex justify-between items-center mb-6">
-        <h3 class="font-serif text-xl font-bold text-clay-800">{t.sizeGuide}</h3>
-        <button id="size-guide-close" class="text-clay-400 hover:text-clay-600 text-2xl">&times;</button>
+        <h3 class="font-serif text-xl font-bold text-charcoal-800">{t.sizeGuide}</h3>
+        <button id="size-guide-close" class="text-charcoal-400 hover:text-charcoal-600 text-2xl">&times;</button>
       </div>
       <table class="w-full text-sm">
         <thead>
-          <tr class="border-b border-cream-200 text-clay-500">
+          <tr class="border-b border-beige-200 text-charcoal-500">
             <th class="py-2 text-left">Size</th>
             <th class="py-2 text-right">{lang === 'en' ? 'Chest' : '胸围'}</th>
           </tr>
         </thead>
         <tbody>
           {Object.entries(sizeGuideData[lang]).map(([size, measure]) => (
-            <tr class="border-b border-cream-100">
-              <td class="py-2 font-medium text-clay-800">{size}</td>
-              <td class="py-2 text-right text-clay-500">{measure}</td>
+            <tr class="border-b border-beige-100">
+              <td class="py-2 font-medium text-charcoal-800">{size}</td>
+              <td class="py-2 text-right text-charcoal-500">{measure}</td>
             </tr>
           ))}
         </tbody>
       </table>
-      <p class="text-xs text-clay-400 mt-4">
+      <p class="text-xs text-charcoal-400 mt-4">
         {lang === 'en' ? 'US sizes. Runs slightly larger than Asian sizing.' : '美码偏大，比亚洲尺码大一号。建议选小一码。'}
       </p>
     </div>
@@ -384,19 +384,19 @@ const sizeGuideData = {
       cartTotalEl.textContent = `$${total}`;
 
       if (cartItems.length === 0) {
-        cartContainer.innerHTML = `<p class="text-clay-400 text-center py-12">${t.empty}</p>`;
+        cartContainer.innerHTML = `<p class="text-charcoal-400 text-center py-12">${t.empty}</p>`;
       } else {
         cartContainer.innerHTML = cartItems.map((item: any, idx: number) => `
-          <div class="flex gap-3 items-center bg-cream-50 rounded-xl p-3">
-            <div class="w-16 h-16 bg-cream-200 rounded-lg flex items-center justify-center text-2xl flex-shrink-0">
+          <div class="flex gap-3 items-center bg-beige-50 rounded-xl p-3">
+            <div class="w-16 h-16 bg-beige-200 rounded-lg flex items-center justify-center text-2xl flex-shrink-0">
               ${item.name.includes('Hoodie') || item.name.includes('卫衣') ? '\uD83E\uDDE5' : item.name.includes('Cap') || item.name.includes('帽') ? '\uD83E\uDDE2' : '\uD83D\uDC55'}
             </div>
             <div class="flex-1 min-w-0">
-              <p class="text-sm font-medium text-clay-800 truncate">${item.name}</p>
-              <p class="text-xs text-clay-400">Size: ${item.size} &times; ${item.quantity}</p>
-              <p class="text-sm font-semibold text-clay-700">$${item.price * item.quantity}</p>
+              <p class="text-sm font-medium text-charcoal-800 truncate">${item.name}</p>
+              <p class="text-xs text-charcoal-400">Size: ${item.size} &times; ${item.quantity}</p>
+              <p class="text-sm font-semibold text-charcoal-700">$${item.price * item.quantity}</p>
             </div>
-            <button data-remove="${idx}" class="text-clay-400 hover:text-red-500 text-lg">&times;</button>
+            <button data-remove="${idx}" class="text-charcoal-400 hover:text-red-500 text-lg">&times;</button>
           </div>
         `).join('');
       }
@@ -447,11 +447,11 @@ const sizeGuideData = {
         const el = btn as HTMLElement;
         const productId = el.dataset.product!;
         document.querySelectorAll(`.size-btn[data-product="${productId}"]`).forEach(b => {
-          b.classList.remove('border-clay-600', 'bg-clay-100');
-          b.classList.add('border-clay-300');
+          b.classList.remove('border-charcoal-600', 'bg-charcoal-100');
+          b.classList.add('border-charcoal-300');
         });
-        el.classList.add('border-clay-600', 'bg-clay-100');
-        el.classList.remove('border-clay-300');
+        el.classList.add('border-charcoal-600', 'bg-charcoal-100');
+        el.classList.remove('border-charcoal-300');
       });
     });
 
@@ -460,7 +460,7 @@ const sizeGuideData = {
       btn.addEventListener('click', () => {
         const el = btn as HTMLElement;
         const productId = el.dataset.product!;
-        const sizeBtn = document.querySelector(`.size-btn[data-product="${productId}"].border-clay-600`);
+        const sizeBtn = document.querySelector(`.size-btn[data-product="${productId}"].border-charcoal-600`);
         const size = sizeBtn?.getAttribute('data-size') || '';
         addToCart(el.dataset.name!, Number(el.dataset.price!), size, el.dataset.image!);
       });

@@ -9,9 +9,9 @@ const labels = {
 const t = labels[lang];
 ---
 
-<section id="scriptures" class="py-24 lg:py-32 px-4 sm:px-6 bg-gradient-to-b from-white to-cream-100 overflow-hidden">
+<section id="scriptures" class="py-24 lg:py-32 px-4 sm:px-6 bg-gradient-to-b from-white to-beige-100 overflow-hidden">
   <div class="max-w-5xl mx-auto">
-    <h2 class="section-title text-clay-900">{t.title}</h2>
+    <h2 class="section-title text-charcoal-900">{t.title}</h2>
     <p class="section-subtitle">{t.subtitle}</p>
 
     <!-- Carousel Container -->
@@ -20,13 +20,13 @@ const t = labels[lang];
       <div id="scripture-track" class="scripture-track flex items-center justify-center h-full transition-transform duration-700 ease-out">
         {scriptures.map((s, i) => (
           <div
-            class="scripture-card shrink-0 bg-white rounded-2xl shadow-lg border border-cream-200 p-8 md:p-10 transition-all duration-700 ease-out"
+            class="scripture-card shrink-0 bg-white rounded-2xl shadow-lg border border-beige-200 p-8 md:p-10 transition-all duration-700 ease-out"
             data-index={i}
           >
-            <p class="text-base md:text-xl leading-relaxed font-serif italic text-clay-700 mb-5 line-clamp-6">
+            <p class="text-base md:text-xl leading-relaxed font-serif italic text-charcoal-700 mb-5 line-clamp-6">
               {s[lang]}
             </p>
-            <p class="text-sm text-clay-400 font-medium tracking-wide border-t border-cream-200 pt-4">— {s.ref}</p>
+            <p class="text-sm text-charcoal-400 font-medium tracking-wide border-t border-beige-200 pt-4">— {s.ref}</p>
           </div>
         ))}
       </div>
@@ -36,10 +36,10 @@ const t = labels[lang];
       <div class="absolute inset-y-0 right-0 w-16 md:w-28 pointer-events-none bg-gradient-to-l from-white/90 to-transparent z-10"></div>
 
       <!-- Arrow buttons -->
-      <button id="scr-prev" class="scr-btn scr-prev absolute left-1 md:left-4 top-1/2 -translate-y-1/2 w-11 h-11 rounded-full bg-white/80 backdrop-blur-sm shadow-md border border-cream-300 flex items-center justify-center text-clay-500 hover:bg-white hover:text-clay-800 hover:shadow-lg hover:border-clay-300 transition-all z-20" aria-label="Previous">
+      <button id="scr-prev" class="scr-btn scr-prev absolute left-1 md:left-4 top-1/2 -translate-y-1/2 w-11 h-11 rounded-full bg-white/80 backdrop-blur-sm shadow-md border border-beige-300 flex items-center justify-center text-charcoal-500 hover:bg-white hover:text-charcoal-800 hover:shadow-lg hover:border-charcoal-300 transition-all z-20" aria-label="Previous">
         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/></svg>
       </button>
-      <button id="scr-next" class="scr-btn scr-next absolute right-1 md:right-4 top-1/2 -translate-y-1/2 w-11 h-11 rounded-full bg-white/80 backdrop-blur-sm shadow-md border border-cream-300 flex items-center justify-center text-clay-500 hover:bg-white hover:text-clay-800 hover:shadow-lg hover:border-clay-300 transition-all z-20" aria-label="Next">
+      <button id="scr-next" class="scr-btn scr-next absolute right-1 md:right-4 top-1/2 -translate-y-1/2 w-11 h-11 rounded-full bg-white/80 backdrop-blur-sm shadow-md border border-beige-300 flex items-center justify-center text-charcoal-500 hover:bg-white hover:text-charcoal-800 hover:shadow-lg hover:border-charcoal-300 transition-all z-20" aria-label="Next">
         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
       </button>
     </div>
@@ -47,7 +47,7 @@ const t = labels[lang];
     <!-- Dots -->
     <div class="flex justify-center gap-2 mt-8">
       {scriptures.map((_, i) => (
-        <span class={`scr-dot w-2.5 h-2.5 rounded-full cursor-pointer transition-all duration-400 ${i === 0 ? 'bg-clay-700 scale-125' : 'bg-clay-300 hover:bg-clay-400'}`} data-sdot={i}></span>
+        <span class={`scr-dot w-2.5 h-2.5 rounded-full cursor-pointer transition-all duration-400 ${i === 0 ? 'bg-charcoal-700 scale-125' : 'bg-charcoal-300 hover:bg-charcoal-400'}`} data-sdot={i}></span>
       ))}
     </div>
   </div>
@@ -106,7 +106,7 @@ const t = labels[lang];
 
   /* ── Dot active state ── */
   .scr-dot.active {
-    @apply bg-clay-700 scale-125;
+    @apply bg-charcoal-700 scale-125;
   }
 
   /* ── Button hide on small screens when not needed ── */

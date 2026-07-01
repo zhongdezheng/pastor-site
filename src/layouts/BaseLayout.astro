@@ -26,21 +26,21 @@ const t = labels[lang];
   <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
 </head>
 <body>
-  <nav class="fixed top-0 left-0 right-0 z-40 bg-cream-50/90 backdrop-blur-md border-b border-cream-200/50">
+  <nav class="fixed top-0 left-0 right-0 z-40 bg-beige-50/90 backdrop-blur-md border-b border-beige-200/50">
     <div class="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
-      <a href={`/${lang}/`} class="font-serif text-xl font-bold text-clay-800 tracking-tight">
+      <a href={`/${lang}/`} class="font-serif text-xl font-bold text-charcoal-800 tracking-tight">
         ✝ {site.name[lang]}
       </a>
-      <div class="hidden md:flex items-center gap-8 text-sm font-medium text-clay-500">
-        <a href={`/${lang}/`} class="hover:text-clay-800 transition-colors">{t.home}</a>
-        <a href={`/${lang}/products/`} class="hover:text-clay-800 transition-colors">{t.products}</a>
-        <a href={`/${lang}/prayer/`} class="hover:text-clay-800 transition-colors">{t.prayer}</a>
-        <a href={`/${lang}/contact/`} class="hover:text-clay-800 transition-colors">{t.contact}</a>
-        <a href={otherPath} class="ml-4 px-4 py-1.5 border border-clay-300 rounded-full text-xs text-clay-500 hover:text-clay-700 hover:border-clay-400 transition-colors">
+      <div class="hidden md:flex items-center gap-8 text-sm font-medium text-charcoal-500">
+        <a href={`/${lang}/`} class="hover:text-charcoal-800 transition-colors">{t.home}</a>
+        <a href={`/${lang}/products/`} class="hover:text-charcoal-800 transition-colors">{t.products}</a>
+        <a href={`/${lang}/prayer/`} class="hover:text-charcoal-800 transition-colors">{t.prayer}</a>
+        <a href={`/${lang}/contact/`} class="hover:text-charcoal-800 transition-colors">{t.contact}</a>
+        <a href={otherPath} class="ml-4 px-4 py-1.5 border border-charcoal-300 rounded-full text-xs text-charcoal-500 hover:text-charcoal-700 hover:border-charcoal-400 transition-colors">
           {t.langSwitch}
         </a>
       </div>
-      <a href={otherPath} class="md:hidden text-sm text-clay-500">{t.langSwitch}</a>
+      <a href={otherPath} class="md:hidden text-sm text-charcoal-500">{t.langSwitch}</a>
     </div>
   </nav>
 
@@ -48,17 +48,17 @@ const t = labels[lang];
     <slot />
   </main>
 
-  <footer class="bg-clay-900 text-cream-300 py-16 px-6">
+  <footer class="bg-charcoal-900 text-beige-300 py-16 px-6">
     <div class="max-w-4xl mx-auto text-center">
-      <p class="font-serif text-2xl font-bold text-cream-100 mb-2">✝ {site.name[lang]}</p>
-      <p class="text-sm text-cream-500 mb-8">{site.tagline[lang]}</p>
+      <p class="font-serif text-2xl font-bold text-beige-100 mb-2">✝ {site.name[lang]}</p>
+      <p class="text-sm text-beige-500 mb-8">{site.tagline[lang]}</p>
       <div class="flex justify-center gap-8 text-sm mb-8">
-        <a href={`/${lang}/`} class="hover:text-cream-100 transition-colors">{t.home}</a>
-        <a href={`/${lang}/products/`} class="hover:text-cream-100 transition-colors">{t.products}</a>
-        <a href={`/${lang}/prayer/`} class="hover:text-cream-100 transition-colors">{t.prayer}</a>
-        <a href={`/${lang}/contact/`} class="hover:text-cream-100 transition-colors">{t.contact}</a>
+        <a href={`/${lang}/`} class="hover:text-beige-100 transition-colors">{t.home}</a>
+        <a href={`/${lang}/products/`} class="hover:text-beige-100 transition-colors">{t.products}</a>
+        <a href={`/${lang}/prayer/`} class="hover:text-beige-100 transition-colors">{t.prayer}</a>
+        <a href={`/${lang}/contact/`} class="hover:text-beige-100 transition-colors">{t.contact}</a>
       </div>
-      <p class="text-xs text-cream-600">
+      <p class="text-xs text-beige-600">
         &copy; {new Date().getFullYear()} {site.name.en}. {
           lang === 'en'
             ? '"Love one another as I have loved you." — John 15:12'
