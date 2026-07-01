@@ -3,6 +3,7 @@ import tailwind from '@astrojs/tailwind';
 
 export default defineConfig({
   output: 'static',
+  trailingSlash: 'always',
   integrations: [tailwind()],
   i18n: {
     defaultLocale: 'en',
