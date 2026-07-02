@@ -1,4 +1,4 @@
-# Pastor Site — Light & Grace
+# Pastor Site — Light & Grace 
 
 A bilingual (EN/ZH) Christian ministry website built with Astro, featuring:
 
