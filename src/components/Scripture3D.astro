@@ -2,20 +2,13 @@
 import scriptures from '../content/scriptures.json';
 interface Props { lang: 'en' | 'zh' }
 const { lang } = Astro.props;
-const labels = {
-  en: { title: 'Words of Life', subtitle: 'Scriptures that sustain us through every season' },
-  zh: { title: '生命的话语', subtitle: '陪伴我们走过每个季节的经文' },
-};
-const t = labels[lang];
 ---
 
 <section id="scriptures" class="py-24 lg:py-32 px-4 sm:px-6 bg-gradient-to-b from-white to-beige-100 overflow-hidden">
   <div class="max-w-5xl mx-auto">
-    <h2 class="section-title text-charcoal-900">{t.title}</h2>
-    <p class="section-subtitle">{t.subtitle}</p>
 
     <!-- Carousel Container -->
-    <div id="scripture-carousel" class="scripture-carousel mt-16 relative select-none" style="height: 380px;">
+    <div id="scripture-carousel" class="scripture-carousel relative select-none" style="height: 380px;">
       <!-- Track -->
       <div id="scripture-track" class="scripture-track flex items-center justify-center h-full transition-transform duration-700 ease-out">
         {scriptures.map((s, i) => (

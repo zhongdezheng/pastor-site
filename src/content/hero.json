@@ -1,24 +1,18 @@
 {
   "en": {
-    "greeting": "Hi, I'm",
-    "name": "Pastor David",
+    "name": "Pastor Jeff",
     "title": "A Young Pastor from China",
     "testimony": "I was called to full-time ministry at a very young age. It wasn't an easy path — my parents strongly opposed my faith and my decision to serve God. But through every trial, the Lord confirmed His calling again and again. He sustained me, encouraged me, and never let me go.",
     "testimony2": "This is my story of following the light in a place where faith comes at a cost. My prayer is that through this website, you would encounter the same grace that transformed my life.",
     "verse": "\"My grace is sufficient for you, for my power is made perfect in weakness.\"",
-    "verseRef": "— 2 Corinthians 12:9",
-    "cta1": "My Story",
-    "cta2": "Shop Products"
+    "verseRef": "— 2 Corinthians 12:9"
   },
   "zh": {
-    "greeting": "你好，我是",
-    "name": "大卫牧师",
+    "name": "杰夫牧师",
     "title": "一位来自中国的年轻牧师",
     "testimony": "我在很小的时候就被呼召全职服侍上帝。这条路并不容易——我的父母强烈反对我的信仰和我服侍上帝的决定。但上帝在每一次试炼中一次又一次地印证祂的呼召。祂扶持我，鼓励我，从未离弃我。",
     "testimony2": "这是我在一个信仰需要付代价的地方跟随真光的故事。我祷告通过这个网站，你能遇见那改变我生命的恩典。",
     "verse": "「我的恩典够你用的，因为我的能力是在人的软弱上显得完全。」",
-    "verseRef": "— 哥林多后书 12:9",
-    "cta1": "我的故事",
-    "cta2": "浏览产品"
+    "verseRef": "— 哥林多后书 12:9"
   }
 }

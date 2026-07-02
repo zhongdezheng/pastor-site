@@ -8,8 +8,6 @@ const { lang } = Astro.props;
 
 const labels = {
   en: {
-    title: 'Faith-Inspired Apparel',
-    subtitle: 'Wear your faith. Every piece designed to carry a message of hope and grace.',
     addToCart: 'Add to Cart',
     sizes: 'Sizes',
     weight: 'Weight',
@@ -22,8 +20,6 @@ const labels = {
     outOfStock: 'Out of Stock',
   },
   zh: {
-    title: '信仰主题服饰',
-    subtitle: '穿出你的信仰。每件设计都承载着盼望与恩典的信息。',
     addToCart: '加入购物车',
     sizes: '尺码',
     weight: '重量',
@@ -58,12 +54,10 @@ const sizeGuideData = {
 
 <section id="products" class="py-24 lg:py-32 px-4 sm:px-6 bg-white overflow-hidden">
   <div class="max-w-5xl mx-auto">
-    <h2 class="section-title text-charcoal-900">{t.title}</h2>
-    <p class="section-subtitle">{t.subtitle}</p>
 
     <!-- Cart toggle -->
-    <div class="flex justify-end mb-8 mt-8">
-      <button id="cart-toggle" class="relative px-5 py-2.5 px-5 py-2.5 bg-sage-500 hover:bg-sage-600 text-white rounded-full text-sm font-medium transition-colors transition-colors">
+    <div class="flex justify-end mb-8">
+      <button id="cart-toggle" class="relative px-5 py-2.5 bg-sage-500 hover:bg-sage-600 text-white rounded-full text-sm font-medium transition-colors">
         &#x1F6D2; {t.cart} <span id="cart-badge" class="ml-1 bg-sage-200 text-sage-900 px-1.5 py-0.5 rounded-full text-xs hidden">0</span>
       </button>
     </div>
@@ -293,15 +287,71 @@ const sizeGuideData = {
       });
     }
 
-    // ── Navigation ──
-    function go(dir: 1 | -1) {
-      current = (current + dir + total) % total;
-      render();
+    // ── Navigation with auto-scroll ──
+    let animFrame: number | null = null;
+    let scrollPos = 0;
+    let targetCard = 0;
+    let paused = false;
+    let lastTime = 0;
+    const SCROLL_SPEED = 20;
+
+    function getCardUnit(): number { return getCardWidth() + getGap(); }
+
+    function animate(timestamp: number) {
+      if (paused) { animFrame = null; return; }
+      if (!lastTime) lastTime = timestamp;
+      const dt = Math.min(timestamp - lastTime, 100);
+      lastTime = timestamp;
+      scrollPos += SCROLL_SPEED * (dt / 1000);
+      const unit = getCardUnit();
+      const totalWidth = total * unit;
+      while (scrollPos >= totalWidth) scrollPos -= totalWidth;
+      const floatIdx = (scrollPos / unit) % total;
+      targetCard = Math.round(floatIdx) % total;
+      renderSmooth(floatIdx);
+      animFrame = requestAnimationFrame(animate);
     }
 
-    function goTo(idx: number) {
-      current = idx;
-      render();
+    function renderSmooth(floatIdx: number) {
+      const cw = getCardWidth();
+      const gap = getGap();
+      const unit = cw + gap;
+      cards.forEach((card, i) => {
+        let dist = i - floatIdx;
+        if (dist < -total / 2) dist += total;
+        if (dist > total / 2) dist -= total;
+        const rounded = Math.round(dist);
+        card.setAttribute('data-offset', String(Math.max(-3, Math.min(3, rounded))));
+        if (Math.abs(rounded) <= 2) card.style.display = '';
+        else card.style.display = 'none';
+      });
+      const containerCenter = track.parentElement!.clientWidth / 2;
+      const offsetPx = floatIdx * unit;
+      const translateX = containerCenter - (cw / 2) - offsetPx;
+      track.style.transform = `translateX(${translateX}px)`;
+      dots.forEach((dot, i) => { dot.classList.toggle('active', i === targetCard); });
+    }
+
+    function pauseAuto() { paused = true; if (animFrame) { cancelAnimationFrame(animFrame); animFrame = null; } }
+    function resumeAuto() {
+      if (paused) { paused = false; lastTime = 0; animFrame = requestAnimationFrame(animate); }
+      else if (!animFrame) { lastTime = 0; animFrame = requestAnimationFrame(animate); }
+    }
+
+    function jumpTo(idx: number) {
+      const unit = getCardUnit();
+      const totalWidth = total * unit;
+      scrollPos = idx * unit;
+      while (scrollPos < 0) scrollPos += totalWidth;
+      while (scrollPos >= totalWidth) scrollPos -= totalWidth;
+      targetCard = idx;
+      renderSmooth(idx);
+    }
+
+    function go(dir: 1 | -1) {
+      pauseAuto();
+      jumpTo((targetCard + dir + total) % total);
+      setTimeout(resumeAuto, 1500);
     }
 
     prevBtn?.addEventListener('click', () => go(-1));
@@ -309,50 +359,54 @@ const sizeGuideData = {
 
     dots.forEach(dot => {
       dot.addEventListener('click', () => {
-        goTo(parseInt(dot.getAttribute('data-pdot') || '0'));
+        const idx = parseInt(dot.getAttribute('data-pdot') || '0');
+        pauseAuto();
+        jumpTo(idx);
+        setTimeout(resumeAuto, 1500);
       });
     });
 
-    // Click side cards to jump
     cards.forEach(card => {
       card.addEventListener('click', (e) => {
-        // Don't trigger when clicking buttons inside the card
         if ((e.target as HTMLElement).closest('button')) return;
         const idx = parseInt(card.getAttribute('data-index') || '0');
-        if (idx !== current) goTo(idx);
+        if (idx !== targetCard) {
+          pauseAuto();
+          jumpTo(idx);
+          setTimeout(resumeAuto, 1500);
+        }
       });
     });
 
-    // Touch swipe
+    track.addEventListener('mouseenter', pauseAuto);
+    track.addEventListener('mouseleave', resumeAuto);
+
     let touchStartX = 0;
-    let touchEndX = 0;
     track.addEventListener('touchstart', (e: TouchEvent) => {
       touchStartX = e.changedTouches[0].screenX;
+      pauseAuto();
     }, { passive: true });
     track.addEventListener('touchend', (e: TouchEvent) => {
-      touchEndX = e.changedTouches[0].screenX;
-      const diff = touchStartX - touchEndX;
-      if (Math.abs(diff) > 40) {
-        go(diff > 0 ? 1 : -1);
-      }
+      const diff = touchStartX - e.changedTouches[0].screenX;
+      if (Math.abs(diff) > 40) go(diff > 0 ? 1 : -1);
+      else resumeAuto();
     }, { passive: true });
 
-    // Keyboard
+    window.addEventListener('resize', () => renderSmooth(targetCard));
+
     document.addEventListener('keydown', (e) => {
       const section = document.getElementById('products');
       if (!section) return;
       const rect = section.getBoundingClientRect();
-      const isVisible = rect.top < window.innerHeight && rect.bottom > 0;
-      if (!isVisible) return;
+      if (rect.top >= window.innerHeight || rect.bottom <= 0) return;
       if (e.key === 'ArrowLeft') go(-1);
       if (e.key === 'ArrowRight') go(1);
     });
 
-    // Resize
-    window.addEventListener('resize', () => render());
-
-    // Init
-    render();
+    scrollPos = 0;
+    targetCard = 0;
+    renderSmooth(0);
+    resumeAuto();
 
     // ── Cart logic (unchanged from original) ──
     const cartItems: any[] = [];

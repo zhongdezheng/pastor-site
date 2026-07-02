@@ -4,7 +4,7 @@ interface Props { lang: 'en' | 'zh' }
 const { lang } = Astro.props;
 const t = heroData[lang];
 const photos = [
-  { src: '/images/hero-1.svg', alt: 'Pastor David' },
+  { src: '/images/hero-1.svg', alt: 'Pastor Jeff' },
   { src: '/images/hero-2.svg', alt: 'Worship' },
   { src: '/images/hero-3.svg', alt: 'Ministry' },
 ];
@@ -15,7 +15,6 @@ const photos = [
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-20 items-center py-16 lg:py-24">
       <!-- Left: Text -->
       <div class="order-2 lg:order-1">
-        <p class="text-sm uppercase tracking-[0.2em] text-charcoal-400 mb-4 font-medium">{t.greeting}</p>
         <h1 class="text-4xl md:text-5xl lg:text-6xl font-serif font-bold text-charcoal-900 leading-tight mb-6">
           {t.name}
         </h1>
@@ -28,10 +27,6 @@ const photos = [
           <p class="text-charcoal-500 italic font-serif">{t.verse}</p>
           <cite class="text-sm text-charcoal-400 not-italic mt-2 block">{t.verseRef}</cite>
         </blockquote>
-        <div class="flex flex-col sm:flex-row gap-4">
-          <a href={`/${lang}/#scriptures`} class="btn-primary">{t.cta1}</a>
-          <a href={`/${lang}/#products`} class="btn-outline">{t.cta2}</a>
-        </div>
       </div>
 
       <!-- Right: Photo Carousel -->
