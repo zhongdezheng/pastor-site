@@ -19,7 +19,7 @@ const { lang } = Astro.props;
             <p class="text-base md:text-xl leading-relaxed font-serif italic text-charcoal-700 mb-5 line-clamp-6">
               {s[lang]}
             </p>
-            <p class="text-sm text-charcoal-400 font-medium tracking-wide border-t border-beige-200 pt-4">— {s.ref}</p>
+            <p class="text-sm text-charcoal-400 font-medium tracking-wide border-t border-beige-200 pt-4">— {lang === 'en' ? s.refEn : s.refZh}</p>
           </div>
         ))}
       </div>

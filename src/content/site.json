@@ -2,8 +2,8 @@
   "site": {
     "name": { "en": "Livingstone", "zh": "活石" },
     "tagline": { "en": "A young pastor's journey of faith", "zh": "一位年轻牧师的信心之旅" },
-    "whatsapp": "YOUR_WHATSAPP_NUMBER",
-    "email": "YOUR_EMAIL@example.com",
+    "whatsapp": "8613602812927",
+    "email": "pastorjeffinchina@gmail.com",
     "googleSheetsWebhook": "YOUR_GOOGLE_APPS_SCRIPT_URL"
   }
 }
