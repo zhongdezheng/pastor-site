@@ -43,8 +43,8 @@ const labels = {
   },
 };
 const t = labels[lang];
-
-// Serialize for client-side use
+const tJSON = JSON.stringify(t);
+const langStr = lang;
 const countriesJSON = JSON.stringify(countries);
 ---
 
@@ -109,13 +109,24 @@ const countriesJSON = JSON.stringify(countries);
   </div>
 </section>
 
-<style is:inline>
+<script type="application/json" id="countries-data">{countriesJSON}</script>
+<script type="application/json" id="prayer-labels">{tJSON}</script>
+<script id="prayer-lang" type="text/plain">{langStr}</script>
+
+<style>
   #globe-container canvas { display: block; }
 </style>
 
 <script>
-  // ── Country data ──
-  const countryData: Record<string, [number, number]> = JSON.parse('{countriesJSON}');
+  // ── Load data from DOM ──
+  const countryData: Record<string, [number, number]> = JSON.parse(
+    document.getElementById('countries-data')!.textContent || '{}'
+  );
+  (window as any).countryData = countryData;
+  const tLabels: Record<string, string> = JSON.parse(
+    document.getElementById('prayer-labels')!.textContent || '{}'
+  );
+  const lang = document.getElementById('prayer-lang')!.textContent || 'en';
 
   // ── Dynamically load Three.js then init ──
   function loadThree(): Promise<void> {
@@ -279,7 +290,7 @@ const countriesJSON = JSON.stringify(countries);
       const counter = document.getElementById('prayer-counter');
       if (counter) {
         const count = prayerDots.length / 2;
-        const label = '{lang}' === 'zh' ? `✨ ${count} 个国家的祷告` : `✨ Prayers from ${count} countries`;
+      const label = lang === 'zh' ? `✨ ${count} 个国家的祷告` : `✨ Prayers from ${count} countries`;
         counter.textContent = label;
       }
     }
@@ -384,7 +395,7 @@ const countriesJSON = JSON.stringify(countries);
       const request = (formData.get('request') || '').toString().trim();
 
       if (!countryName || !request) {
-        alert('{t.required}');
+        alert(tLabels.required);
         return;
       }
 
@@ -420,11 +431,11 @@ const countriesJSON = JSON.stringify(countries);
         email: formData.get('email') || '',
         country: countryName,
         request,
-        lang: '{lang}',
+        lang,
         timestamp: new Date().toISOString(),
       };
 
-      btn.textContent = '{t.submitting}';
+      btn.textContent = tLabels.submitting;
       btn.classList.add('opacity-70', 'pointer-events-none');
 
       try {
@@ -442,7 +453,7 @@ const countriesJSON = JSON.stringify(countries);
         success.classList.add('hidden');
         console.error(err);
       } finally {
-        btn.textContent = '{t.submit}';
+        btn.textContent = tLabels.submit;
         btn.classList.remove('opacity-70', 'pointer-events-none');
       }
     });
