@@ -1,0 +1,446 @@
+---
+import countries from '../data/countries.json';
+
+interface Props { lang: 'en' | 'zh' }
+const { lang } = Astro.props;
+
+const labels = {
+  en: {
+    title: 'Prayer Requests',
+    subtitle: 'Your prayers light up the world. Every dot represents a heart crying out to God.',
+    name: 'Name',
+    namePlaceholder: 'Your name (optional)',
+    email: 'Email',
+    emailPlaceholder: 'your@email.com',
+    country: 'Your Country',
+    countryPlaceholder: 'e.g. Kenya, Nigeria, China...',
+    request: 'Prayer Request',
+    requestPlaceholder: 'Share what\'s on your heart...',
+    submit: 'Send Prayer',
+    submitting: 'Sending...',
+    successTitle: 'Thank You',
+    successMsg: 'Your prayer has been received. A light now shines for your nation.',
+    errorMsg: 'Something went wrong. Please try again.',
+    required: 'Please fill in your country and prayer request.',
+  },
+  zh: {
+    title: '代祷需求',
+    subtitle: '你的祷告点亮世界。每一个光点代表一颗呼求上帝的心。',
+    name: '姓名',
+    namePlaceholder: '你的名字（选填）',
+    email: '邮箱',
+    emailPlaceholder: '你的邮箱',
+    country: '你的国家',
+    countryPlaceholder: '例如：中国、美国、肯尼亚...',
+    request: '代祷事项',
+    requestPlaceholder: '分享你心中所想...',
+    submit: '发送代祷',
+    submitting: '发送中...',
+    successTitle: '感谢你',
+    successMsg: '你的代祷已收到。一束光正为你的国家亮起。',
+    errorMsg: '提交失败，请重试。',
+    required: '请填写国家和代祷事项。',
+  },
+};
+const t = labels[lang];
+
+// Serialize for client-side use
+const countriesJSON = JSON.stringify(countries);
+---
+
+<script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js"></script>
+
+<section id="prayer" class="py-24 lg:py-32 px-4 sm:px-6 bg-beige-50 overflow-hidden">
+  <div class="max-w-5xl mx-auto">
+    <h2 class="section-title text-charcoal-900">{t.title}</h2>
+    <p class="section-subtitle mb-8">{t.subtitle}</p>
+
+    <!-- Globe + Form Layout -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-10 items-center">
+      <!-- Left: 3D Globe -->
+      <div class="relative flex justify-center">
+        <div id="globe-container" class="w-full aspect-square max-w-[440px]" style="cursor:grab"></div>
+        <p id="prayer-counter" class="absolute bottom-0 left-1/2 -translate-x-1/2 text-xs text-charcoal-400 font-medium tracking-wide">
+          &#x2728; {lang === 'en' ? 'Prayers around the world' : '世界各地的祷告'}
+        </p>
+      </div>
+
+      <!-- Right: Form -->
+      <div class="max-w-md mx-auto w-full">
+        <form id="prayer-form" class="bg-white rounded-2xl shadow-lg p-6 md:p-8 space-y-5 border border-beige-200">
+          <div>
+            <label class="block text-sm font-medium text-charcoal-600 mb-1.5">{t.name}</label>
+            <input type="text" name="name" placeholder={t.namePlaceholder}
+              class="w-full px-4 py-2.5 rounded-xl border border-beige-300 bg-beige-50 focus:outline-none focus:ring-2 focus:ring-sage-400 focus:border-transparent transition-all text-charcoal-800 text-sm" />
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-charcoal-600 mb-1.5">{t.email}</label>
+            <input type="email" name="email" placeholder={t.emailPlaceholder}
+              class="w-full px-4 py-2.5 rounded-xl border border-beige-300 bg-beige-50 focus:outline-none focus:ring-2 focus:ring-sage-400 focus:border-transparent transition-all text-charcoal-800 text-sm" />
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-charcoal-600 mb-1.5">{t.country} *</label>
+            <input type="text" name="country" required placeholder={t.countryPlaceholder} autocomplete="off" list="country-list"
+              class="w-full px-4 py-2.5 rounded-xl border border-beige-300 bg-beige-50 focus:outline-none focus:ring-2 focus:ring-sage-400 focus:border-transparent transition-all text-charcoal-800 text-sm" />
+            <datalist id="country-list">
+              {Object.keys(countries).map(c => <option value={c} />)}
+            </datalist>
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-charcoal-600 mb-1.5">{t.request} *</label>
+            <textarea name="request" rows="4" required placeholder={t.requestPlaceholder}
+              class="w-full px-4 py-2.5 rounded-xl border border-beige-300 bg-beige-50 focus:outline-none focus:ring-2 focus:ring-sage-400 focus:border-transparent transition-all text-charcoal-800 text-sm resize-none"></textarea>
+          </div>
+          <button type="submit"
+            class="w-full py-3 bg-sage-500 hover:bg-sage-600 text-white font-medium rounded-xl transition-colors text-base">
+            {t.submit}
+          </button>
+        </form>
+
+        <!-- Messages -->
+        <div id="prayer-success" class="hidden mt-6 bg-sage-50 border border-sage-200 rounded-2xl p-6 text-center">
+          <p class="text-4xl mb-3">&#x1F31F;</p>
+          <h3 class="font-serif text-lg font-bold text-sage-800 mb-1">{t.successTitle}</h3>
+          <p class="text-sage-600 text-sm">{t.successMsg}</p>
+        </div>
+        <div id="prayer-error" class="hidden mt-6 bg-red-50 border border-red-200 rounded-2xl p-6 text-center">
+          <p class="text-red-600 text-sm">{t.errorMsg}</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<style is:inline>
+  #globe-container canvas { display: block; }
+</style>
+
+<script>
+  // ── Country data ──
+  const countryData: Record<string, [number, number]> = JSON.parse('{countriesJSON}');
+
+  // ── Three.js Globe ──
+  function initGlobe() {
+    const container = document.getElementById('globe-container');
+    if (!container || typeof THREE === 'undefined') return;
+
+    const w = container.clientWidth;
+    const h = container.clientHeight;
+
+    // Scene
+    const scene = new THREE.Scene();
+
+    // Renderer
+    const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+    renderer.setSize(w, h);
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    container.appendChild(renderer.domElement);
+
+    // Camera
+    const camera = new THREE.PerspectiveCamera(45, w / h, 0.1, 100);
+    camera.position.z = 6;
+
+    // ── Globe ──
+    const radius = 1.8;
+    const globeGroup = new THREE.Group();
+    scene.add(globeGroup);
+
+    // Solid sphere — sage tint
+    const geo = new THREE.SphereGeometry(radius, 64, 64);
+    const mat = new THREE.MeshPhongMaterial({
+      color: 0x8BA899,
+      specular: 0x222222,
+      shininess: 10,
+      transparent: true,
+      opacity: 0.15,
+    });
+    const sphere = new THREE.Mesh(geo, mat);
+    globeGroup.add(sphere);
+
+    // Wireframe overlay
+    const wireGeo = new THREE.SphereGeometry(radius * 1.002, 36, 36);
+    const wireMat = new THREE.MeshBasicMaterial({
+      color: 0x6E8174,
+      wireframe: true,
+      transparent: true,
+      opacity: 0.18,
+    });
+    const wireframe = new THREE.Mesh(wireGeo, wireMat);
+    globeGroup.add(wireframe);
+
+    // Ring (elegant orbit ring)
+    const ringGeo = new THREE.TorusGeometry(radius * 1.25, 0.015, 16, 100);
+    const ringMat = new THREE.MeshBasicMaterial({ color: 0xB5A890, transparent: true, opacity: 0.3 });
+    const ring = new THREE.Mesh(ringGeo, ringMat);
+    ring.rotation.x = Math.PI / 2.5;
+    globeGroup.add(ring);
+
+    // Latitude lines
+    for (let lat = -60; lat <= 60; lat += 30) {
+      const r = radius * Math.cos(lat * Math.PI / 180);
+      const y = radius * Math.sin(lat * Math.PI / 180);
+      const circleGeo = new THREE.TorusGeometry(r, 0.012, 16, 64);
+      const circleMat = new THREE.MeshBasicMaterial({ color: 0xB5A890, transparent: true, opacity: 0.2 });
+      const circle = new THREE.Mesh(circleGeo, circleMat);
+      circle.position.y = y;
+      globeGroup.add(circle);
+    }
+    // Longitude lines
+    for (let lng = 0; lng < 180; lng += 30) {
+      const ringGeo2 = new THREE.TorusGeometry(radius, 0.012, 16, 64);
+      const ringMat2 = new THREE.MeshBasicMaterial({ color: 0xB5A890, transparent: true, opacity: 0.2 });
+      const ring2 = new THREE.Mesh(ringGeo2, ringMat2);
+      ring2.rotation.y = lng * Math.PI / 180;
+      globeGroup.add(ring2);
+    }
+
+    // ── Lighting ──
+    const ambient = new THREE.AmbientLight(0xFDFBF7, 1.5);
+    scene.add(ambient);
+    const dirLight = new THREE.DirectionalLight(0xffffff, 1.2);
+    dirLight.position.set(5, 3, 5);
+    scene.add(dirLight);
+
+    // ── Particles: city dots ──
+    const dotsGroup = new THREE.Group();
+    globeGroup.add(dotsGroup);
+    const dotGeo = new THREE.SphereGeometry(0.025, 8, 8);
+
+    // Add subtle dots for major countries
+    Object.entries(countryData).forEach(([name, [lat, lng]]) => {
+      const phi = (90 - lat) * Math.PI / 180;
+      const theta = (lng + 180) * Math.PI / 180;
+      const x = -radius * Math.sin(phi) * Math.cos(theta);
+      const y = radius * Math.cos(phi);
+      const z = radius * Math.sin(phi) * Math.sin(theta);
+      const dot = new THREE.Mesh(dotGeo, new THREE.MeshBasicMaterial({ color: 0xC4B7A5, transparent: true, opacity: 0.5 }));
+      dot.position.set(x, y, z);
+      dotsGroup.add(dot);
+    });
+
+    // ── Prayer glow dots (added dynamically) ──
+    const prayerDots: THREE.Mesh[] = [];
+
+    function addPrayerDot(lat: number, lng: number) {
+      const phi = (90 - lat) * Math.PI / 180;
+      const theta = (lng + 180) * Math.PI / 180;
+      const x = -radius * Math.sin(phi) * Math.cos(theta);
+      const y = radius * Math.cos(phi);
+      const z = radius * Math.sin(phi) * Math.sin(theta);
+
+      // Inner bright core
+      const coreGeo = new THREE.SphereGeometry(0.04, 16, 16);
+      const coreMat = new THREE.MeshBasicMaterial({ color: 0xF9F4EA, transparent: true, opacity: 1 });
+      const core = new THREE.Mesh(coreGeo, coreMat);
+      core.position.set(x, y, z);
+      globeGroup.add(core);
+
+      // Outer glow halo
+      const haloGeo = new THREE.SphereGeometry(0.08, 16, 16);
+      const haloMat = new THREE.MeshBasicMaterial({ color: 0x6E8174, transparent: true, opacity: 0.7 });
+      const halo = new THREE.Mesh(haloGeo, haloMat);
+      halo.position.set(x, y, z);
+      globeGroup.add(halo);
+
+      prayerDots.push(core, halo);
+
+      // Animate fade out
+      const start = performance.now();
+      const duration = 10000;
+      function fadeOut(now: number) {
+        const elapsed = now - start;
+        const progress = Math.min(elapsed / duration, 1);
+        core.material.opacity = 1 - progress;
+        halo.material.opacity = 0.7 * (1 - progress);
+        halo.scale.setScalar(1 + progress * 2);
+        if (progress < 1) {
+          requestAnimationFrame(fadeOut);
+        } else {
+          globeGroup.remove(core);
+          globeGroup.remove(halo);
+          coreGeo.dispose();
+          coreMat.dispose();
+          haloGeo.dispose();
+          haloMat.dispose();
+        }
+      }
+      requestAnimationFrame(fadeOut);
+
+      // Update counter
+      const counter = document.getElementById('prayer-counter');
+      if (counter) {
+        const count = prayerDots.length / 2;
+        const label = '{lang}' === 'zh' ? `✨ ${count} 个国家的祷告` : `✨ Prayers from ${count} countries`;
+        counter.textContent = label;
+      }
+    }
+
+    // ── Mouse interaction ──
+    let isDragging = false;
+    let prevX = 0, prevY = 0;
+    let rotX = 0.3, rotY = 0;
+    let targetRotX = rotX, targetRotY = rotY;
+
+    container.addEventListener('mousedown', (e) => {
+      isDragging = true;
+      prevX = e.clientX;
+      prevY = e.clientY;
+      container.style.cursor = 'grabbing';
+    });
+    window.addEventListener('mouseup', () => {
+      isDragging = false;
+      container.style.cursor = 'grab';
+    });
+    window.addEventListener('mousemove', (e) => {
+      if (!isDragging) return;
+      const dx = e.clientX - prevX;
+      const dy = e.clientY - prevY;
+      prevX = e.clientX;
+      prevY = e.clientY;
+      targetRotY += dx * 0.005;
+      targetRotX += dy * 0.005;
+      targetRotX = Math.max(-Math.PI / 2, Math.min(Math.PI / 2, targetRotX));
+    });
+
+    // Touch
+    container.addEventListener('touchstart', (e) => {
+      if (e.touches.length === 1) {
+        isDragging = true;
+        prevX = e.touches[0].clientX;
+        prevY = e.touches[0].clientY;
+      }
+    }, { passive: true });
+    window.addEventListener('touchend', () => { isDragging = false; });
+    window.addEventListener('touchmove', (e) => {
+      if (!isDragging || e.touches.length !== 1) return;
+      const dx = e.touches[0].clientX - prevX;
+      const dy = e.touches[0].clientY - prevY;
+      prevX = e.touches[0].clientX;
+      prevY = e.touches[0].clientY;
+      targetRotY += dx * 0.005;
+      targetRotX += dy * 0.005;
+      targetRotX = Math.max(-Math.PI / 2, Math.min(Math.PI / 2, targetRotX));
+    }, { passive: true });
+
+    // ── Animate ──
+    function animate() {
+      requestAnimationFrame(animate);
+
+      if (!isDragging) {
+        targetRotY += 0.003; // auto-rotate right-to-left
+      }
+      rotX += (targetRotX - rotX) * 0.08;
+      rotY += (targetRotY - rotY) * 0.08;
+
+      globeGroup.rotation.x = rotX;
+      globeGroup.rotation.y = rotY;
+
+      // Pulse prayer dots
+      prayerDots.forEach((dot, i) => {
+        const s = 1 + Math.sin(performance.now() * 0.005 + i) * 0.15;
+        dot.scale.setScalar(s);
+      });
+
+      renderer.render(scene, camera);
+    }
+
+    // ── Resize ──
+    window.addEventListener('resize', () => {
+      const nw = container.clientWidth;
+      const nh = container.clientHeight;
+      renderer.setSize(nw, nh);
+      camera.aspect = nw / nh;
+      camera.updateProjectionMatrix();
+    });
+
+    animate();
+
+    // Expose for form handler
+    (window as any).addPrayerGlow = addPrayerDot;
+    (window as any).countryData = countryData;
+  }
+
+  // ── Form Logic ──
+  function initForm() {
+    const form = document.getElementById('prayer-form') as HTMLFormElement;
+    const success = document.getElementById('prayer-success')!;
+    const error = document.getElementById('prayer-error')!;
+    const btn = form?.querySelector('button')!;
+    const countryInput = form?.querySelector('[name="country"]') as HTMLInputElement;
+
+    form?.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const formData = new FormData(form);
+      const countryName = (formData.get('country') || '').toString().trim();
+      const request = (formData.get('request') || '').toString().trim();
+
+      if (!countryName || !request) {
+        alert('{t.required}');
+        return;
+      }
+
+      // Try to find country coordinates
+      const countries = (window as any).countryData as Record<string, [number, number]>;
+      let foundKey = '';
+      const input = countryName.toLowerCase();
+
+      // Exact match
+      if (countries[countryName]) {
+        foundKey = countryName;
+      } else {
+        // Case-insensitive match
+        for (const [key] of Object.entries(countries)) {
+          if (key.toLowerCase() === input) { foundKey = key; break; }
+        }
+      }
+      // Partial match
+      if (!foundKey) {
+        for (const [key] of Object.entries(countries)) {
+          if (key.toLowerCase().includes(input) || input.includes(key.toLowerCase())) { foundKey = key; break; }
+        }
+      }
+
+      if (foundKey && (window as any).addPrayerGlow) {
+        const [lat, lng] = countries[foundKey];
+        (window as any).addPrayerGlow(lat, lng);
+      }
+
+      // Submit to backend
+      const data = {
+        name: formData.get('name') || '',
+        email: formData.get('email') || '',
+        country: countryName,
+        request,
+        lang: '{lang}',
+        timestamp: new Date().toISOString(),
+      };
+
+      btn.textContent = '{t.submitting}';
+      btn.classList.add('opacity-70', 'pointer-events-none');
+
+      try {
+        const res = await fetch('/api/prayer', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(data),
+        });
+        if (!res.ok) throw new Error('Failed');
+        form.classList.add('hidden');
+        success.classList.remove('hidden');
+        error.classList.add('hidden');
+      } catch (err) {
+        error.classList.remove('hidden');
+        success.classList.add('hidden');
+        console.error(err);
+      } finally {
+        btn.textContent = '{t.submit}';
+        btn.classList.remove('opacity-70', 'pointer-events-none');
+      }
+    });
+  }
+
+  // ── Init ──
+  initGlobe();
+  initForm();
+  document.addEventListener('astro:page-load', () => { initGlobe(); initForm(); });
+</script>
