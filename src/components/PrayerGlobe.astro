@@ -48,8 +48,6 @@ const t = labels[lang];
 const countriesJSON = JSON.stringify(countries);
 ---
 
-<script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js"></script>
-
 <section id="prayer" class="py-24 lg:py-32 px-4 sm:px-6 bg-beige-50 overflow-hidden">
   <div class="max-w-5xl mx-auto">
     <h2 class="section-title text-charcoal-900">{t.title}</h2>
@@ -119,8 +117,19 @@ const countriesJSON = JSON.stringify(countries);
   // ── Country data ──
   const countryData: Record<string, [number, number]> = JSON.parse('{countriesJSON}');
 
+  // ── Dynamically load Three.js then init ──
+  function loadThree(): Promise<void> {
+    return new Promise((resolve) => {
+      if ((window as any).THREE) { resolve(); return; }
+      const script = document.createElement('script');
+      script.src = 'https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js';
+      script.onload = () => resolve();
+      document.head.appendChild(script);
+    });
+  }
+
   // ── Three.js Globe ──
-  function initGlobe() {
+  async function initGlobe() {
     const container = document.getElementById('globe-container');
     if (!container || typeof THREE === 'undefined') return;
 
@@ -440,7 +449,6 @@ const countriesJSON = JSON.stringify(countries);
   }
 
   // ── Init ──
-  initGlobe();
-  initForm();
-  document.addEventListener('astro:page-load', () => { initGlobe(); initForm(); });
+  loadThree().then(() => { initGlobe(); initForm(); });
+  document.addEventListener('astro:page-load', () => { loadThree().then(() => { initGlobe(); initForm(); }); });
 </script>
