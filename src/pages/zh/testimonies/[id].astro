@@ -1,0 +1,38 @@
+---
+import BaseLayout from '../../../layouts/BaseLayout.astro';
+import testimonies from '../../../content/testimonies.json';
+
+export function getStaticPaths() {
+  return testimonies.map(t => ({ params: { id: String(t.id) } }));
+}
+
+const id = Number(Astro.params.id);
+const t = testimonies.find(tm => tm.id === id);
+if (!t) return Astro.redirect('/zh/testimonies/');
+---
+
+<BaseLayout lang="zh" title={`${t.title.zh} — 活石`}>
+  <section class="py-24 lg:py-32 px-6 bg-beige-50 min-h-screen">
+    <div class="max-w-3xl mx-auto">
+      <a href="/zh/testimonies/" class="inline-flex items-center gap-1 text-charcoal-400 hover:text-sage-500 text-sm transition-colors mb-12">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/></svg>
+        返回见证
+      </a>
+
+      <article class="bg-white rounded-2xl shadow-lg border border-beige-200 p-8 md:p-12">
+        <header class="mb-10">
+          <h1 class="text-2xl md:text-3xl font-serif font-bold text-charcoal-900 mb-3">{t.title.zh}</h1>
+          <p class="text-charcoal-400 text-sm">{t.date} &middot; {t.author.zh}</p>
+        </header>
+
+        <div class="text-charcoal-700 leading-relaxed font-serif text-lg">
+          {t.content.zh.split('\n\n').map(para => <p class="mb-6">{para}</p>)}
+        </div>
+
+        <footer class="mt-12 pt-6 border-t border-beige-200">
+          <p class="text-charcoal-400 text-sm italic">— {t.author.zh}</p>
+        </footer>
+      </article>
+    </div>
+  </section>
+</BaseLayout>

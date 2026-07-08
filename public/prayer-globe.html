@@ -4,126 +4,107 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <style>
-  * { margin: 0; padding: 0; box-sizing: border-box; }
-  body { background: transparent; overflow: hidden; width: 100vw; height: 100vh; display: flex; align-items: center; justify-content: center; }
-  canvas { display: block; }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { background:transparent; overflow:hidden; width:100vw; height:100vh; display:flex; align-items:center; justify-content:center; }
+  canvas { display:block; }
 </style>
 </head>
 <body>
+<canvas id="g"></canvas>
 <script>
-// Country data
-var countryData = null;
-try { countryData = JSON.parse(document.getElementById('data')?.textContent || '{}'); } catch(e) {}
-
-// Load Three.js
-var script = document.createElement('script');
-script.src = 'https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js';
-script.onload = initGlobe;
-document.head.appendChild(script);
-
-function initGlobe() {
-  var body = document.body;
-  var w = body.clientWidth || 440;
-  var h = body.clientHeight || 440;
-
-  var scene = new THREE.Scene();
-  var renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
-  renderer.setSize(w, h);
-  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-  body.appendChild(renderer.domElement);
-
-  var camera = new THREE.PerspectiveCamera(45, w / Math.max(h, 1), 0.1, 100);
-  camera.position.z = 6;
-
-  var radius = 1.8;
-  var globe = new THREE.Group();
-  scene.add(globe);
-
-  // Solid sphere
-  var geo = new THREE.SphereGeometry(radius, 64, 64);
-  var mat = new THREE.MeshPhongMaterial({ color: 0x8BA899, specular: 0x222222, shininess: 10, transparent: true, opacity: 0.15 });
-  globe.add(new THREE.Mesh(geo, mat));
-
-  // Wireframe
-  var wGeo = new THREE.SphereGeometry(radius * 1.002, 36, 36);
-  var wMat = new THREE.MeshBasicMaterial({ color: 0x6E8174, wireframe: true, transparent: true, opacity: 0.18 });
-  globe.add(new THREE.Mesh(wGeo, wMat));
-
-  // Orbit ring
-  var rGeo = new THREE.TorusGeometry(radius * 1.25, 0.015, 16, 100);
-  var rMat = new THREE.MeshBasicMaterial({ color: 0xB5A890, transparent: true, opacity: 0.3 });
-  var ring = new THREE.Mesh(rGeo, rMat);
-  ring.rotation.x = Math.PI / 2.5;
-  globe.add(ring);
-
-  // Lat/lon grid lines
-  for (var lat = -60; lat <= 60; lat += 30) {
-    var r = radius * Math.cos(lat * Math.PI / 180);
-    var y = radius * Math.sin(lat * Math.PI / 180);
-    var cGeo = new THREE.TorusGeometry(r, 0.012, 16, 64);
-    var cMat = new THREE.MeshBasicMaterial({ color: 0xB5A890, transparent: true, opacity: 0.2 });
-    var circle = new THREE.Mesh(cGeo, cMat);
-    circle.position.y = y;
-    globe.add(circle);
-  }
-  for (var lng = 0; lng < 180; lng += 30) {
-    var lGeo = new THREE.TorusGeometry(radius, 0.012, 16, 64);
-    var lMat = new THREE.MeshBasicMaterial({ color: 0xB5A890, transparent: true, opacity: 0.2 });
-    var lRing = new THREE.Mesh(lGeo, lMat);
-    lRing.rotation.y = lng * Math.PI / 180;
-    globe.add(lRing);
-  }
-
-  // Ambient + directional light
-  scene.add(new THREE.AmbientLight(0xFDFBF7, 1.5));
-  var dl = new THREE.DirectionalLight(0xffffff, 1.2);
-  dl.position.set(5, 3, 5);
-  scene.add(dl);
-
-  // Animate
-  var prayerDots = [];
-  var dragging = false, px = 0, py = 0, rotX = 0.3, rotY = 0, tRx = rotX, tRy = rotY;
-
-  document.addEventListener('mousedown', function(e) { dragging = true; px = e.clientX; py = e.clientY; });
-  window.addEventListener('mouseup', function() { dragging = false; });
-  window.addEventListener('mousemove', function(e) {
-    if (!dragging) return;
-    tRy += (e.clientX - px) * 0.005; tRx += (e.clientY - py) * 0.005;
-    px = e.clientX; py = e.clientY;
-    tRx = Math.max(-1.5, Math.min(1.5, tRx));
-  });
-  document.addEventListener('touchstart', function(e) {
-    if (e.touches.length === 1) { dragging = true; px = e.touches[0].clientX; py = e.touches[0].clientY; }
-  }, { passive: true });
-  window.addEventListener('touchend', function() { dragging = false; });
-  window.addEventListener('touchmove', function(e) {
-    if (!dragging || e.touches.length !== 1) return;
-    tRy += (e.touches[0].clientX - px) * 0.005; tRx += (e.touches[0].clientY - py) * 0.005;
-    px = e.touches[0].clientX; py = e.touches[0].clientY;
-    tRx = Math.max(-1.5, Math.min(1.5, tRx));
-  }, { passive: true });
-
-  window.addEventListener('resize', function() {
-    var nw = body.clientWidth || 440, nh = body.clientHeight || 440;
-    renderer.setSize(nw, nh);
-    camera.aspect = nw / Math.max(nh, 1);
-    camera.updateProjectionMatrix();
-  });
-
-  function animate() {
-    requestAnimationFrame(animate);
-    if (!dragging) tRy += 0.003;
-    rotX += (tRx - rotX) * 0.08;
-    rotY += (tRy - rotY) * 0.08;
-    globe.rotation.x = rotX;
-    globe.rotation.y = rotY;
-    for (var i = 0; i < prayerDots.length; i++) {
-      prayerDots[i].scale.setScalar(1 + Math.sin(performance.now() * 0.005 + i) * 0.15);
-    }
-    renderer.render(scene, camera);
-  }
-  animate();
+(function(){
+var c=document.getElementById('g'),ctx=c.getContext('2d');
+var w=c.width=440,h=c.height=440;
+var points=[];
+// Generate sphere lat/lng points
+for(var i=0;i<600;i++){
+  var lat=Math.asin(2*Math.random()-1);
+  var lng=Math.random()*Math.PI*2;
+  points.push({lat:lat,lng:lng});
 }
+// Add some "continent" clusters
+for(var k=0;k<4;k++){
+  var clat=Math.asin(2*Math.random()-1),clng=Math.random()*Math.PI*2;
+  for(var j=0;j<80;j++){
+    var lat=clat+(Math.random()-0.5)*0.6;
+    var lng=clng+(Math.random()-0.5)*0.6;
+    points.push({lat:lat,lng:lng});
+  }
+}
+var rotY=0,rotX=0.3,vRy=0,vRx=0;
+var drag=false,px=0,py=0;
+
+function project(lat,lng,ry,rx){
+  var cosL=Math.cos(lat),sinL=Math.sin(lat);
+  var cosG=Math.cos(lng+ry),sinG=Math.sin(lng+ry);
+  var x=cosL*cosG,y=sinL,z=cosL*sinG;
+  // rotate around X
+  var cosX=Math.cos(rx),sinX=Math.sin(rx);
+  var ny=y*cosX-z*sinX,nz=y*sinX+z*cosX;
+  return {x:x,y:ny,z:nz};
+}
+
+function draw(){
+  ctx.clearRect(0,0,w,h);
+  var R=170;
+  // Draw wireframe sphere
+  ctx.strokeStyle='rgba(120,110,100,0.15)';
+  ctx.lineWidth=1;
+  // meridians
+  for(var i=0;i<12;i++){
+    var angle=Math.PI*i/12;
+    ctx.beginPath();
+    for(var j=0;j<=60;j++){
+      var lat=Math.PI*j/60-Math.PI/2;
+      var p=project(lat,angle,rotY,rotX);
+      var sx=w/2+p.x*R, sy=h/2+p.z*R;
+      if(j===0)ctx.moveTo(sx,sy);else ctx.lineTo(sx,sy);
+    }
+    ctx.stroke();
+  }
+  // parallels
+  for(var i=1;i<12;i++){
+    var lat=Math.PI*i/12-Math.PI/2;
+    if(Math.abs(lat)>Math.PI/2-0.1)continue;
+    ctx.beginPath();
+    for(var j=0;j<=60;j++){
+      var lng=Math.PI*2*j/60;
+      var p=project(lat,lng,rotY,rotX);
+      var sx=w/2+p.x*R,sy=h/2+p.z*R;
+      if(j===0)ctx.moveTo(sx,sy);else ctx.lineTo(sx,sy);
+    }
+    ctx.stroke();
+  }
+  // Draw dots
+  for(var i=0;i<points.length;i++){
+    var pt=points[i];
+    var p=project(pt.lat,pt.lng,rotY,rotX);
+    var sx=w/2+p.x*R,sy=h/2+p.z*R;
+    var dist=Math.sqrt(sx*sx+sy*sy);
+    if(dist>190)continue;
+    var front=p.z>0?1:0.3;
+    ctx.fillStyle='rgba(169,168,76,'+(front*0.7)+')';
+    ctx.beginPath();ctx.arc(sx,sy,1.5,0,Math.PI*2);ctx.fill();
+  }
+}
+
+function animate(){
+  if(!drag)rotY+=0.004;
+  rotY+=vRy*0.01;rotX+=vRx*0.01;
+  vRy*=0.95;vRx*=0.95;
+  draw();
+  requestAnimationFrame(animate);
+}
+
+c.addEventListener('mousedown',function(e){drag=true;px=e.clientX;py=e.clientY;vRy=0;vRx=0;});
+window.addEventListener('mouseup',function(){drag=false;});
+window.addEventListener('mousemove',function(e){if(!drag)return;vRy=(e.clientX-px)*0.15;vRx=(e.clientY-py)*0.15;px=e.clientX;py=e.clientY;});
+c.addEventListener('touchstart',function(e){if(e.touches.length===1){drag=true;px=e.touches[0].clientX;py=e.touches[0].clientY;vRy=0;vRx=0;}},{passive:true});
+window.addEventListener('touchend',function(){drag=false;});
+window.addEventListener('touchmove',function(e){if(!drag||e.touches.length!==1)return;vRy=(e.touches[0].clientX-px)*0.15;vRx=(e.touches[0].clientY-py)*0.15;px=e.touches[0].clientX;py=e.touches[0].clientY;},{passive:true});
+
+requestAnimationFrame(animate);
+})();
 </script>
 </body>
 </html>

@@ -4,9 +4,10 @@ interface Props { lang: 'en' | 'zh' }
 const { lang } = Astro.props;
 const t = heroData[lang];
 const photos = [
-  { src: '/images/hero-1.svg', alt: 'Pastor Jeff' },
-  { src: '/images/hero-2.svg', alt: 'Worship' },
-  { src: '/images/hero-3.svg', alt: 'Ministry' },
+  { src: '/images/hero-1.jpg', alt: 'Pastor Jeff' },
+  { src: '/images/hero-2.jpg', alt: 'Ministry' },
+  { src: '/images/hero-3.jpg', alt: 'Faith' },
+  { src: '/images/hero-4.jpg', alt: 'Worship' },
 ];
 ---
 
@@ -19,14 +20,18 @@ const photos = [
           {t.name}
         </h1>
         <p class="text-lg text-charcoal-500 font-serif italic mb-8">{t.title}</p>
-        <div class="space-y-4 text-charcoal-600 leading-relaxed max-w-lg mb-10">
-          <p>{t.testimony}</p>
-          <p>{t.testimony2}</p>
+        <div class="space-y-4 text-charcoal-600 leading-relaxed max-w-lg mb-6">
+          <p>{t.preview}</p>
         </div>
-        <blockquote class="border-l-2 border-beige-400 pl-6 mb-8">
+        <blockquote class="border-l-2 border-beige-400 pl-6 mb-6">
           <p class="text-charcoal-500 italic font-serif">{t.verse}</p>
           <cite class="text-sm text-charcoal-400 not-italic mt-2 block">{t.verseRef}</cite>
         </blockquote>
+        <div class="text-right">
+          <a href={`/${lang}/testimonies/`} class="inline-flex items-center gap-1 text-sage-500 hover:text-sage-600 font-medium text-sm transition-colors">
+            {lang === 'en' ? 'Read More' : '更多'} <span class="text-lg">&rarr;</span>
+          </a>
+        </div>
       </div>
 
       <!-- Right: Photo Carousel -->

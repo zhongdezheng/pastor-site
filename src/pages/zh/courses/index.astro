@@ -1,0 +1,18 @@
+---
+import BaseLayout from '../../../layouts/BaseLayout.astro';
+---
+<BaseLayout lang="zh" title="课程 — 活石">
+  <section class="pt-24 pb-16 px-4 sm:px-6 bg-beige-50 min-h-screen">
+    <div class="max-w-4xl mx-auto">
+      <h1 class="font-serif text-3xl font-bold text-charcoal-800 mb-3 text-center">圣经学习课程</h1>
+      <p class="text-charcoal-500 mb-10 text-center text-sm">通过引导性的学习和反思，深化你的信仰。</p>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div class="bg-white rounded-2xl border p-6 hover:shadow-lg transition-shadow"><span class="text-3xl">📖</span><h3 class="font-serif text-lg font-bold text-charcoal-800 mt-3">信仰根基</h3><p class="text-xs text-charcoal-400 mt-1">6周的根基性学习，涵盖基督教的核心信仰。</p><div class="flex gap-2 mt-3"><span class="text-[10px] bg-beige-100 px-2 py-0.5 rounded-full">入门</span><span class="text-[10px] bg-beige-100 px-2 py-0.5 rounded-full">6课</span><span class="text-[10px] bg-beige-100 px-2 py-0.5 rounded-full">免费</span></div><button class="mt-4 px-4 py-2 bg-charcoal-800 text-white text-xs rounded-lg hover:bg-charcoal-700" onclick="enrollWhatsApp('信仰根基')">通过 WhatsApp 报名</button></div>
+        <div class="bg-white rounded-2xl border p-6 hover:shadow-lg transition-shadow"><span class="text-3xl">✝️</span><h3 class="font-serif text-lg font-bold text-charcoal-800 mt-3">耶稣生平</h3><p class="text-xs text-charcoal-400 mt-1">走过福音书，发现基督的生活和教导。</p><div class="flex gap-2 mt-3"><span class="text-[10px] bg-beige-100 px-2 py-0.5 rounded-full">中级</span><span class="text-[10px] bg-beige-100 px-2 py-0.5 rounded-full">8课</span><span class="text-[10px] bg-beige-100 px-2 py-0.5 rounded-full">免费</span></div><button class="mt-4 px-4 py-2 bg-charcoal-800 text-white text-xs rounded-lg hover:bg-charcoal-700" onclick="enrollWhatsApp('耶稣生平')">通过 WhatsApp 报名</button></div>
+        <div class="bg-white rounded-2xl border p-6 hover:shadow-lg transition-shadow"><span class="text-3xl">🙏</span><h3 class="font-serif text-lg font-bold text-charcoal-800 mt-3">祷告与属灵争战</h3><p class="text-xs text-charcoal-400 mt-1">学习祷告的大能，如何在属灵争战中站立得稳。</p><div class="flex gap-2 mt-3"><span class="text-[10px] bg-beige-100 px-2 py-0.5 rounded-full">进阶</span><span class="text-[10px] bg-beige-100 px-2 py-0.5 rounded-full">10课</span><span class="text-[10px] bg-beige-100 px-2 py-0.5 rounded-full">免费</span></div><button class="mt-4 px-4 py-2 bg-charcoal-800 text-white text-xs rounded-lg hover:bg-charcoal-700" onclick="enrollWhatsApp('祷告与属灵争战')">通过 WhatsApp 报名</button></div>
+        <div class="bg-white rounded-2xl border p-6 hover:shadow-lg transition-shadow"><span class="text-3xl">🌍</span><h3 class="font-serif text-lg font-bold text-charcoal-800 mt-3">宣教与传福音</h3><p class="text-xs text-charcoal-400 mt-1">为完成大使命、分享福音预备你的心。</p><div class="flex gap-2 mt-3"><span class="text-[10px] bg-beige-100 px-2 py-0.5 rounded-full">所有级别</span><span class="text-[10px] bg-beige-100 px-2 py-0.5 rounded-full">6课</span><span class="text-[10px] bg-beige-100 px-2 py-0.5 rounded-full">免费</span></div><button class="mt-4 px-4 py-2 bg-charcoal-800 text-white text-xs rounded-lg hover:bg-charcoal-700" onclick="enrollWhatsApp('宣教与传福音')">通过 WhatsApp 报名</button></div>
+      </div>
+    </div>
+  </section>
+</BaseLayout>
+<script is:inline>function enrollWhatsApp(c){window.open('https://wa.me/8613602812927?text='+encodeURIComponent('你好！我想报名：'+c),'_blank');}</script>

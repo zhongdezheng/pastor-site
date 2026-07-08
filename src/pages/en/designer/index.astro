@@ -1,0 +1,104 @@
+---
+import BaseLayout from '../../../layouts/BaseLayout.astro';
+---
+
+<BaseLayout lang="en" title="Custom Design — Livingstone">
+  <section class="pt-24 pb-16 px-4 sm:px-6 bg-white min-h-screen">
+    <div class="max-w-6xl mx-auto">
+      <a href="/en/products/" class="text-sm text-charcoal-500 hover:text-charcoal-700 mb-4 inline-block">&larr; Back to Products</a>
+      <h1 class="font-serif text-2xl font-bold text-charcoal-800 mb-2">Custom Design Studio</h1>
+      <p class="text-sm text-charcoal-400 mb-6">Upload your artwork and customize your apparel</p>
+
+      <div class="flex flex-col lg:flex-row gap-6">
+        <!-- Left: Products + Gallery -->
+        <div class="lg:w-64 flex-shrink-0 space-y-4">
+          <div class="bg-beige-50 rounded-xl p-4">
+            <h3 class="text-sm font-bold text-charcoal-800 mb-3">Select Product</h3>
+            <div id="designer-products" class="space-y-2">
+              <div class="product-opt bg-white rounded-lg p-2 flex items-center gap-2 cursor-pointer border-2 border-charcoal-800" data-product="tee">
+                <span class="text-xl">👕</span>
+                <div><p class="text-xs font-bold">T-Shirt</p><p class="text-[10px] text-green-600">$10</p></div>
+              </div>
+              <div class="product-opt bg-white rounded-lg p-2 flex items-center gap-2 cursor-pointer border-2 border-transparent hover:border-charcoal-300" data-product="hoodie">
+                <span class="text-xl">🧥</span>
+                <div><p class="text-xs font-bold">Hoodie</p><p class="text-[10px] text-green-600">$49</p></div>
+              </div>
+              <div class="product-opt bg-white rounded-lg p-2 flex items-center gap-2 cursor-pointer border-2 border-transparent hover:border-charcoal-300" data-product="cap">
+                <span class="text-xl">🧢</span>
+                <div><p class="text-xs font-bold">Cap</p><p class="text-[10px] text-green-600">$19</p></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="bg-beige-50 rounded-xl p-4">
+            <h3 class="text-sm font-bold text-charcoal-800 mb-3">Upload Artwork</h3>
+            <div class="upload-zone border-2 border-dashed border-charcoal-300 rounded-xl p-4 text-center cursor-pointer hover:border-charcoal-500 transition-colors">
+              <p class="text-xs text-charcoal-500">Click or drag image here</p>
+              <p class="text-[10px] text-charcoal-400 mt-1">PNG, JPG up to 5MB</p>
+              <input type="file" accept="image/*" id="designer-upload" class="hidden" onchange="handleDesignerUpload(this)">
+            </div>
+            <div id="designer-gallery" class="grid grid-cols-2 gap-2 mt-3"></div>
+          </div>
+        </div>
+
+        <!-- Center: Preview Canvas -->
+        <div class="flex-1 bg-beige-50 rounded-2xl p-4 flex items-center justify-center min-h-[400px] relative">
+          <div id="designer-canvas" class="relative w-full max-w-[400px] aspect-square bg-white rounded-xl shadow-inner flex items-center justify-center">
+            <div id="canvas-base" class="absolute inset-0 flex items-center justify-center">
+              <span class="text-6xl opacity-20">👕</span>
+            </div>
+            <div id="canvas-overlay" class="absolute inset-0 flex items-center justify-center">
+              <p class="text-xs text-charcoal-400">Upload artwork to preview</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right: Options -->
+        <div class="lg:w-56 flex-shrink-0 space-y-4">
+          <div class="bg-white rounded-xl border p-4">
+            <label class="text-xs font-bold text-charcoal-500 uppercase tracking-wide">Color</label>
+            <div class="flex gap-2 mt-1.5" id="designer-colors">
+              <div class="w-8 h-8 rounded-full border-2 border-charcoal-800 cursor-pointer bg-[#f0f0f0]" data-color="white"></div>
+              <div class="w-8 h-8 rounded-full border-2 border-transparent cursor-pointer bg-[#222]" data-color="black"></div>
+              <div class="w-8 h-8 rounded-full border-2 border-transparent cursor-pointer bg-[#1e3a5f]" data-color="navy"></div>
+              <div class="w-8 h-8 rounded-full border-2 border-transparent cursor-pointer bg-[#999]" data-color="grey"></div>
+            </div>
+          </div>
+          <div class="bg-white rounded-xl border p-4">
+            <label class="text-xs font-bold text-charcoal-500 uppercase tracking-wide">Size</label>
+            <div class="flex flex-wrap gap-1.5 mt-1.5" id="designer-sizes">
+              {['S','M','L','XL','2XL','3XL'].map(s => <div class="px-2.5 py-1 border rounded-lg text-xs cursor-pointer hover:border-charcoal-500 border-charcoal-300" data-size={s}>{s}</div>)}
+            </div>
+          </div>
+          <div class="bg-white rounded-xl border p-4">
+            <label class="text-xs font-bold text-charcoal-500 uppercase tracking-wide">Qty</label>
+            <div class="flex items-center gap-2 mt-1.5">
+              <button class="w-7 h-7 border rounded-full text-sm" onclick="chgDesignQty(-1)">−</button>
+              <span class="w-6 text-center font-bold text-sm" id="design-qty">1</span>
+              <button class="w-7 h-7 border rounded-full text-sm" onclick="chgDesignQty(1)">+</button>
+            </div>
+          </div>
+
+          <button class="w-full py-2.5 bg-charcoal-800 hover:bg-charcoal-700 text-white rounded-xl font-medium text-sm transition-colors">Add to Cart</button>
+          <button class="w-full py-2.5 bg-green-600 hover:bg-green-500 text-white rounded-xl font-medium text-sm transition-colors">Order via WhatsApp</button>
+        </div>
+      </div>
+    </div>
+  </section>
+</BaseLayout>
+
+<script is:inline>
+  var dQty=1;
+  function chgDesignQty(d){dQty=Math.max(1,dQty+d);document.getElementById('design-qty').textContent=dQty;}
+  document.querySelector('.upload-zone').onclick=function(){document.getElementById('designer-upload').click();};
+  function handleDesignerUpload(input){
+    var f=input.files[0];if(!f)return;
+    var r=new FileReader();r.onload=function(e){
+      document.getElementById('canvas-overlay').innerHTML='<img src="'+e.target.result+'" alt="" class="max-w-[60%] max-h-[60%] object-contain">';
+      var g=document.getElementById('designer-gallery');
+      g.innerHTML+='<img src="'+e.target.result+'" class="w-full aspect-square object-cover rounded-lg border cursor-pointer">';
+    };r.readAsDataURL(f);
+  }
+  document.querySelectorAll('#designer-colors > div').forEach(function(el){el.onclick=function(){document.querySelectorAll('#designer-colors > div').forEach(function(e){e.classList.toggle('border-charcoal-800',e===el);e.classList.toggle('border-transparent',e!==el);});};});
+  document.querySelectorAll('#designer-sizes > div').forEach(function(el){el.onclick=function(){document.querySelectorAll('#designer-sizes > div').forEach(function(e){e.classList.remove('bg-charcoal-800','text-white');e.classList.add('border-charcoal-300');});el.classList.add('bg-charcoal-800','text-white');el.classList.remove('border-charcoal-300');};});
+</script>

@@ -1,0 +1,62 @@
+---
+import BaseLayout from '../../../layouts/BaseLayout.astro';
+---
+<BaseLayout lang="en" title="Courses — Livingstone">
+  <section class="pt-24 pb-16 px-4 sm:px-6 bg-beige-50 min-h-screen">
+    <div class="max-w-4xl mx-auto">
+      <h1 class="font-serif text-3xl font-bold text-charcoal-800 mb-3 text-center">Bible Study Courses</h1>
+      <p class="text-charcoal-500 mb-10 text-center text-sm">Deepen your faith through guided study and reflection.</p>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div class="bg-white rounded-2xl border p-6 hover:shadow-lg transition-shadow">
+          <span class="text-3xl">📖</span>
+          <h3 class="font-serif text-lg font-bold text-charcoal-800 mt-3">Foundations of Faith</h3>
+          <p class="text-xs text-charcoal-400 mt-1">6-week foundational study covering the core beliefs of Christianity.</p>
+          <div class="flex gap-2 mt-3">
+            <span class="text-[10px] bg-beige-100 px-2 py-0.5 rounded-full">Beginner</span>
+            <span class="text-[10px] bg-beige-100 px-2 py-0.5 rounded-full">6 Lessons</span>
+            <span class="text-[10px] bg-beige-100 px-2 py-0.5 rounded-full">Free</span>
+          </div>
+          <button class="mt-4 px-4 py-2 bg-charcoal-800 text-white text-xs rounded-lg hover:bg-charcoal-700" onclick="enrollWhatsApp('Foundations of Faith')">Enroll via WhatsApp</button>
+        </div>
+
+        <div class="bg-white rounded-2xl border p-6 hover:shadow-lg transition-shadow">
+          <span class="text-3xl">✝️</span>
+          <h3 class="font-serif text-lg font-bold text-charcoal-800 mt-3">The Life of Jesus</h3>
+          <p class="text-xs text-charcoal-400 mt-1">Walk through the Gospels and discover the life and teachings of Christ.</p>
+          <div class="flex gap-2 mt-3">
+            <span class="text-[10px] bg-beige-100 px-2 py-0.5 rounded-full">Intermediate</span>
+            <span class="text-[10px] bg-beige-100 px-2 py-0.5 rounded-full">8 Lessons</span>
+            <span class="text-[10px] bg-beige-100 px-2 py-0.5 rounded-full">Free</span>
+          </div>
+          <button class="mt-4 px-4 py-2 bg-charcoal-800 text-white text-xs rounded-lg hover:bg-charcoal-700" onclick="enrollWhatsApp('The Life of Jesus')">Enroll via WhatsApp</button>
+        </div>
+
+        <div class="bg-white rounded-2xl border p-6 hover:shadow-lg transition-shadow">
+          <span class="text-3xl">🙏</span>
+          <h3 class="font-serif text-lg font-bold text-charcoal-800 mt-3">Prayer &amp; Spiritual Warfare</h3>
+          <p class="text-xs text-charcoal-400 mt-1">Learn the power of prayer and how to stand firm in spiritual battles.</p>
+          <div class="flex gap-2 mt-3">
+            <span class="text-[10px] bg-beige-100 px-2 py-0.5 rounded-full">Advanced</span>
+            <span class="text-[10px] bg-beige-100 px-2 py-0.5 rounded-full">10 Lessons</span>
+            <span class="text-[10px] bg-beige-100 px-2 py-0.5 rounded-full">Free</span>
+          </div>
+          <button class="mt-4 px-4 py-2 bg-charcoal-800 text-white text-xs rounded-lg hover:bg-charcoal-700" onclick="enrollWhatsApp('Prayer & Spiritual Warfare')">Enroll via WhatsApp</button>
+        </div>
+
+        <div class="bg-white rounded-2xl border p-6 hover:shadow-lg transition-shadow">
+          <span class="text-3xl">🌍</span>
+          <h3 class="font-serif text-lg font-bold text-charcoal-800 mt-3">Missions &amp; Evangelism</h3>
+          <p class="text-xs text-charcoal-400 mt-1">Prepare your heart for the Great Commission and sharing the Gospel.</p>
+          <div class="flex gap-2 mt-3">
+            <span class="text-[10px] bg-beige-100 px-2 py-0.5 rounded-full">All Levels</span>
+            <span class="text-[10px] bg-beige-100 px-2 py-0.5 rounded-full">6 Lessons</span>
+            <span class="text-[10px] bg-beige-100 px-2 py-0.5 rounded-full">Free</span>
+          </div>
+          <button class="mt-4 px-4 py-2 bg-charcoal-800 text-white text-xs rounded-lg hover:bg-charcoal-700" onclick="enrollWhatsApp('Missions & Evangelism')">Enroll via WhatsApp</button>
+        </div>
+      </div>
+    </div>
+  </section>
+</BaseLayout>
+<script is:inline>function enrollWhatsApp(c){window.open('https://wa.me/8613602812927?text='+encodeURIComponent('Hi! I would like to enroll in: '+c),'_blank');}</script>

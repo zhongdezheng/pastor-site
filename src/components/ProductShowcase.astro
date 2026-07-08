@@ -1,550 +1,319 @@
 ---
 import products from '../content/products.json';
-import siteData from '../content/site.json';
-const { site } = siteData;
 
 interface Props { lang: 'en' | 'zh' }
 const { lang } = Astro.props;
 
 const labels = {
   en: {
-    addToCart: 'Add to Cart',
-    sizes: 'Sizes',
-    weight: 'Weight',
-    stock: 'In Stock',
-    cart: 'Cart',
-    empty: 'Your cart is empty',
-    checkoutWA: 'Order via WhatsApp',
-    sizeGuide: 'Size Guide',
-    close: 'Close',
-    outOfStock: 'Out of Stock',
+    all: 'All', apparel: 'Clothing', accessories: 'Jewelry',
+    categories: 'Categories', addToCart: 'Add to Cart', buyNow: 'Buy Now',
+    color: 'Color', sizes: 'Sizes', qty: 'Qty', weight: 'Weight',
+    stock: 'In Stock', outOfStock: 'Out of Stock', orderNow: 'Order Now',
+    productDetails: 'Product Details', washCare: 'Wash & Care',
+    submitOrder: 'Submit Order', close: 'Close',
   },
   zh: {
-    addToCart: '加入购物车',
-    sizes: '尺码',
-    weight: '重量',
-    stock: '库存',
-    cart: '购物车',
-    empty: '购物车是空的',
-    checkoutWA: '通过 WhatsApp 下单',
-    sizeGuide: '尺码指南',
-    close: '关闭',
-    outOfStock: '已售罄',
+    all: '全部', apparel: '服装', accessories: '首饰',
+    categories: '产品分类', addToCart: '加入购物车', buyNow: '立即购买',
+    color: '颜色', sizes: '尺码', qty: '数量', weight: '克重',
+    stock: '库存', outOfStock: '已售罄', orderNow: '立即下单',
+    productDetails: '商品详情', washCare: '洗涤保养',
+    submitOrder: '提交订单', close: '关闭',
   },
 };
 const t = labels[lang];
 
-const sizeGuideData = {
-  en: {
-    S: 'Chest 36-38"',
-    M: 'Chest 38-40"',
-    L: 'Chest 40-42"',
-    XL: 'Chest 42-44"',
-    XXL: 'Chest 44-46"',
-  },
-  zh: {
-    S: '胸围 91-96cm',
-    M: '胸围 96-102cm',
-    L: '胸围 102-107cm',
-    XL: '胸围 107-112cm',
-    XXL: '胸围 112-117cm',
-  },
-};
+const categories = [
+  { key: 'apparel', label: t.apparel },
+  { key: 'accessories', label: t.accessories },
+];
+
+const sizeGuide = lang === 'en'
+  ? { S:'Chest 36-38"', M:'Chest 38-40"', L:'Chest 40-42"', XL:'Chest 42-44"', '2XL':'Chest 44-46"', '3XL':'Chest 46-48"' }
+  : { S:'胸围 91-96cm', M:'胸围 96-102cm', L:'胸围 102-107cm', XL:'胸围 107-112cm', '2XL':'胸围 112-117cm', '3XL':'胸围 117-122cm' };
 ---
 
-<section id="products" class="py-24 lg:py-32 px-4 sm:px-6 bg-white overflow-hidden">
-  <div class="max-w-5xl mx-auto">
+<section id="product-page" class="py-24 lg:py-32 px-4 sm:px-6 bg-white min-h-screen">
+  <div class="max-w-6xl mx-auto flex gap-8">
 
-    <!-- Cart toggle -->
-    <div class="flex justify-end mb-8">
-      <button id="cart-toggle" class="relative px-5 py-2.5 bg-sage-500 hover:bg-sage-600 text-white rounded-full text-sm font-medium transition-colors">
-        &#x1F6D2; {t.cart} <span id="cart-badge" class="ml-1 bg-sage-200 text-sage-900 px-1.5 py-0.5 rounded-full text-xs hidden">0</span>
-      </button>
-    </div>
+    <!-- LEFT SIDEBAR: Categories -->
+    <aside class="hidden md:block w-48 flex-shrink-0">
+      <div class="sticky top-24">
+        <h3 class="text-xs uppercase tracking-widest text-charcoal-400 mb-3 font-semibold">{t.categories}</h3>
+        <nav class="space-y-1">
+          <button class="cat-btn w-full text-left px-3 py-2 rounded-lg text-sm font-medium transition-colors bg-sage-100 text-sage-800" data-cat="all">{t.all}</button>
+          {categories.map(cat => (
+            <button class="cat-btn w-full text-left px-3 py-2 rounded-lg text-sm transition-colors hover:bg-beige-100 text-charcoal-600" data-cat={cat.key}>{cat.label}</button>
+          ))}
+        </nav>
+      </div>
+    </aside>
 
-    <!-- Product Carousel -->
-    <div id="product-carousel" class="product-carousel relative select-none" style="height: 280px;">
-      <div id="product-track" class="product-track flex items-start justify-center h-full transition-transform duration-600 ease-out">
-        {products.map((p, i) => (
-          <div
-            class="product-card shrink-0 bg-white rounded-2xl border border-beige-200 shadow-sm transition-all duration-600 ease-out flex flex-col"
-            data-index={i}
-          >
-            <!-- Product image placeholder -->
-            <div class="aspect-square bg-beige-100 rounded-t-2xl flex items-center justify-center text-3xl flex-shrink-0 relative overflow-hidden">
-              {p.id.includes('hoodie') ? '🧥' : p.id.includes('cap') ? '🧢' : '👕'}
-            </div>
-
-            <div class="p-3 flex flex-col flex-1">
-              <h3 class="font-serif font-bold text-xs text-charcoal-800 mb-0.5 leading-tight">{p.name[lang]}</h3>
-              <p class="text-charcoal-700 font-semibold text-sm mb-0.5">${p.price}</p>
-              <p class="text-[10px] text-charcoal-400 mb-2">{t.weight}: {p.weight}</p>
-
-              <!-- Size selector -->
-              <div class="mb-2">
-                <label class="text-[10px] text-charcoal-400 uppercase tracking-wide">{t.sizes}</label>
-                <div class="flex flex-wrap gap-0.5 mt-0.5">
-                  {p.sizes.map((s) => (
-                    <button
-                      class="size-btn px-1.5 py-0 text-[10px] border border-charcoal-300 rounded hover:border-charcoal-500 transition-colors"
-                      data-product={p.id}
-                      data-size={s}
-                    >{s}</button>
-                  ))}
-                </div>
-              </div>
-
-              <div class="mt-auto flex items-center justify-between">
-                <span class={`text-[10px] font-medium ${p.stock > 0 ? 'text-green-600' : 'text-red-400'}`}>
-                  {p.stock > 0 ? `${t.stock}: ${p.stock}` : t.outOfStock}
-                </span>
-                <button
-                  class="add-to-cart px-2 py-1.5 bg-charcoal-800 text-beige-50 text-[10px] rounded-lg hover:bg-charcoal-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap"
-                  data-product={p.id}
-                  data-name={p.name[lang]}
-                  data-price={p.price}
-                  data-image={p.images[0]}
-                  disabled={p.stock === 0}
-                >{t.addToCart}</button>
-              </div>
-            </div>
-          </div>
+    <!-- MAIN: Product Grid -->
+    <div class="flex-1 min-w-0">
+      <!-- Mobile category pills -->
+      <div class="flex gap-2 mb-6 md:hidden overflow-x-auto pb-1">
+        <button class="cat-btn-mobile shrink-0 px-3 py-1.5 rounded-full text-xs font-medium bg-sage-100 text-sage-800" data-cat="all">{t.all}</button>
+        {categories.map(cat => (
+          <button class="cat-btn-mobile shrink-0 px-3 py-1.5 rounded-full text-xs font-medium bg-beige-100 text-charcoal-500" data-cat={cat.key}>{cat.label}</button>
         ))}
       </div>
 
-      <!-- Fade overlays -->
-      <div class="absolute inset-y-0 left-0 w-12 md:w-24 pointer-events-none bg-gradient-to-r from-white/95 to-transparent z-10 rounded-l-2xl"></div>
-      <div class="absolute inset-y-0 right-0 w-12 md:w-24 pointer-events-none bg-gradient-to-l from-white/95 to-transparent z-10 rounded-r-2xl"></div>
-
-      <!-- Arrow buttons -->
-      <button id="prod-prev" class="prod-btn absolute left-1 md:left-3 top-1/2 -translate-y-1/2 w-11 h-11 rounded-full bg-white/85 backdrop-blur-sm shadow-md border border-beige-300 flex items-center justify-center text-charcoal-500 hover:bg-white hover:text-charcoal-800 hover:shadow-lg transition-all z-20" aria-label="Previous">
-        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/></svg>
-      </button>
-      <button id="prod-next" class="prod-btn absolute right-1 md:right-3 top-1/2 -translate-y-1/2 w-11 h-11 rounded-full bg-white/85 backdrop-blur-sm shadow-md border border-beige-300 flex items-center justify-center text-charcoal-500 hover:bg-white hover:text-charcoal-800 hover:shadow-lg transition-all z-20" aria-label="Next">
-        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
-      </button>
-    </div>
-
-    <!-- Dots -->
-    <div class="flex justify-center gap-2 mt-6">
-      {products.map((_, i) => (
-        <span class={`prod-dot w-2.5 h-2.5 rounded-full cursor-pointer transition-all duration-400 ${i === 0 ? 'bg-charcoal-700 scale-125' : 'bg-charcoal-300 hover:bg-charcoal-400'}`} data-pdot={i}></span>
-      ))}
-    </div>
-
-    <!-- Size Guide trigger -->
-    <div class="text-center mt-8">
-      <button id="size-guide-trigger" class="text-sm text-charcoal-500 underline hover:text-charcoal-700 transition-colors">{t.sizeGuide}</button>
+      <!-- Product Grid -->
+      <div id="product-grid" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+        {products.map(p => (
+          <a href={`/${lang}/products/${p.id}/`} class="product-card-item block bg-white rounded-xl border border-beige-200 overflow-hidden cursor-pointer hover:shadow-lg transition-all duration-300 hover:-translate-y-0.5" data-category={p.category} data-id={p.id}>
+            <div class="aspect-square bg-beige-100 flex items-center justify-center relative">
+              {p.images && p.images[0] ? (
+                <img src={p.images[0]} alt="" class="w-full h-full object-cover" loading="lazy" />
+              ) : (
+                <span class="text-3xl">👕</span>
+              )}
+              {p.stock === 0 && <div class="absolute inset-0 bg-black/20 flex items-center justify-center"><span class="bg-red-500 text-white text-xs px-2 py-0.5 rounded">{t.outOfStock}</span></div>}
+            </div>
+            <div class="p-3">
+              <h3 class="font-serif font-bold text-xs text-charcoal-800 leading-tight line-clamp-1">{p.name[lang]}</h3>
+              <div class="flex items-center gap-2 mt-0.5">
+                <span class="font-bold text-sm text-charcoal-700">${p.price}</span>
+                <span class="text-[10px] text-charcoal-400">{t.weight}: {p.weight}</span>
+              </div>
+              <div class="flex flex-wrap gap-0.5 mt-1.5">
+                {p.sizes.map(s => <span class="text-[9px] border border-charcoal-200 rounded px-1 py-0 text-charcoal-500">{s}</span>)}
+              </div>
+              <div class="flex gap-1 mt-1.5">
+                {p.colors.map(c => {
+                  const colorMap = { '白色': '#f0f0f0', '黑色': '#222', '灰色': '#999', '深蓝': '#1e3a5f', '米白': '#f5f0e8' };
+                  const bg = colorMap[c] || c;
+                  return <span class="inline-block w-3.5 h-3.5 rounded-full border border-charcoal-300" style={`background:${bg}`} title={c}></span>;
+                })}
+              </div>
+            </div>
+          </a>
+        ))}
+      </div>
     </div>
   </div>
 
-  <!-- Cart Drawer -->
-  <div id="cart-drawer" class="fixed inset-0 z-50 hidden">
-    <div class="absolute inset-0 bg-black/30 backdrop-blur-sm" id="cart-overlay"></div>
-    <div class="absolute right-0 top-0 h-full w-full max-w-md bg-white shadow-2xl p-6 flex flex-col">
-      <div class="flex items-center justify-between mb-6">
-        <h3 class="font-serif text-xl font-bold text-charcoal-800">&#x1F6D2; {t.cart}</h3>
-        <button id="cart-close" class="text-charcoal-400 hover:text-charcoal-600 text-2xl">&times;</button>
+  <!-- PRODUCT DETAIL MODAL -->
+  <div id="detail-modal" class="fixed inset-0 z-50 hidden bg-black/40 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-3xl w-full max-h-[90vh] overflow-y-auto shadow-2xl relative flex flex-col md:flex-row">
+      <button id="detail-close" class="absolute top-3 right-3 z-10 w-8 h-8 flex items-center justify-center rounded-full bg-white/80 hover:bg-white text-charcoal-500 text-lg">&times;</button>
+      <div class="md:w-1/2 bg-beige-50 flex flex-col">
+        <div id="detail-gallery-main" class="aspect-square flex items-center justify-center p-2"></div>
+        <div id="detail-thumbs" class="flex gap-2 p-3 overflow-x-auto"></div>
       </div>
-      <div id="cart-items" class="flex-1 overflow-y-auto space-y-4 mb-6">
-        <p class="text-charcoal-400 text-center py-12">{t.empty}</p>
-      </div>
-      <div class="border-t border-beige-200 pt-4">
-        <div class="flex justify-between text-charcoal-800 font-semibold mb-4">
-          <span>Total</span>
-          <span id="cart-total">$0</span>
+      <div class="md:w-1/2 p-5 flex flex-col gap-3">
+        <div>
+          <h2 id="detail-name" class="font-serif text-xl font-bold text-charcoal-800 leading-tight"></h2>
+          <p id="detail-price" class="text-2xl font-bold text-red-500 mt-1"></p>
+          <p id="detail-weight" class="text-xs text-charcoal-400 mt-0.5"></p>
         </div>
-        <button id="checkout-wa" class="w-full py-3 bg-green-600 text-white rounded-xl font-medium hover:bg-green-500 transition-colors">
-          {t.checkoutWA}
-        </button>
+        <div><span class="text-xs text-charcoal-500 font-medium">{t.color}</span><div id="detail-colors" class="flex gap-2 mt-1"></div></div>
+        <div><span class="text-xs text-charcoal-500 font-medium">{t.sizes}</span><div id="detail-sizes" class="flex flex-wrap gap-1.5 mt-1"></div></div>
+        <div class="flex items-center gap-3">
+          <span class="text-xs text-charcoal-500">{t.qty}</span>
+          <button id="qty-minus" class="w-8 h-8 border rounded-full text-sm">−</button>
+          <span id="qty-val" class="w-6 text-center font-bold">1</span>
+          <button id="qty-plus" class="w-8 h-8 border rounded-full text-sm">+</button>
+          <span id="detail-stock" class="text-xs text-green-600 ml-auto"></span>
+        </div>
+        <button id="btn-buy-now" class="w-full py-2.5 bg-red-500 hover:bg-red-600 text-white rounded-xl font-medium text-sm transition-colors">{t.buyNow}</button>
+        <button id="btn-add-cart" class="w-full py-2.5 bg-charcoal-800 hover:bg-charcoal-700 text-white rounded-xl font-medium text-sm transition-colors">{t.addToCart}</button>
+        <div class="border-t pt-3 mt-1">
+          <div class="flex gap-0 border-b border-beige-200 mb-2">
+            <button class="detail-tab px-3 py-1.5 text-xs font-medium border-b-2 border-charcoal-800 text-charcoal-800" data-tab="details">{t.productDetails}</button>
+            <button class="detail-tab px-3 py-1.5 text-xs text-charcoal-400 border-b-2 border-transparent" data-tab="care">{t.washCare}</button>
+          </div>
+          <div id="tab-details" class="text-xs text-charcoal-500 leading-relaxed whitespace-pre-line"></div>
+          <div id="tab-care" class="text-xs text-charcoal-500 leading-relaxed whitespace-pre-line hidden">{lang === 'en' ? 'Hand wash or machine wash cold. Do not bleach. Do not soak for long periods. Wash liquid temperature should not exceed 45°C.\n\nMeasurements taken flat. Tolerance of 2-4cm is normal.' : '可手洗或机洗。不可漂白。不要长时间浸泡。洗涤液温度不超过45°C。\n\n平铺测量，误差2-4cm属正常现象。'}</div>
+        </div>
       </div>
     </div>
   </div>
 
-  <!-- Size Guide Modal -->
-  <div id="size-guide-modal" class="fixed inset-0 z-50 hidden bg-black/30 backdrop-blur-sm flex items-center justify-center">
-    <div class="bg-white rounded-2xl p-8 max-w-md w-full mx-4 shadow-2xl">
-      <div class="flex justify-between items-center mb-6">
-        <h3 class="font-serif text-xl font-bold text-charcoal-800">{t.sizeGuide}</h3>
-        <button id="size-guide-close" class="text-charcoal-400 hover:text-charcoal-600 text-2xl">&times;</button>
+  <!-- ORDER FORM MODAL -->
+  <div id="order-modal" class="fixed inset-0 z-50 hidden bg-black/40 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl relative">
+      <button id="order-close" class="absolute top-3 right-3 text-charcoal-400 hover:text-charcoal-600 text-xl">&times;</button>
+      <h3 class="font-serif text-lg font-bold text-charcoal-800 mb-1">{t.orderNow}</h3>
+      <div id="order-summary" class="text-xs text-charcoal-500 bg-beige-50 rounded-lg p-3 mb-4"></div>
+      <div class="space-y-3" id="order-fields">
+        <input id="cust-name" type="text" placeholder={lang === 'en' ? 'Your Name' : '您的姓名'} class="w-full px-3 py-2 border border-beige-300 rounded-lg text-sm">
+        <input id="cust-email" type="email" placeholder="Email" class="w-full px-3 py-2 border border-beige-300 rounded-lg text-sm">
+        <input id="cust-phone" type="text" placeholder="Phone / WhatsApp" class="w-full px-3 py-2 border border-beige-300 rounded-lg text-sm">
+        <textarea id="cust-note" rows="2" placeholder={lang === 'en' ? 'Special requests...' : '备注...'} class="w-full px-3 py-2 border border-beige-300 rounded-lg text-sm"></textarea>
+        <button id="btn-submit-order" class="w-full py-2.5 bg-green-600 hover:bg-green-500 text-white rounded-xl font-medium text-sm transition-colors">{t.submitOrder}</button>
       </div>
-      <table class="w-full text-sm">
-        <thead>
-          <tr class="border-b border-beige-200 text-charcoal-500">
-            <th class="py-2 text-left">Size</th>
-            <th class="py-2 text-right">{lang === 'en' ? 'Chest' : '胸围'}</th>
-          </tr>
-        </thead>
-        <tbody>
-          {Object.entries(sizeGuideData[lang]).map(([size, measure]) => (
-            <tr class="border-b border-beige-100">
-              <td class="py-2 font-medium text-charcoal-800">{size}</td>
-              <td class="py-2 text-right text-charcoal-500">{measure}</td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-      <p class="text-xs text-charcoal-400 mt-4">
-        {lang === 'en' ? 'US sizes. Runs slightly larger than Asian sizing.' : '美码偏大，比亚洲尺码大一号。建议选小一码。'}
-      </p>
+      <div id="order-done" class="hidden text-center py-6">
+        <div class="text-4xl text-green-500 mb-2">✓</div>
+        <p class="text-sm text-charcoal-600 font-medium">{lang === 'en' ? 'Order submitted!' : '订单已提交！'}</p>
+        <p class="text-xs text-charcoal-400 mt-1">{lang === 'en' ? 'We will contact you shortly.' : '我们会尽快与您联系。'}</p>
+      </div>
     </div>
+  </div>
+
+  <!-- Cart Widget -->
+  <div id="cart-widget" class="fixed bottom-24 right-6 z-50">
+    <button id="cart-toggle" class="relative w-14 h-14 bg-charcoal-800 text-white rounded-full shadow-lg flex items-center justify-center text-lg hover:bg-charcoal-700 transition-colors">
+      🛒 <span id="cart-badge" class="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] w-5 h-5 rounded-full flex items-center justify-center font-bold hidden">0</span>
+    </button>
   </div>
 </section>
 
-<style>
-  /* ── Fixed card dimensions ── */
-  .product-card {
-    width: 140px;
-    min-height: 250px;
-  }
-  @media (min-width: 768px) {
-    .product-card {
-      width: 160px;
-    }
-  }
+<script define:vars={{productsJSON: JSON.stringify(products), siteWhatsapp: "8613602812927", sizeGuideJSON: JSON.stringify(sizeGuide)}}>
+  const PRODUCTS = JSON.parse(productsJSON);
+  const WHATSAPP = siteWhatsapp;
+  const SIZEGUIDE = JSON.parse(sizeGuideJSON);
 
-  /* ── Card states by offset from center ── */
-  .product-card[data-offset="-3"],
-  .product-card[data-offset="3"] {
-    opacity: 0;
-    transform: scale(0.72);
-    pointer-events: none;
-  }
-  .product-card[data-offset="-2"],
-  .product-card[data-offset="2"] {
-    opacity: 0.3;
-    transform: scale(0.80);
-    filter: blur(1px);
-    pointer-events: none;
-  }
-  .product-card[data-offset="-1"],
-  .product-card[data-offset="1"] {
-    opacity: 0.6;
-    transform: scale(0.88);
-    cursor: pointer;
-  }
-  .product-card[data-offset="0"] {
-    opacity: 1;
-    transform: scale(1);
-    box-shadow: 0 16px 48px rgba(120,100,80,0.12), 0 6px 16px rgba(120,100,80,0.06);
-    z-index: 5;
-  }
+  let activeCat = 'all';
+  let cartItems = [];
+  let currentProd = null;
+  let selectedColor = '';
+  let selectedSize = '';
+  let qty = 1;
 
-  #product-track {
-    gap: 8px;
-  }
-  @media (min-width: 768px) {
-    #product-track { gap: 12px; }
-  }
+  document.addEventListener('DOMContentLoaded', () => {
+    try { const s = localStorage.getItem('ps-cart'); if (s) cartItems = JSON.parse(s); updateCartUI(); } catch(e) {}
 
-  .prod-dot.active {
-    background-color: #5c4d3c;
-    transform: scale(1.25);
-  }
-</style>
-
-<script>
-  function initProductCarousel() {
-    const track = document.getElementById('product-track');
-    const cards = document.querySelectorAll<HTMLElement>('.product-card');
-    const dots = document.querySelectorAll<HTMLElement>('.prod-dot');
-    const prevBtn = document.getElementById('prod-prev');
-    const nextBtn = document.getElementById('prod-next');
-
-    if (!track || cards.length === 0) return;
-
-    let current = 0;
-    const total = cards.length;
-
-    function getCardWidth(): number {
-      return window.innerWidth >= 768 ? 160 : 140;
-    }
-    function getGap(): number {
-      return window.innerWidth >= 768 ? 12 : 8;
-    }
-
-    function render() {
-      const cw = getCardWidth();
-      const gap = getGap();
-
-      cards.forEach((card, i) => {
-        const offset = i - current;
-        card.setAttribute('data-offset', String(offset));
-        if (Math.abs(offset) <= 2) {
-          card.style.display = '';
-        } else {
-          card.style.display = 'none';
-        }
-      });
-
-      const containerCenter = track.parentElement!.clientWidth / 2;
-      const cardCenterOffset = current * (cw + gap);
-      const translateX = containerCenter - (cw / 2) - cardCenterOffset;
-      track.style.transform = `translateX(${translateX}px)`;
-
-      dots.forEach((dot, i) => {
-        dot.classList.toggle('active', i === current);
-      });
-    }
-
-    // ── Navigation with auto-scroll ──
-    let animFrame: number | null = null;
-    let scrollPos = 0;
-    let targetCard = 0;
-    let paused = false;
-    let lastTime = 0;
-    const SCROLL_SPEED = 20;
-
-    function getCardUnit(): number { return getCardWidth() + getGap(); }
-
-    function animate(timestamp: number) {
-      if (paused) { animFrame = null; return; }
-      if (!lastTime) lastTime = timestamp;
-      const dt = Math.min(timestamp - lastTime, 100);
-      lastTime = timestamp;
-      scrollPos += SCROLL_SPEED * (dt / 1000);
-      const unit = getCardUnit();
-      const totalWidth = total * unit;
-      while (scrollPos >= totalWidth) scrollPos -= totalWidth;
-      const floatIdx = (scrollPos / unit) % total;
-      targetCard = Math.round(floatIdx) % total;
-      renderSmooth(floatIdx);
-      animFrame = requestAnimationFrame(animate);
-    }
-
-    function renderSmooth(floatIdx: number) {
-      const cw = getCardWidth();
-      const gap = getGap();
-      const unit = cw + gap;
-      cards.forEach((card, i) => {
-        let dist = i - floatIdx;
-        if (dist < -total / 2) dist += total;
-        if (dist > total / 2) dist -= total;
-        const rounded = Math.round(dist);
-        card.setAttribute('data-offset', String(Math.max(-3, Math.min(3, rounded))));
-        if (Math.abs(rounded) <= 2) card.style.display = '';
-        else card.style.display = 'none';
-      });
-      const containerCenter = track.parentElement!.clientWidth / 2;
-      const offsetPx = floatIdx * unit;
-      const translateX = containerCenter - (cw / 2) - offsetPx;
-      track.style.transform = `translateX(${translateX}px)`;
-      dots.forEach((dot, i) => { dot.classList.toggle('active', i === targetCard); });
-    }
-
-    function pauseAuto() { paused = true; if (animFrame) { cancelAnimationFrame(animFrame); animFrame = null; } }
-    function resumeAuto() {
-      if (paused) { paused = false; lastTime = 0; animFrame = requestAnimationFrame(animate); }
-      else if (!animFrame) { lastTime = 0; animFrame = requestAnimationFrame(animate); }
-    }
-
-    function jumpTo(idx: number) {
-      const unit = getCardUnit();
-      const totalWidth = total * unit;
-      scrollPos = idx * unit;
-      while (scrollPos < 0) scrollPos += totalWidth;
-      while (scrollPos >= totalWidth) scrollPos -= totalWidth;
-      targetCard = idx;
-      renderSmooth(idx);
-    }
-
-    function go(dir: 1 | -1) {
-      pauseAuto();
-      jumpTo((targetCard + dir + total) % total);
-      setTimeout(resumeAuto, 1500);
-    }
-
-    prevBtn?.addEventListener('click', () => go(-1));
-    nextBtn?.addEventListener('click', () => go(1));
-
-    dots.forEach(dot => {
-      dot.addEventListener('click', () => {
-        const idx = parseInt(dot.getAttribute('data-pdot') || '0');
-        pauseAuto();
-        jumpTo(idx);
-        setTimeout(resumeAuto, 1500);
-      });
-    });
-
-    cards.forEach(card => {
-      card.addEventListener('click', (e) => {
-        if ((e.target as HTMLElement).closest('button')) return;
-        const idx = parseInt(card.getAttribute('data-index') || '0');
-        if (idx !== targetCard) {
-          pauseAuto();
-          jumpTo(idx);
-          setTimeout(resumeAuto, 1500);
-        }
-      });
-    });
-
-    track.addEventListener('mouseenter', pauseAuto);
-    track.addEventListener('mouseleave', resumeAuto);
-
-    let touchStartX = 0;
-    track.addEventListener('touchstart', (e: TouchEvent) => {
-      touchStartX = e.changedTouches[0].screenX;
-      pauseAuto();
-    }, { passive: true });
-    track.addEventListener('touchend', (e: TouchEvent) => {
-      const diff = touchStartX - e.changedTouches[0].screenX;
-      if (Math.abs(diff) > 40) go(diff > 0 ? 1 : -1);
-      else resumeAuto();
-    }, { passive: true });
-
-    window.addEventListener('resize', () => renderSmooth(targetCard));
-
-    document.addEventListener('keydown', (e) => {
-      const section = document.getElementById('products');
-      if (!section) return;
-      const rect = section.getBoundingClientRect();
-      if (rect.top >= window.innerHeight || rect.bottom <= 0) return;
-      if (e.key === 'ArrowLeft') go(-1);
-      if (e.key === 'ArrowRight') go(1);
-    });
-
-    scrollPos = 0;
-    targetCard = 0;
-    renderSmooth(0);
-    resumeAuto();
-
-    // ── Cart logic (unchanged from original) ──
-    const cartItems: any[] = [];
-    const cartBadge = document.getElementById('cart-badge')!;
-    const cartDrawer = document.getElementById('cart-drawer')!;
-    const cartOverlay = document.getElementById('cart-overlay')!;
-    const cartClose = document.getElementById('cart-close')!;
-    const cartToggle = document.getElementById('cart-toggle')!;
-    const cartContainer = document.getElementById('cart-items')!;
-    const cartTotalEl = document.getElementById('cart-total')!;
-    const checkoutBtn = document.getElementById('checkout-wa')!;
-    const sizeGuideModal = document.getElementById('size-guide-modal')!;
-    const sizeGuideTrigger = document.getElementById('size-guide-trigger')!;
-    const sizeGuideClose = document.getElementById('size-guide-close')!;
-
-    const whatsapp = '{site.whatsapp}';
-
-    function updateCartUI() {
-      const count = cartItems.reduce((s: number, i: any) => s + i.quantity, 0);
-      const total = cartItems.reduce((s: number, i: any) => s + i.price * i.quantity, 0);
-
-      if (count > 0) {
-        cartBadge.textContent = String(count);
-        cartBadge.classList.remove('hidden');
-      } else {
-        cartBadge.classList.add('hidden');
-      }
-
-      cartTotalEl.textContent = `$${total}`;
-
-      if (cartItems.length === 0) {
-        cartContainer.innerHTML = `<p class="text-charcoal-400 text-center py-12">${t.empty}</p>`;
-      } else {
-        cartContainer.innerHTML = cartItems.map((item: any, idx: number) => `
-          <div class="flex gap-3 items-center bg-beige-50 rounded-xl p-3">
-            <div class="w-16 h-16 bg-beige-200 rounded-lg flex items-center justify-center text-2xl flex-shrink-0">
-              ${item.name.includes('Hoodie') || item.name.includes('卫衣') ? '\uD83E\uDDE5' : item.name.includes('Cap') || item.name.includes('帽') ? '\uD83E\uDDE2' : '\uD83D\uDC55'}
-            </div>
-            <div class="flex-1 min-w-0">
-              <p class="text-sm font-medium text-charcoal-800 truncate">${item.name}</p>
-              <p class="text-xs text-charcoal-400">Size: ${item.size} &times; ${item.quantity}</p>
-              <p class="text-sm font-semibold text-charcoal-700">$${item.price * item.quantity}</p>
-            </div>
-            <button data-remove="${idx}" class="text-charcoal-400 hover:text-red-500 text-lg">&times;</button>
-          </div>
-        `).join('');
-      }
-
-      // Bind remove buttons
-      document.querySelectorAll('[data-remove]').forEach(btn => {
-        btn.addEventListener('click', () => {
-          const idx = parseInt((btn as HTMLElement).getAttribute('data-remove')!);
-          cartItems.splice(idx, 1);
-          updateCartUI();
-          saveCart();
-        });
-      });
-    }
-
-    function addToCart(name: string, price: number, size: string, image: string) {
-      if (!size) {
-        alert('{lang === "en" ? "Please select a size first" : "请先选择尺码"}');
-        return;
-      }
-      const existing = cartItems.find((i: any) => i.name === name && i.size === size);
-      if (existing) {
-        existing.quantity++;
-      } else {
-        cartItems.push({ name, price, size, image, quantity: 1 });
-      }
-      updateCartUI();
-      saveCart();
-      cartToggle.classList.add('scale-110');
-      setTimeout(() => cartToggle.classList.remove('scale-110'), 200);
-    }
-
-    function saveCart() {
-      localStorage.setItem('pastor-site-cart', JSON.stringify(cartItems));
-    }
-
-    function checkout() {
-      if (cartItems.length === 0) return;
-      const lines = cartItems.map((i: any) => `\u2022 ${i.name} (${i.size}) \u00d7${i.quantity} \u2014 $${i.price * i.quantity}`);
-      const total = cartItems.reduce((s: number, i: any) => s + i.price * i.quantity, 0);
-      const text = `Hi! I'd like to order:%0A%0A${lines.join('%0A')}%0A%0ATotal: $${total}%0A%0A`;
-      window.open(`https://wa.me/${whatsapp}?text=${text}`, '_blank');
-    }
-
-    // Size selection
-    document.querySelectorAll('.size-btn').forEach(btn => {
+    // Category filter
+    document.querySelectorAll('.cat-btn, .cat-btn-mobile').forEach(btn => {
       btn.addEventListener('click', () => {
-        const el = btn as HTMLElement;
-        const productId = el.dataset.product!;
-        document.querySelectorAll(`.size-btn[data-product="${productId}"]`).forEach(b => {
-          b.classList.remove('border-charcoal-600', 'bg-charcoal-100');
-          b.classList.add('border-charcoal-300');
+        activeCat = btn.dataset.cat;
+        document.querySelectorAll('.cat-btn, .cat-btn-mobile').forEach(b => {
+          b.classList.toggle('bg-sage-100', b.dataset.cat === activeCat);
+          b.classList.toggle('text-sage-800', b.dataset.cat === activeCat);
+          b.classList.toggle('bg-beige-100', b.dataset.cat !== activeCat);
+          b.classList.toggle('text-charcoal-500', b.dataset.cat !== activeCat);
         });
-        el.classList.add('border-charcoal-600', 'bg-charcoal-100');
-        el.classList.remove('border-charcoal-300');
+        document.querySelectorAll('.product-card-item').forEach(card => {
+          card.style.display = (activeCat === 'all' || card.dataset.category === activeCat) ? '' : 'none';
+        });
       });
     });
+
+    // Detail modal
+    document.getElementById('detail-close').addEventListener('click', closeDetail);
+    document.getElementById('detail-modal').addEventListener('click', e => { if (e.target === document.getElementById('detail-modal')) closeDetail(); });
+
+    // Qty
+    document.getElementById('qty-plus').addEventListener('click', () => { qty++; document.getElementById('qty-val').textContent = qty; });
+    document.getElementById('qty-minus').addEventListener('click', () => { qty = Math.max(1, qty-1); document.getElementById('qty-val').textContent = qty; });
+
+    // Detail tabs
+    document.querySelectorAll('.detail-tab').forEach(tab => {
+      tab.addEventListener('click', () => {
+        document.querySelectorAll('.detail-tab').forEach(t => { t.classList.remove('border-charcoal-800','text-charcoal-800'); t.classList.add('border-transparent','text-charcoal-400'); });
+        tab.classList.add('border-charcoal-800','text-charcoal-800'); tab.classList.remove('border-transparent','text-charcoal-400');
+        document.getElementById('tab-details').classList.toggle('hidden', tab.dataset.tab !== 'details');
+        document.getElementById('tab-care').classList.toggle('hidden', tab.dataset.tab !== 'care');
+      });
+    });
+
+    // Buy now
+    document.getElementById('btn-buy-now').addEventListener('click', openOrderForm);
 
     // Add to cart
-    document.querySelectorAll('.add-to-cart').forEach(btn => {
-      btn.addEventListener('click', () => {
-        const el = btn as HTMLElement;
-        const productId = el.dataset.product!;
-        const sizeBtn = document.querySelector(`.size-btn[data-product="${productId}"].border-charcoal-600`);
-        const size = sizeBtn?.getAttribute('data-size') || '';
-        addToCart(el.dataset.name!, Number(el.dataset.price!), size, el.dataset.image!);
+    document.getElementById('btn-add-cart').addEventListener('click', () => {
+      if (!currentProd) return;
+      if (!selectedSize) { alert('Please select a size'); return; }
+      const existing = cartItems.find(i => i.id === currentProd.id && i.size === selectedSize && i.color === selectedColor);
+      if (existing) existing.quantity += qty;
+      else cartItems.push({ id: currentProd.id, name: currentProd.name, price: currentProd.price, size: selectedSize, color: selectedColor, quantity: qty });
+      saveCart(); updateCartUI();
+      document.getElementById('cart-toggle').classList.add('scale-110');
+      setTimeout(() => document.getElementById('cart-toggle').classList.remove('scale-110'), 200);
+    });
+
+    // Cart toggle
+    document.getElementById('cart-toggle').addEventListener('click', checkoutCart);
+
+    // Order modal
+    document.getElementById('order-close').addEventListener('click', () => document.getElementById('order-modal').classList.add('hidden'));
+    document.getElementById('order-modal').addEventListener('click', e => { if (e.target === document.getElementById('order-modal')) document.getElementById('order-modal').classList.add('hidden'); });
+    document.getElementById('btn-submit-order').addEventListener('click', submitOrder);
+  });
+
+  function openDetail(id) {
+    const prod = PRODUCTS.find(p => p.id === id);
+    if (!prod) return;
+    currentProd = prod;
+    selectedColor = prod.colors[0] || '';
+    selectedSize = '';
+    qty = 1;
+    document.getElementById('qty-val').textContent = '1';
+    document.getElementById('detail-name').textContent = prod.name;
+    document.getElementById('detail-price').textContent = '$' + prod.price + ' USD';
+    document.getElementById('detail-weight').textContent = (prod.material?.zh || prod.material?.en || '') + ' | ' + prod.weight;
+    document.getElementById('detail-stock').textContent = prod.stock > 0 ? prod.stock + ' in stock' : 'Out of Stock';
+
+    // Gallery
+    const main = document.getElementById('detail-gallery-main');
+    const thumbs = document.getElementById('detail-thumbs');
+    const images = prod.images || [];
+    if (images.length) {
+      main.innerHTML = '<img src="' + images[0] + '" alt="" class="w-full h-full object-contain rounded-lg" />';
+      thumbs.innerHTML = images.map((img, i) => '<div class="w-14 h-14 rounded-lg overflow-hidden flex-shrink-0 cursor-pointer border-2 ' + (i===0?'border-charcoal-600':'border-transparent') + '" onclick="document.getElementById(\'detail-gallery-main\').innerHTML=\'<img src=\\\''+img+'\\\' alt=\\\'\\\' class=\\\'w-full h-full object-contain rounded-lg\\\' />\'; document.querySelectorAll(\'#detail-thumbs > div\').forEach(d=>d.classList.remove(\'border-charcoal-600\')); this.classList.add(\'border-charcoal-600\')"><img src="'+img+'" alt="" class="w-full h-full object-cover" /></div>').join('');
+    } else {
+      main.innerHTML = '<span class="text-5xl">👕</span>';
+      thumbs.innerHTML = '';
+    }
+
+    // Colors
+    const colorMap = { '白色': '#f0f0f0', '黑色': '#222', '灰色': '#999', '深蓝': '#1e3a5f', '米白': '#f5f0e8' };
+    document.getElementById('detail-colors').innerHTML = prod.colors.map(c => '<div class="co-opt w-8 h-8 rounded-full border-2 cursor-pointer ' + (c===selectedColor?'border-charcoal-800':'border-charcoal-300') + '" style="background:' + (colorMap[c]||c) + '" title="'+c+'" data-color="'+c+'"></div>').join('');
+    document.querySelectorAll('.co-opt').forEach(el => {
+      el.addEventListener('click', () => {
+        selectedColor = el.dataset.color;
+        document.querySelectorAll('.co-opt').forEach(e => e.classList.toggle('border-charcoal-800', e.dataset.color === selectedColor));
       });
     });
 
-    // Cart UI
-    cartToggle.addEventListener('click', () => cartDrawer.classList.remove('hidden'));
-    cartClose.addEventListener('click', () => cartDrawer.classList.add('hidden'));
-    cartOverlay.addEventListener('click', () => cartDrawer.classList.add('hidden'));
-    checkoutBtn.addEventListener('click', checkout);
-
-    // Size guide modal
-    sizeGuideTrigger.addEventListener('click', () => sizeGuideModal.classList.remove('hidden'));
-    sizeGuideClose.addEventListener('click', () => sizeGuideModal.classList.add('hidden'));
-    sizeGuideModal.addEventListener('click', (e) => {
-      if (e.target === sizeGuideModal) sizeGuideModal.classList.add('hidden');
+    // Sizes
+    document.getElementById('detail-sizes').innerHTML = prod.sizes.map(s => '<div class="sz-opt px-3 py-1.5 border rounded-lg text-xs cursor-pointer font-medium border-charcoal-300 text-charcoal-600 hover:border-charcoal-500" data-size="'+s+'">'+s+'</div>').join('');
+    document.querySelectorAll('.sz-opt').forEach(el => {
+      el.addEventListener('click', () => {
+        selectedSize = el.dataset.size;
+        document.querySelectorAll('.sz-opt').forEach(e => { e.classList.remove('bg-charcoal-800','text-white','border-charcoal-800'); e.classList.add('border-charcoal-300','text-charcoal-600'); });
+        el.classList.add('bg-charcoal-800','text-white','border-charcoal-800'); el.classList.remove('border-charcoal-300','text-charcoal-600');
+      });
     });
 
-    // Load saved cart
-    try {
-      const saved = localStorage.getItem('pastor-site-cart');
-      if (saved) {
-        const parsed = JSON.parse(saved);
-        cartItems.push(...parsed);
-      }
-    } catch(e) {}
-
-    updateCartUI();
+    document.getElementById('tab-details').textContent = prod.details?.zh || prod.details?.en || '';
+    document.getElementById('detail-modal').classList.remove('hidden');
   }
 
-  initProductCarousel();
-  document.addEventListener('astro:page-load', initProductCarousel);
+  function closeDetail() { document.getElementById('detail-modal').classList.add('hidden'); }
+
+  function openOrderForm() {
+    if (!currentProd) return;
+    const p = currentProd;
+    document.getElementById('order-summary').innerHTML = '<strong>'+p.name+'</strong><br>Color: '+selectedColor+' | Size: '+selectedSize+' | Qty: '+qty+'<br><strong class="text-red-500">$'+(p.price*qty).toFixed(2)+'</strong>';
+    document.getElementById('order-done').classList.add('hidden');
+    document.getElementById('order-fields').style.display = '';
+    document.getElementById('order-modal').classList.remove('hidden');
+  }
+
+  function submitOrder() {
+    const name = document.getElementById('cust-name').value.trim();
+    if (!name) return alert('Please enter your name');
+    const lines = ['*'+currentProd.name+'*', 'Color: '+selectedColor+' | Size: '+selectedSize+' | Qty: '+qty, 'Total: $'+(currentProd.price*qty).toFixed(2), 'Name: '+name, 'Email: '+document.getElementById('cust-email').value.trim(), 'Phone: '+document.getElementById('cust-phone').value.trim(), 'Note: '+document.getElementById('cust-note').value.trim()];
+    window.open('https://wa.me/'+WHATSAPP+'?text='+encodeURIComponent(lines.join('\n')), '_blank');
+    document.getElementById('order-fields').style.display = 'none';
+    document.getElementById('order-done').classList.remove('hidden');
+  }
+
+  function saveCart() { localStorage.setItem('ps-cart', JSON.stringify(cartItems)); }
+  function updateCartUI() {
+    const count = cartItems.reduce((s, i) => s + i.quantity, 0);
+    const badge = document.getElementById('cart-badge');
+    if (count > 0) { badge.textContent = count; badge.classList.remove('hidden'); }
+    else badge.classList.add('hidden');
+  }
+  function checkoutCart() {
+    if (!cartItems.length) return alert('Cart is empty');
+    const lines = cartItems.map(i => '• ' + i.name + ' (' + i.color + ' ' + i.size + ') ×' + i.quantity + ' — $' + i.price * i.quantity);
+    lines.push('Total: $' + cartItems.reduce((s,i) => s + i.price * i.quantity, 0));
+    window.open('https://wa.me/'+WHATSAPP+'?text='+encodeURIComponent(lines.join('\n')), '_blank');
+  }
 </script>

@@ -1,0 +1,21 @@
+---
+import BaseLayout from '../../../layouts/BaseLayout.astro';
+import testimonies from '../../../content/testimonies.json';
+---
+
+<BaseLayout lang="en" title="Testimonies — Livingstone">
+  <section class="py-24 lg:py-32 px-6 bg-beige-50 min-h-screen">
+    <div class="max-w-2xl mx-auto">
+      <h1 class="text-3xl md:text-4xl font-serif font-bold text-charcoal-900 text-center mb-16">Testimonies</h1>
+
+      <div class="space-y-1">
+        {testimonies.map((t) => (
+          <a href={`/en/testimonies/${t.id}/`} class="block py-4 border-b border-beige-200 hover:bg-beige-50/50 transition-colors">
+            <p class="font-serif font-bold text-charcoal-800 text-lg text-left">{t.title.en}</p>
+            <p class="text-charcoal-400 text-sm mt-0.5">{t.date} · {t.author.en}</p>
+          </a>
+        ))}
+      </div>
+    </div>
+  </section>
+</BaseLayout>
