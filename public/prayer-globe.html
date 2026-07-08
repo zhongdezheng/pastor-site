@@ -4,126 +4,157 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <style>
-  * { margin: 0; padding: 0; box-sizing: border-box; }
-  body { background: transparent; overflow: hidden; width: 100vw; height: 100vh; display: flex; align-items: center; justify-content: center; }
-  canvas { display: block; }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { background:transparent; overflow:hidden; width:100vw; height:100vh; display:flex; align-items:center; justify-content:center; }
+  canvas { display:block; }
 </style>
-</head>
-<body>
+</head><body><canvas id="g"></canvas>
 <script>
-// Country data
-var countryData = null;
-try { countryData = JSON.parse(document.getElementById('data')?.textContent || '{}'); } catch(e) {}
+(function(){
+var c=document.getElementById('g'),ctx=c.getContext('2d');
+var W=440,H=440;
+c.width=W;c.height=H;
 
-// Load Three.js
-var script = document.createElement('script');
-script.src = 'https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js';
-script.onload = initGlobe;
-document.head.appendChild(script);
+// === TEXTURE: Draw earth map onto offscreen canvas ===
+var tex=document.createElement('canvas');
+tex.width=512;tex.height=256;
+var tx=tex.getContext('2d');
 
-function initGlobe() {
-  var body = document.body;
-  var w = body.clientWidth || 440;
-  var h = body.clientHeight || 440;
+// Ocean
+tx.fillStyle='#1a3a5c';tx.fillRect(0,0,512,256);
 
-  var scene = new THREE.Scene();
-  var renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
-  renderer.setSize(w, h);
-  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-  body.appendChild(renderer.domElement);
-
-  var camera = new THREE.PerspectiveCamera(45, w / Math.max(h, 1), 0.1, 100);
-  camera.position.z = 6;
-
-  var radius = 1.8;
-  var globe = new THREE.Group();
-  scene.add(globe);
-
-  // Solid sphere
-  var geo = new THREE.SphereGeometry(radius, 64, 64);
-  var mat = new THREE.MeshPhongMaterial({ color: 0x8BA899, specular: 0x222222, shininess: 10, transparent: true, opacity: 0.15 });
-  globe.add(new THREE.Mesh(geo, mat));
-
-  // Wireframe
-  var wGeo = new THREE.SphereGeometry(radius * 1.002, 36, 36);
-  var wMat = new THREE.MeshBasicMaterial({ color: 0x6E8174, wireframe: true, transparent: true, opacity: 0.18 });
-  globe.add(new THREE.Mesh(wGeo, wMat));
-
-  // Orbit ring
-  var rGeo = new THREE.TorusGeometry(radius * 1.25, 0.015, 16, 100);
-  var rMat = new THREE.MeshBasicMaterial({ color: 0xB5A890, transparent: true, opacity: 0.3 });
-  var ring = new THREE.Mesh(rGeo, rMat);
-  ring.rotation.x = Math.PI / 2.5;
-  globe.add(ring);
-
-  // Lat/lon grid lines
-  for (var lat = -60; lat <= 60; lat += 30) {
-    var r = radius * Math.cos(lat * Math.PI / 180);
-    var y = radius * Math.sin(lat * Math.PI / 180);
-    var cGeo = new THREE.TorusGeometry(r, 0.012, 16, 64);
-    var cMat = new THREE.MeshBasicMaterial({ color: 0xB5A890, transparent: true, opacity: 0.2 });
-    var circle = new THREE.Mesh(cGeo, cMat);
-    circle.position.y = y;
-    globe.add(circle);
+// Simplified continent outlines as pixel blobs
+function continent(cx,cy,rx,ry,color){
+  tx.fillStyle=color;
+  tx.beginPath();
+  for(var a=0;a<Math.PI*2;a+=0.15){
+    var rr=Math.random()*0.3*(rx+ry)/2;
+    var x=cx+Math.cos(a)*(rx+rr),y=cy+Math.sin(a)*(ry+rr);
+    if(a===0)tx.moveTo(x,y);else tx.lineTo(x,y);
   }
-  for (var lng = 0; lng < 180; lng += 30) {
-    var lGeo = new THREE.TorusGeometry(radius, 0.012, 16, 64);
-    var lMat = new THREE.MeshBasicMaterial({ color: 0xB5A890, transparent: true, opacity: 0.2 });
-    var lRing = new THREE.Mesh(lGeo, lMat);
-    lRing.rotation.y = lng * Math.PI / 180;
-    globe.add(lRing);
-  }
-
-  // Ambient + directional light
-  scene.add(new THREE.AmbientLight(0xFDFBF7, 1.5));
-  var dl = new THREE.DirectionalLight(0xffffff, 1.2);
-  dl.position.set(5, 3, 5);
-  scene.add(dl);
-
-  // Animate
-  var prayerDots = [];
-  var dragging = false, px = 0, py = 0, rotX = 0.3, rotY = 0, tRx = rotX, tRy = rotY;
-
-  document.addEventListener('mousedown', function(e) { dragging = true; px = e.clientX; py = e.clientY; });
-  window.addEventListener('mouseup', function() { dragging = false; });
-  window.addEventListener('mousemove', function(e) {
-    if (!dragging) return;
-    tRy += (e.clientX - px) * 0.005; tRx += (e.clientY - py) * 0.005;
-    px = e.clientX; py = e.clientY;
-    tRx = Math.max(-1.5, Math.min(1.5, tRx));
-  });
-  document.addEventListener('touchstart', function(e) {
-    if (e.touches.length === 1) { dragging = true; px = e.touches[0].clientX; py = e.touches[0].clientY; }
-  }, { passive: true });
-  window.addEventListener('touchend', function() { dragging = false; });
-  window.addEventListener('touchmove', function(e) {
-    if (!dragging || e.touches.length !== 1) return;
-    tRy += (e.touches[0].clientX - px) * 0.005; tRx += (e.touches[0].clientY - py) * 0.005;
-    px = e.touches[0].clientX; py = e.touches[0].clientY;
-    tRx = Math.max(-1.5, Math.min(1.5, tRx));
-  }, { passive: true });
-
-  window.addEventListener('resize', function() {
-    var nw = body.clientWidth || 440, nh = body.clientHeight || 440;
-    renderer.setSize(nw, nh);
-    camera.aspect = nw / Math.max(nh, 1);
-    camera.updateProjectionMatrix();
-  });
-
-  function animate() {
-    requestAnimationFrame(animate);
-    if (!dragging) tRy += 0.003;
-    rotX += (tRx - rotX) * 0.08;
-    rotY += (tRy - rotY) * 0.08;
-    globe.rotation.x = rotX;
-    globe.rotation.y = rotY;
-    for (var i = 0; i < prayerDots.length; i++) {
-      prayerDots[i].scale.setScalar(1 + Math.sin(performance.now() * 0.005 + i) * 0.15);
-    }
-    renderer.render(scene, camera);
-  }
-  animate();
+  tx.fill();
 }
+
+// Draw continents
+var cc=['#2d5a27','#3a6b2e','#4a7c3a','#3e7030'];
+for(var k=0;k<8;k++){tx.fillStyle=cc[k%4];tx.beginPath();var cx2=Math.random()*512,cy2=Math.random()*256;for(var a=0;a<Math.PI*2;a+=0.2){var rx2=30+Math.random()*60,ry2=20+Math.random()*40;var x=cx2+Math.cos(a)*rx2,y=cy2+Math.sin(a)*ry2;if(a===0)tx.moveTo(x,y);else tx.lineTo(x,y);}tx.fill();}
+
+// Africa
+tx.fillStyle='#3e7030';tx.beginPath();
+tx.moveTo(250,60);tx.bezierCurveTo(230,80,240,140,250,170);
+tx.bezierCurveTo(260,200,270,180,275,150);
+tx.bezierCurveTo(280,120,270,80,255,60);tx.fill();
+tx.fillStyle='#2d5a27';tx.beginPath();
+tx.moveTo(255,70);tx.bezierCurveTo(245,90,250,130,258,160);
+tx.bezierCurveTo(265,180,272,170,268,145);
+tx.bezierCurveTo(274,115,265,85,260,70);tx.fill();
+
+// South America
+tx.fillStyle='#4a7c3a';tx.beginPath();
+tx.moveTo(130,140);tx.bezierCurveTo(120,130,100,160,110,200);
+tx.bezierCurveTo(115,230,125,240,125,200);
+tx.bezierCurveTo(128,180,135,160,130,140);tx.fill();
+
+// North America
+tx.fillStyle='#3e7030';tx.beginPath();
+tx.moveTo(30,50);tx.bezierCurveTo(10,60,5,90,20,110);
+tx.bezierCurveTo(40,140,80,150,90,130);
+tx.bezierCurveTo(100,100,80,60,60,40);
+tx.bezierCurveTo(50,30,40,40,30,50);tx.fill();
+
+// Eurasia
+tx.fillStyle='#3e7030';tx.beginPath();
+tx.moveTo(280,40);tx.bezierCurveTo(260,20,300,10,350,20);
+tx.bezierCurveTo(400,15,450,30,480,40);
+tx.bezierCurveTo(500,60,490,90,480,80);
+tx.bezierCurveTo(460,60,420,70,380,65);
+tx.bezierCurveTo(340,80,300,70,280,50);tx.fill();
+tx.fillStyle='#2d5a27';tx.beginPath();
+tx.moveTo(290,45);tx.bezierCurveTo(280,30,310,25,350,30);
+tx.bezierCurveTo(390,25,440,38,470,45);
+tx.bezierCurveTo(480,55,475,75,470,70);
+tx.bezierCurveTo(450,62,420,68,380,62);
+tx.bezierCurveTo(345,70,310,62,295,52);tx.fill();
+
+// Australia
+tx.fillStyle='#3e7030';tx.beginPath();
+tx.moveTo(360,160);tx.bezierCurveTo(350,150,340,160,345,180);
+tx.bezierCurveTo(350,195,365,195,370,180);
+tx.bezierCurveTo(375,170,368,160,360,160);tx.fill();
+
+// Ice caps
+tx.fillStyle='#e8e8e8';tx.fillRect(0,0,510,18);tx.fillRect(0,238,510,18);
+
+// === 3D RENDER ===
+var points=[];
+for(var y=0;y<256;y+=4){
+  for(var x=0;x<512;x+=4){
+    var p=tx.getImageData(x,y,1,1).data;
+    if(p[3]>0) points.push({x:x/512,y:y/256,c:p});
+  }
+}
+
+var R=170,rotY=0,rotX=0.3,vRy=0,vRx=0,drag=false,px=0,py=0;
+
+function project(lat,lng,ry,rx){
+  var cosL=Math.cos(lat),sinL=Math.sin(lat);
+  var cosG=Math.cos(lng+ry),sinG=Math.sin(lng+ry);
+  var xx=cosL*cosG,zz=cosL*sinG,yy=sinL;
+  var cx=Math.cos(rx),sx=Math.sin(rx);
+  var ny=yy*cx-zz*sx,nz=yy*sx+zz*cx;
+  return {x:xx,y:ny,z:nz};
+}
+
+function draw(){
+  ctx.clearRect(0,0,W,H);
+
+  // Sort points by depth
+  var front=[],back=[];
+  for(var i=0;i<points.length;i++){
+    var p=points[i];
+    var lat=(0.5-p.y/256)*Math.PI;
+    var lng=p.x/512*Math.PI*2;
+    var pp=project(lat,lng,rotY,rotX);
+    var sx=W/2+pp.x*R,sy=H/2+pp.z*R;
+    var dist=Math.sqrt(sx*sx+sy*sy);
+    if(dist>R+5)continue;
+    if(pp.z>0)front.push({sx:sx,sy:sy,c:p.c,g:pp.y});
+    else back.push({sx:sx,sy:sy,c:p.c,g:pp.y});
+  }
+
+  // Draw back first
+  for(var i=0;i<back.length;i++){
+    var b=back[i];
+    var shade=0.4+((R-b.g)/R)*0.3;
+    ctx.fillStyle='rgba('+b.c[0]+','+b.c[1]+','+b.c[2]+','+shade+')';
+    ctx.fillRect(b.sx-1.5,b.sy-1.5,3,3);
+  }
+  // Draw front
+  for(var i=0;i<front.length;i++){
+    var f=front[i];
+    var shade=0.6+((R+f.g)/R)*0.3;
+    ctx.fillStyle='rgba('+f.c[0]+','+f.c[1]+','+f.c[2]+','+shade+')';
+    ctx.fillRect(f.sx-1.5,f.sy-1.5,3,3);
+  }
+}
+
+function animate(){
+  if(!drag)rotY+=0.004;
+  rotY+=vRy*0.01;rotX+=vRx*0.01;
+  vRy*=0.95;vRx*=0.95;
+  draw();
+  requestAnimationFrame(animate);
+}
+
+c.addEventListener('mousedown',function(e){drag=true;px=e.clientX;py=e.clientY;vRy=0;vRx=0;});
+window.addEventListener('mouseup',function(){drag=false;});
+window.addEventListener('mousemove',function(e){if(!drag)return;vRy=(e.clientX-px)*0.15;vRx=(e.clientY-py)*0.15;px=e.clientX;py=e.clientY;});
+c.addEventListener('touchstart',function(e){if(e.touches.length===1){drag=true;px=e.touches[0].clientX;py=e.touches[0].clientY;vRy=0;vRx=0;}},{passive:true});
+window.addEventListener('touchend',function(){drag=false;});
+window.addEventListener('touchmove',function(e){if(!drag||e.touches.length!==1)return;vRy=(e.touches[0].clientX-px)*0.15;vRx=(e.touches[0].clientY-py)*0.15;px=e.touches[0].clientX;py=e.touches[0].clientY;},{passive:true});
+
+requestAnimationFrame(animate);
+})();
 </script>
 </body>
 </html>
