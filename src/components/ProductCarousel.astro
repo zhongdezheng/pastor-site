@@ -183,7 +183,7 @@ const jewelryProducts = products.filter(p => p.category !== 'apparel');
       var total = cards().length;
       var unit = getUnit();
       var totalW = total*unit;
-      while(scrollPos>=totalW) scrollPos-=totalW;
+      scrollPos=((scrollPos%totalW)+totalW)%totalW;
 
       var containerW = track.parentElement.clientWidth;
       var bestIdx = 0, bestDist = Infinity;
@@ -209,7 +209,7 @@ const jewelryProducts = products.filter(p => p.category !== 'apparel');
       activeIdx = (activeIdx+dir+cards().length)%cards().length;
       var total = cards().length, unit = getUnit(), totalW = total*unit;
       scrollPos = activeIdx*unit - (track.parentElement.clientWidth/2 - getCardW()/2);
-      while(scrollPos<0) scrollPos+=totalW; while(scrollPos>=totalW) scrollPos-=totalW;
+      scrollPos=((scrollPos%totalW)+totalW)%totalW;
       activateCard(activeIdx);
       renderScroll();
       setTimeout(resume,1800);
@@ -226,7 +226,7 @@ const jewelryProducts = products.filter(p => p.category !== 'apparel');
         var idx = parseInt(dot.getAttribute('data-pdot'))||0;
         var total=cards().length, unit=getUnit(), totalW=total*unit;
         scrollPos=idx*unit - (track.parentElement.clientWidth/2-getCardW()/2);
-        while(scrollPos<0) scrollPos+=totalW; while(scrollPos>=totalW) scrollPos-=totalW;
+        scrollPos=((scrollPos%totalW)+totalW)%totalW;
         activateCard(idx); renderScroll(); setTimeout(resume,1800);
       }
     };
@@ -239,7 +239,7 @@ const jewelryProducts = products.filter(p => p.category !== 'apparel');
         var idx = parseInt(card.getAttribute('data-index'))||0;
         var total=cards().length, unit=getUnit(), totalW=total*unit;
         scrollPos=idx*unit - (track.parentElement.clientWidth/2-getCardW()/2);
-        while(scrollPos<0) scrollPos+=totalW; while(scrollPos>=totalW) scrollPos-=totalW;
+        scrollPos=((scrollPos%totalW)+totalW)%totalW;
         activateCard(idx); renderScroll(); setTimeout(resume,1800);
       }
     });
@@ -304,8 +304,9 @@ const jewelryProducts = products.filter(p => p.category !== 'apparel');
     });
 
     track.style.position='relative';
-    // Start cards from the right side so they scroll leftward into view
-    scrollPos = -(track.parentElement.clientWidth + getCardW());
+    // Start with cards at the far right, scrolling leftward into view
+    var totalW = FILTERED.length * getUnit();
+    scrollPos = Math.max(0, totalW - track.parentElement.clientWidth - getCardW());
     activeIdx=0; renderScroll(); resume();
   });
 </script>
