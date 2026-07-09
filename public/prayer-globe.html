@@ -4,157 +4,81 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <style>
-  * { margin:0; padding:0; box-sizing:border-box; }
-  body { background:transparent; overflow:hidden; width:100vw; height:100vh; display:flex; align-items:center; justify-content:center; }
-  canvas { display:block; }
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{background:#0a0f1a;overflow:hidden;display:flex;align-items:center;justify-content:center;width:100vw;height:100vh}
+  canvas{display:block}
 </style>
-</head><body><canvas id="g"></canvas>
-<script>
-(function(){
-var c=document.getElementById('g'),ctx=c.getContext('2d');
-var W=440,H=440;
-c.width=W;c.height=H;
+</head><body>
+<script type="importmap">
+{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js"}}
+</script>
+<script type="module">
+import * as THREE from 'three';
+const body=document.body,W=body.clientWidth||440,H=body.clientHeight||440;
 
-// === TEXTURE: Draw earth map onto offscreen canvas ===
-var tex=document.createElement('canvas');
-tex.width=512;tex.height=256;
-var tx=tex.getContext('2d');
+const scene=new THREE.Scene();
+scene.background=null;
+const renderer=new THREE.WebGLRenderer({antialias:true,alpha:true});
+renderer.setSize(W,H);renderer.setPixelRatio(Math.min(devicePixelRatio,2));
+body.appendChild(renderer.domElement);
 
-// Ocean
-tx.fillStyle='#1a3a5c';tx.fillRect(0,0,512,256);
+const camera=new THREE.PerspectiveCamera(45,W/Math.max(H,1),0.1,100);
+camera.position.z=5.5;
 
-// Simplified continent outlines as pixel blobs
-function continent(cx,cy,rx,ry,color){
-  tx.fillStyle=color;
-  tx.beginPath();
-  for(var a=0;a<Math.PI*2;a+=0.15){
-    var rr=Math.random()*0.3*(rx+ry)/2;
-    var x=cx+Math.cos(a)*(rx+rr),y=cy+Math.sin(a)*(ry+rr);
-    if(a===0)tx.moveTo(x,y);else tx.lineTo(x,y);
-  }
-  tx.fill();
-}
+const globe=new THREE.Group();
+scene.add(globe);
 
-// Draw continents
-var cc=['#2d5a27','#3a6b2e','#4a7c3a','#3e7030'];
-for(var k=0;k<8;k++){tx.fillStyle=cc[k%4];tx.beginPath();var cx2=Math.random()*512,cy2=Math.random()*256;for(var a=0;a<Math.PI*2;a+=0.2){var rx2=30+Math.random()*60,ry2=20+Math.random()*40;var x=cx2+Math.cos(a)*rx2,y=cy2+Math.sin(a)*ry2;if(a===0)tx.moveTo(x,y);else tx.lineTo(x,y);}tx.fill();}
+// Earth texture sphere
+const texLoader=new THREE.TextureLoader();
+const earthTex=texLoader.load('https://unpkg.com/three-globe/example/img/earth-blue-marble.jpg');
+const geo=new THREE.SphereGeometry(1.8,64,64);
+const mat=new THREE.MeshPhongMaterial({map:earthTex,specular:0x111111,shininess:5});
+globe.add(new THREE.Mesh(geo,mat));
 
-// Africa
-tx.fillStyle='#3e7030';tx.beginPath();
-tx.moveTo(250,60);tx.bezierCurveTo(230,80,240,140,250,170);
-tx.bezierCurveTo(260,200,270,180,275,150);
-tx.bezierCurveTo(280,120,270,80,255,60);tx.fill();
-tx.fillStyle='#2d5a27';tx.beginPath();
-tx.moveTo(255,70);tx.bezierCurveTo(245,90,250,130,258,160);
-tx.bezierCurveTo(265,180,272,170,268,145);
-tx.bezierCurveTo(274,115,265,85,260,70);tx.fill();
+// Atmosphere glow
+const atmGeo=new THREE.SphereGeometry(1.81,64,64);
+const atmMat=new THREE.MeshPhongMaterial({color:0x4488ff,specular:0x000000,shininess:0,transparent:true,opacity:0.08});
+globe.add(new THREE.Mesh(atmGeo,atmMat));
 
-// South America
-tx.fillStyle='#4a7c3a';tx.beginPath();
-tx.moveTo(130,140);tx.bezierCurveTo(120,130,100,160,110,200);
-tx.bezierCurveTo(115,230,125,240,125,200);
-tx.bezierCurveTo(128,180,135,160,130,140);tx.fill();
+// Lights
+scene.add(new THREE.AmbientLight(0x404060,1.8));
+const sun=new THREE.DirectionalLight(0xffffff,1.5);
+sun.position.set(5,2,5);
+scene.add(sun);
 
-// North America
-tx.fillStyle='#3e7030';tx.beginPath();
-tx.moveTo(30,50);tx.bezierCurveTo(10,60,5,90,20,110);
-tx.bezierCurveTo(40,140,80,150,90,130);
-tx.bezierCurveTo(100,100,80,60,60,40);
-tx.bezierCurveTo(50,30,40,40,30,50);tx.fill();
+let rotX=0.3,rotY=0,tRx=rotX,tRy=rotY,drag=false,px=0,py=0;
 
-// Eurasia
-tx.fillStyle='#3e7030';tx.beginPath();
-tx.moveTo(280,40);tx.bezierCurveTo(260,20,300,10,350,20);
-tx.bezierCurveTo(400,15,450,30,480,40);
-tx.bezierCurveTo(500,60,490,90,480,80);
-tx.bezierCurveTo(460,60,420,70,380,65);
-tx.bezierCurveTo(340,80,300,70,280,50);tx.fill();
-tx.fillStyle='#2d5a27';tx.beginPath();
-tx.moveTo(290,45);tx.bezierCurveTo(280,30,310,25,350,30);
-tx.bezierCurveTo(390,25,440,38,470,45);
-tx.bezierCurveTo(480,55,475,75,470,70);
-tx.bezierCurveTo(450,62,420,68,380,62);
-tx.bezierCurveTo(345,70,310,62,295,52);tx.fill();
+document.addEventListener('mousedown',e=>{drag=true;px=e.clientX;py=e.clientY});
+window.addEventListener('mouseup',()=>drag=false);
+window.addEventListener('mousemove',e=>{
+  if(!drag)return;tRy+=(e.clientX-px)*0.005;tRx+=(e.clientY-py)*0.005;
+  px=e.clientX;py=e.clientY;tRx=Math.max(-1.5,Math.min(1.5,tRx));
+});
+document.addEventListener('touchstart',e=>{
+  if(e.touches.length===1){drag=true;px=e.touches[0].clientX;py=e.touches[0].clientY;}
+},{passive:true});
+window.addEventListener('touchend',()=>drag=false);
+window.addEventListener('touchmove',e=>{
+  if(!drag||e.touches.length!==1)return;
+  tRy+=(e.touches[0].clientX-px)*0.005;tRx+=(e.touches[0].clientY-py)*0.005;
+  px=e.touches[0].clientX;py=e.touches[0].clientY;tRx=Math.max(-1.5,Math.min(1.5,tRx));
+},{passive:true});
 
-// Australia
-tx.fillStyle='#3e7030';tx.beginPath();
-tx.moveTo(360,160);tx.bezierCurveTo(350,150,340,160,345,180);
-tx.bezierCurveTo(350,195,365,195,370,180);
-tx.bezierCurveTo(375,170,368,160,360,160);tx.fill();
-
-// Ice caps
-tx.fillStyle='#e8e8e8';tx.fillRect(0,0,510,18);tx.fillRect(0,238,510,18);
-
-// === 3D RENDER ===
-var points=[];
-for(var y=0;y<256;y+=4){
-  for(var x=0;x<512;x+=4){
-    var p=tx.getImageData(x,y,1,1).data;
-    if(p[3]>0) points.push({x:x/512,y:y/256,c:p});
-  }
-}
-
-var R=170,rotY=0,rotX=0.3,vRy=0,vRx=0,drag=false,px=0,py=0;
-
-function project(lat,lng,ry,rx){
-  var cosL=Math.cos(lat),sinL=Math.sin(lat);
-  var cosG=Math.cos(lng+ry),sinG=Math.sin(lng+ry);
-  var xx=cosL*cosG,zz=cosL*sinG,yy=sinL;
-  var cx=Math.cos(rx),sx=Math.sin(rx);
-  var ny=yy*cx-zz*sx,nz=yy*sx+zz*cx;
-  return {x:xx,y:ny,z:nz};
-}
-
-function draw(){
-  ctx.clearRect(0,0,W,H);
-
-  // Sort points by depth
-  var front=[],back=[];
-  for(var i=0;i<points.length;i++){
-    var p=points[i];
-    var lat=(0.5-p.y/256)*Math.PI;
-    var lng=p.x/512*Math.PI*2;
-    var pp=project(lat,lng,rotY,rotX);
-    var sx=W/2+pp.x*R,sy=H/2+pp.z*R;
-    var dist=Math.sqrt(sx*sx+sy*sy);
-    if(dist>R+5)continue;
-    if(pp.z>0)front.push({sx:sx,sy:sy,c:p.c,g:pp.y});
-    else back.push({sx:sx,sy:sy,c:p.c,g:pp.y});
-  }
-
-  // Draw back first
-  for(var i=0;i<back.length;i++){
-    var b=back[i];
-    var shade=0.4+((R-b.g)/R)*0.3;
-    ctx.fillStyle='rgba('+b.c[0]+','+b.c[1]+','+b.c[2]+','+shade+')';
-    ctx.fillRect(b.sx-1.5,b.sy-1.5,3,3);
-  }
-  // Draw front
-  for(var i=0;i<front.length;i++){
-    var f=front[i];
-    var shade=0.6+((R+f.g)/R)*0.3;
-    ctx.fillStyle='rgba('+f.c[0]+','+f.c[1]+','+f.c[2]+','+shade+')';
-    ctx.fillRect(f.sx-1.5,f.sy-1.5,3,3);
-  }
-}
+window.addEventListener('resize',()=>{
+  const nw=body.clientWidth||440,nh=body.clientHeight||440;
+  renderer.setSize(nw,nh);
+  camera.aspect=nw/Math.max(nh,1);
+  camera.updateProjectionMatrix();
+});
 
 function animate(){
-  if(!drag)rotY+=0.004;
-  rotY+=vRy*0.01;rotX+=vRx*0.01;
-  vRy*=0.95;vRx*=0.95;
-  draw();
   requestAnimationFrame(animate);
+  if(!drag)tRy+=0.003;
+  rotX+=(tRx-rotX)*0.08;rotY+=(tRy-rotY)*0.08;
+  globe.rotation.x=rotX;globe.rotation.y=rotY;
+  renderer.render(scene,camera);
 }
-
-c.addEventListener('mousedown',function(e){drag=true;px=e.clientX;py=e.clientY;vRy=0;vRx=0;});
-window.addEventListener('mouseup',function(){drag=false;});
-window.addEventListener('mousemove',function(e){if(!drag)return;vRy=(e.clientX-px)*0.15;vRx=(e.clientY-py)*0.15;px=e.clientX;py=e.clientY;});
-c.addEventListener('touchstart',function(e){if(e.touches.length===1){drag=true;px=e.touches[0].clientX;py=e.touches[0].clientY;vRy=0;vRx=0;}},{passive:true});
-window.addEventListener('touchend',function(){drag=false;});
-window.addEventListener('touchmove',function(e){if(!drag||e.touches.length!==1)return;vRy=(e.touches[0].clientX-px)*0.15;vRx=(e.touches[0].clientY-py)*0.15;px=e.touches[0].clientX;py=e.touches[0].clientY;},{passive:true});
-
-requestAnimationFrame(animate);
-})();
+animate();
 </script>
 </body>
 </html>
