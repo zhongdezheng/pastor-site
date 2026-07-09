@@ -27,10 +27,10 @@ const jewelryProducts = products.filter(p => p.category !== 'apparel');
     </div>
 
     <!-- Product Carousel -->
-    <div id="product-carousel" class="product-carousel relative select-none" style="height: 340px;">
-      <div id="product-track" class="product-track flex items-start justify-center h-full transition-transform duration-600 ease-out">
+    <div id="product-carousel" class="product-carousel relative select-none overflow-hidden" style="height: 340px;">
+      <div id="product-track" class="product-track flex items-start h-full" style="position:relative;">
         {appProducts.map((p, i) => (
-          <div class="carousel-card shrink-0 bg-white rounded-2xl border border-beige-200 shadow-sm transition-all duration-500 ease-out flex flex-col" data-index={i} data-category={p.category} data-id={p.id}>
+          <div class="carousel-card shrink-0 bg-white rounded-2xl border border-beige-200 shadow-sm transition-all duration-300 ease-out flex flex-col" data-index={i} data-category={p.category} data-id={p.id}>
             <div class="aspect-square bg-beige-100 rounded-t-2xl flex items-center justify-center text-3xl flex-shrink-0 relative overflow-hidden">
               {p.images && p.images[0] ? <img src={p.images[0]} alt="" class="w-full h-full object-cover" loading="lazy" /> : <span>👕</span>}
               {p.stock === 0 && <div class="absolute inset-0 bg-black/20 flex items-center justify-center"><span class="bg-red-500 text-white text-xs px-2 py-0.5 rounded">{t.outOfStock}</span></div>}
@@ -78,18 +78,27 @@ const jewelryProducts = products.filter(p => p.category !== 'apparel');
 </section>
 
 <style>
-  .carousel-card { width: 160px; min-height: 300px; }
+  .carousel-card { width: 160px; min-height: 300px; cursor:pointer; }
   @media (min-width: 768px) { .carousel-card { width: 180px; } }
-  .carousel-card[data-offset="-3"], .carousel-card[data-offset="3"] { opacity:0; transform:scale(0.72); pointer-events:none; }
-  .carousel-card[data-offset="-2"], .carousel-card[data-offset="2"] { opacity:0.3; transform:scale(0.80); filter:blur(1px); pointer-events:none; }
-  .carousel-card[data-offset="-1"], .carousel-card[data-offset="1"] { opacity:0.6; transform:scale(0.88); cursor:pointer; }
-  .carousel-card[data-offset="0"] { opacity:1; transform:scale(1); box-shadow:0 16px 48px rgba(120,100,80,0.12),0 6px 16px rgba(120,100,80,0.06); z-index:5; min-height:340px; }
-  .carousel-card[data-offset="0"] .carousel-qty { display:flex!important; }
-  .carousel-card[data-offset="0"] .carousel-colors span { width:16px!important; height:16px!important; }
-  .carousel-card[data-offset="0"] .carousel-size-btn { padding: 0.15rem 0.5rem!important; font-size:10px!important; }
-  .carousel-card:hover[data-offset="-1"],.carousel-card:hover[data-offset="1"] { opacity:0.9; transform:scale(0.92); }
-  #product-track { gap: 10px; }
-  @media (min-width: 768px) { #product-track { gap: 14px; } }
+  .carousel-card.active-card {
+    transform: scale(1.12) perspective(800px) rotateY(0deg) !important;
+    box-shadow: 0 20px 60px rgba(120,100,80,0.15),0 8px 20px rgba(120,100,80,0.08) !important;
+    z-index: 5 !important;
+    min-height: 340px;
+    transition: transform 0.5s cubic-bezier(0.34,1.56,0.64,1), box-shadow 0.5s ease !important;
+  }
+  .carousel-card.active-card .carousel-qty { display:flex!important; }
+  .carousel-card.active-card .carousel-colors span { width:16px!important; height:16px!important; }
+  .carousel-card.active-card .carousel-size-btn { padding: 0.15rem 0.5rem!important; font-size:10px!important; }
+  .carousel-card.pop-in {
+    animation: pop3d 0.5s cubic-bezier(0.34,1.56,0.64,1);
+  }
+  @keyframes pop3d {
+    0% { transform:scale(0.9) perspective(800px) rotateY(15deg); }
+    50% { transform:scale(1.15) perspective(800px) rotateY(-5deg); }
+    100% { transform:scale(1.12) perspective(800px) rotateY(0deg); }
+  }
+  #product-track { transition: none !important; }
 </style>
 
 <script type="application/json" id="__carouselData" set:html={JSON.stringify(products.map(p=>({id:p.id,name:p.name[lang],price:p.price,colors:p.colors,sizes:p.sizes,category:p.category,stock:p.stock,image:p.images?p.images[0]:''})))}></script>
@@ -100,7 +109,6 @@ const jewelryProducts = products.filter(p => p.category !== 'apparel');
 
   function refilter() {
     FILTERED = ALLPRODS.filter(function(p){ return CURRCAT==='all'||p.category===CURRCAT; });
-    // Rebuild track
     var track = document.getElementById('product-track');
     track.innerHTML = FILTERED.map(function(p,i){
       var colorsHtml = p.colors.map(function(c){
@@ -108,7 +116,7 @@ const jewelryProducts = products.filter(p => p.category !== 'apparel');
         return '<span class="inline-block w-3 h-3 rounded-full border border-charcoal-300" style="background:'+bg+'" title="'+c+'"></span>';
       }).join('');
       var sizesHtml = p.sizes.map(function(s){ return '<button class="carousel-size-btn px-1.5 py-0 text-[9px] border border-charcoal-300 rounded hover:border-charcoal-600 transition-colors" data-product="'+p.id+'" data-size="'+s+'">'+s+'</button>'; }).join('');
-      return '<div class="carousel-card shrink-0 bg-white rounded-2xl border border-beige-200 shadow-sm transition-all duration-500 ease-out flex flex-col" data-index="'+i+'" data-category="'+p.category+'" data-id="'+p.id+'">'
+      return '<div class="carousel-card shrink-0 bg-white rounded-2xl border border-beige-200 shadow-sm transition-all duration-300 ease-out flex flex-col" data-index="'+i+'" data-category="'+p.category+'" data-id="'+p.id+'">'
         +'<div class="aspect-square bg-beige-100 rounded-t-2xl flex items-center justify-center text-3xl flex-shrink-0 relative overflow-hidden">'+(p.image?('<img src="'+p.image+'" alt="" class="w-full h-full object-cover" loading="lazy" />'):'<span>👕</span>')+(p.stock===0?'<div class="absolute inset-0 bg-black/20 flex items-center justify-center"><span class="bg-red-500 text-white text-xs px-2 py-0.5 rounded">售罄</span></div>':'')+'</div>'
         +'<div class="p-3 flex flex-col flex-1"><h3 class="font-serif font-bold text-xs text-charcoal-800 mb-0.5 leading-tight">'+p.name+'</h3><p class="text-charcoal-700 font-semibold text-sm mb-0.5">$'+p.price+'</p>'
         +'<div class="carousel-colors flex gap-0.5 mb-1">'+colorsHtml+'</div>'
@@ -116,44 +124,55 @@ const jewelryProducts = products.filter(p => p.category !== 'apparel');
         +'<div class="carousel-qty flex items-center gap-1 mb-2 hidden"><button class="carousel-qty-minus w-5 h-5 border border-charcoal-300 rounded text-[10px] flex items-center justify-center">−</button><span class="carousel-qty-val w-4 text-center text-xs font-bold">1</span><button class="carousel-qty-plus w-5 h-5 border border-charcoal-300 rounded text-[10px] flex items-center justify-center">+</button></div>'
         +'<div class="mt-auto flex items-center justify-between"><span class="text-[10px] font-medium '+(p.stock>0?'text-green-600':'text-red-400')+'">库存:'+p.stock+'</span><button class="carousel-add-cart px-2 py-1.5 bg-charcoal-800 text-white text-[10px] rounded-lg hover:bg-charcoal-700 transition-colors" data-product="'+p.id+'">加入购物车</button></div></div></div>';
     }).join('');
-    // Rebuild dots
-    var dots = document.querySelectorAll('.carousel-dot').length ? document.querySelector('.flex.justify-center.gap-2.mt-6') : document.querySelector('#product-carousel'); 
   }
 
   document.addEventListener('DOMContentLoaded', function(){
     var track = document.getElementById('product-track');
-    var cards = function(){ return document.querySelectorAll('.carousel-card'); };
-    var dotContainer = document.querySelector('#product-carousel').nextElementSibling;
     var prevBtn = document.getElementById('prod-prev');
     var nextBtn = document.getElementById('prod-next');
     if (!track) return;
-    var targetCard = 0;
-    var scrollPos = 0;
-    var paused = false;
-    var lastTime = 0;
-    var animFrame = null;
-    var SCROLL_SPEED = 20;
+
+    var scrollPos = 0, paused = false, lastTime = 0, animFrame = null;
+    var activeIdx = 0;
+    var SCROLL_SPEED = 35;
 
     function getCardW(){ return window.innerWidth>=768?180:160; }
     function getGap(){ return window.innerWidth>=768?14:10; }
     function getUnit(){ return getCardW()+getGap(); }
 
-    function renderSmooth(floatIdx){
-      var cw = getCardW(), gap = getGap(), unit = cw+gap;
-      var total = cards().length;
-      cards().forEach(function(card,i){
-        var dist = i - floatIdx;
-        if(dist<-total/2) dist+=total; if(dist>total/2) dist-=total;
-        var rounded = Math.round(dist);
-        card.setAttribute('data-offset', String(Math.max(-3,Math.min(3,rounded))));
-        card.style.display = Math.abs(rounded)<=2?'':'none';
+    function cards(){ return track.querySelectorAll('.carousel-card'); }
+
+    function activateCard(idx){
+      cards().forEach(function(c){ c.classList.remove('active-card','pop-in'); });
+      var active = cards()[idx];
+      if(active){ active.classList.add('active-card','pop-in'); activeIdx = idx; }
+      document.querySelectorAll('.carousel-dot').forEach(function(d,i){
+        d.classList.toggle('bg-charcoal-700', i===idx);
+        d.classList.toggle('scale-125', i===idx);
       });
+    }
+
+    function renderScroll(){
+      var total = cards().length;
+      if(!total) return;
+      var unit = getUnit();
       var containerW = track.parentElement.clientWidth;
-      var offsetPx = floatIdx * unit;
-      track.style.transform = 'translateX('+(containerW/2 - cw/2 - offsetPx)+'px)';
-      // Update dots
-      var dots = dotContainer.querySelectorAll('.carousel-dot');
-      dots.forEach(function(d,i){ d.classList.toggle('bg-charcoal-700', i===Math.round(floatIdx)%total); d.classList.toggle('scale-125', i===Math.round(floatIdx)%total); });
+      cards().forEach(function(card,i){
+        var cardLeft = i * unit - scrollPos;
+        while(cardLeft < -unit*1.5) cardLeft += total*unit;
+        while(cardLeft > containerW + unit*0.5) cardLeft -= total*unit;
+        card.style.position = 'absolute';
+        card.style.left = cardLeft + 'px';
+        card.style.top = '0';
+        var center = containerW/2;
+        var dist = Math.abs(cardLeft + getCardW()/2 - center);
+        var maxDist = containerW/2 + getCardW()/2;
+        var opacity = 1 - Math.min(0.6, dist/maxDist * 0.8);
+        card.style.opacity = opacity;
+        card.style.transform = 'scale(' + (0.85 + opacity*0.15) + ')';
+        card.style.filter = opacity<0.5 ? 'blur(1px)' : 'none';
+        card.style.pointerEvents = opacity>0.5 ? 'auto' : 'none';
+      });
     }
 
     function animate(ts){
@@ -161,51 +180,79 @@ const jewelryProducts = products.filter(p => p.category !== 'apparel');
       if(!lastTime) lastTime=ts;
       var dt = Math.min(ts-lastTime, 100); lastTime=ts;
       scrollPos += SCROLL_SPEED*(dt/1000);
-      var total = FILTERED.length;
+      var total = cards().length;
       var unit = getUnit();
       var totalW = total*unit;
       while(scrollPos>=totalW) scrollPos-=totalW;
-      var floatIdx = (scrollPos/unit)%total;
-      renderSmooth(floatIdx);
-      targetCard = Math.round(floatIdx)%total;
+
+      var containerW = track.parentElement.clientWidth;
+      var bestIdx = 0, bestDist = Infinity;
+      cards().forEach(function(card,i){
+        var cardLeft = i*unit - scrollPos;
+        while(cardLeft < -unit) cardLeft += totalW;
+        while(cardLeft > containerW+unit) cardLeft -= totalW;
+        var d = Math.abs(cardLeft + getCardW()/2 - containerW/2);
+        if(d < bestDist){ bestDist = d; bestIdx = i; }
+      });
+      if(bestIdx !== activeIdx && bestDist < getCardW()*0.4){
+        activateCard(bestIdx);
+      }
+      renderScroll();
       animFrame = requestAnimationFrame(animate);
     }
+
     function pause(){ paused=true; if(animFrame){ cancelAnimationFrame(animFrame); animFrame=null; } }
     function resume(){ if(paused){ paused=false; lastTime=0; animFrame=requestAnimationFrame(animate); } else if(!animFrame){ lastTime=0; animFrame=requestAnimationFrame(animate); } }
 
-    function jumpTo(idx){
-      var unit = getUnit(), total = FILTERED.length, totalW = total*unit;
-      scrollPos = idx*unit; while(scrollPos<0) scrollPos+=totalW; while(scrollPos>=totalW) scrollPos-=totalW;
-      renderSmooth(idx); targetCard = idx;
+    function go(dir){
+      pause();
+      activeIdx = (activeIdx+dir+cards().length)%cards().length;
+      var total = cards().length, unit = getUnit(), totalW = total*unit;
+      scrollPos = activeIdx*unit - (track.parentElement.clientWidth/2 - getCardW()/2);
+      while(scrollPos<0) scrollPos+=totalW; while(scrollPos>=totalW) scrollPos-=totalW;
+      activateCard(activeIdx);
+      renderScroll();
+      setTimeout(resume,1800);
     }
-    function go(dir){ pause(); jumpTo((targetCard+dir+FILTERED.length)%FILTERED.length); setTimeout(resume,1800); }
 
     prevBtn.onclick = function(){ go(-1); };
     nextBtn.onclick = function(){ go(1); };
 
+    var dotContainer = document.querySelector('#product-carousel').nextElementSibling;
     dotContainer.onclick = function(e){
       var dot = e.target.closest('.carousel-dot');
-      if(dot){ pause(); jumpTo(parseInt(dot.getAttribute('data-pdot'))||0); setTimeout(resume,1800); }
+      if(dot){
+        pause();
+        var idx = parseInt(dot.getAttribute('data-pdot'))||0;
+        var total=cards().length, unit=getUnit(), totalW=total*unit;
+        scrollPos=idx*unit - (track.parentElement.clientWidth/2-getCardW()/2);
+        while(scrollPos<0) scrollPos+=totalW; while(scrollPos>=totalW) scrollPos-=totalW;
+        activateCard(idx); renderScroll(); setTimeout(resume,1800);
+      }
     };
 
-    // Click non-center card to jump
     track.addEventListener('click', function(e){
       if(e.target.closest('button')) return;
       var card = e.target.closest('.carousel-card');
-      if(card && card.getAttribute('data-offset')!=='0'){ pause(); jumpTo(parseInt(card.getAttribute('data-index'))||0); setTimeout(resume,1800); }
+      if(card && !card.classList.contains('active-card')){
+        pause();
+        var idx = parseInt(card.getAttribute('data-index'))||0;
+        var total=cards().length, unit=getUnit(), totalW=total*unit;
+        scrollPos=idx*unit - (track.parentElement.clientWidth/2-getCardW()/2);
+        while(scrollPos<0) scrollPos+=totalW; while(scrollPos>=totalW) scrollPos-=totalW;
+        activateCard(idx); renderScroll(); setTimeout(resume,1800);
+      }
     });
 
     track.addEventListener('mouseenter', pause);
     track.addEventListener('mouseleave', resume);
 
-    // Touch
     var tX=0;
     track.addEventListener('touchstart', function(e){ tX=e.changedTouches[0].screenX; pause(); }, {passive:true});
     track.addEventListener('touchend', function(e){ var d=tX-e.changedTouches[0].screenX; if(Math.abs(d)>40) go(d>0?1:-1); else resume(); }, {passive:true});
 
-    window.addEventListener('resize', function(){ renderSmooth(targetCard); });
+    window.addEventListener('resize', function(){ renderScroll(); });
 
-    // Category filter buttons
     document.querySelectorAll('.carousel-cat-btn').forEach(function(btn){
       btn.onclick = function(){
         CURRCAT = btn.getAttribute('data-cat');
@@ -217,54 +264,46 @@ const jewelryProducts = products.filter(p => p.category !== 'apparel');
         });
         refilter();
         pause();
-        targetCard=0; scrollPos=0;
-        jumpTo(0);
-        // Rebind dots
+        scrollPos=0; activeIdx=0;
+        renderScroll(); activateCard(0);
         dotContainer.innerHTML = FILTERED.map(function(_,i){ return '<span class="carousel-dot w-2.5 h-2.5 rounded-full cursor-pointer transition-all duration-400 '+(i===0?'bg-charcoal-700 scale-125':'bg-charcoal-300 hover:bg-charcoal-400')+'" data-pdot="'+i+'"></span>'; }).join('');
         setTimeout(resume,200);
       };
     });
 
-    // Size selection
     document.addEventListener('click', function(e){
       var sz = e.target.closest('.carousel-size-btn');
       if(sz){
         var pid = sz.getAttribute('data-product');
-        var size = sz.getAttribute('data-size');
         document.querySelectorAll('.carousel-size-btn[data-product="'+pid+'"]').forEach(function(b){ b.classList.remove('border-charcoal-600','bg-charcoal-100'); b.classList.add('border-charcoal-300'); });
-        sz.classList.add('border-charcoal-600','bg-charcoal-100');
-        sz.classList.remove('border-charcoal-300');
+        sz.classList.add('border-charcoal-600','bg-charcoal-100'); sz.classList.remove('border-charcoal-300');
         return;
       }
-      // Qty buttons
       var q = e.target.closest('.carousel-qty-minus, .carousel-qty-plus');
       if(q){
         var val = q.parentElement.querySelector('.carousel-qty-val');
         var v = parseInt(val.textContent)||1;
-        if(q.classList.contains('carousel-qty-minus')) v = Math.max(1, v-1);
-        else v++;
-        val.textContent = v;
-        return;
+        if(q.classList.contains('carousel-qty-minus')) v=Math.max(1,v-1); else v++;
+        val.textContent=v; return;
       }
-      // Add to cart
       var add = e.target.closest('.carousel-add-cart');
       if(add){
-        var pid2 = add.getAttribute('data-product');
-        var name2 = add.getAttribute('data-name')||add.closest('.carousel-card').querySelector('h3').textContent;
-        var price2 = parseFloat(add.getAttribute('data-price'))||10;
-        var sizeBtn = document.querySelector('.carousel-size-btn[data-product="'+pid2+'"].border-charcoal-600');
-        var size2 = sizeBtn ? sizeBtn.getAttribute('data-size') : '';
-        var qtyEl = add.closest('.carousel-card').querySelector('.carousel-qty-val');
-        var qty2 = qtyEl ? parseInt(qtyEl.textContent)||1 : 1;
-        var cart = JSON.parse(localStorage.getItem('ps-cart')||'[]');
-        var exist = cart.find(function(i){ return i.id===pid2 && i.size===size2; });
-        if(exist) exist.quantity += qty2; else cart.push({id:pid2,name:name2,price:price2,color:'',size:size2,quantity:qty2});
+        var pid2=add.getAttribute('data-product');
+        var name2=add.getAttribute('data-name')||add.closest('.carousel-card').querySelector('h3').textContent;
+        var price2=parseFloat(add.getAttribute('data-price'))||10;
+        var sizeBtn=document.querySelector('.carousel-size-btn[data-product="'+pid2+'"].border-charcoal-600');
+        var size2=sizeBtn?sizeBtn.getAttribute('data-size'):'';
+        var qtyEl=add.closest('.carousel-card').querySelector('.carousel-qty-val');
+        var qty2=qtyEl?parseInt(qtyEl.textContent)||1:1;
+        var cart=JSON.parse(localStorage.getItem('ps-cart')||'[]');
+        var exist=cart.find(function(i){return i.id===pid2&&i.size===size2;});
+        if(exist) exist.quantity+=qty2; else cart.push({id:pid2,name:name2,price:price2,color:'',size:size2,quantity:qty2});
         localStorage.setItem('ps-cart',JSON.stringify(cart));
-        // Flash
-        add.textContent = '✓ Added'; setTimeout(function(){ add.textContent = '加入购物车'; },1000);
+        add.textContent='✓ Added'; setTimeout(function(){add.textContent='加入购物车';},1000);
       }
     });
 
-    scrollPos=0; targetCard=0; renderSmooth(0); resume();
+    track.style.position='relative';
+    scrollPos=0; activeIdx=0; renderScroll(); activateCard(0); resume();
   });
 </script>
