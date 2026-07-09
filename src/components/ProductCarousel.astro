@@ -304,6 +304,8 @@ const jewelryProducts = products.filter(p => p.category !== 'apparel');
     });
 
     track.style.position='relative';
-    scrollPos=0; activeIdx=0; renderScroll(); activateCard(0); resume();
+    // Start cards from the right side so they scroll leftward into view
+    scrollPos = -(track.parentElement.clientWidth + getCardW());
+    activeIdx=0; renderScroll(); resume();
   });
 </script>
