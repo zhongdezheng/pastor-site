@@ -37,7 +37,7 @@ const allProducts = products;
           {duplicated.map((p, i) => (
             <div class="carousel-card-item shrink-0 bg-white rounded-2xl border border-beige-200 shadow-sm transition-all duration-300 cursor-pointer" data-index={i % appProducts.length} data-category={p.category} data-id={p.id} data-sid={i} style="width:180px; min-height:300px;">
               <div class="aspect-square bg-beige-100 rounded-t-2xl flex items-center justify-center text-3xl relative overflow-hidden">
-                {p.images && p.images[0] ? <img src={p.images[0]} alt="" class="w-full h-full object-cover" loading="lazy" /> : <span>👕</span>}
+                {p.images && p.images[0] ? <img src={p.images[0]} alt="" class="w-full h-full object-cover" loading="lazy" style="object-position:center 20%" /> : <span>👕</span>}
                 {p.stock === 0 && <div class="absolute inset-0 bg-black/20 flex items-center justify-center"><span class="bg-red-500 text-white text-xs px-2 py-0.5 rounded">{t.outOfStock}</span></div>}
               </div>
               <div class="p-3 flex flex-col flex-1">
@@ -96,7 +96,7 @@ const allProducts = products;
     var CURRCAT = 'all';
     var FILTERED = ALLPRODS.filter(function(p){ return CURRCAT==='all'||p.category===CURRCAT; });
     var track, inner, prevBtn, nextBtn;
-    var scrollX = 0, speed = 1.2, paused = false, raf = null;
+    var scrollX = FILTERED.length * step - 200, speed = 1.2, paused = false, raf = null;
     var cardW = 180, gap = 14, step = cardW + gap;
     var activeIdx = 0;
 
@@ -120,7 +120,7 @@ const allProducts = products;
         var sizesHtml = (p.sizes||[]).map(function(s) { return '<span class="text-[9px] border border-charcoal-200 rounded px-1 py-0 text-charcoal-500">'+s+'</span>'; }).join('');
         var sid = i % FILTERED.length;
         return '<div class="carousel-card-item shrink-0 bg-white rounded-2xl border border-beige-200 shadow-sm transition-all duration-300 cursor-pointer" data-index="'+sid+'" data-sid="'+i+'" data-id="'+p.id+'" data-category="'+p.category+'" style="width:'+cardW+'px; min-height:300px;">'+
-          '<div class="aspect-square bg-beige-100 rounded-t-2xl flex items-center justify-center text-3xl relative overflow-hidden">'+(p.image?'<img src="'+p.image+'" alt="" class="w-full h-full object-cover" loading="lazy" />':'<span>👕</span>')+(p.stock===0?'<div class="absolute inset-0 bg-black/20 flex items-center justify-center"><span class="bg-red-500 text-white text-xs px-2 py-0.5 rounded">售罄</span></div>':'')+'</div>'+
+          '<div class="aspect-square bg-beige-100 rounded-t-2xl flex items-center justify-center text-3xl relative overflow-hidden">'+(p.image?'<img src="'+p.image+'" alt="" class="w-full h-full object-cover" loading="lazy" style="object-position:center 20%" />':'<span>👕</span>')+(p.stock===0?'<div class="absolute inset-0 bg-black/20 flex items-center justify-center"><span class="bg-red-500 text-white text-xs px-2 py-0.5 rounded">售罄</span></div>':'')+'</div>'+
           '<div class="p-3 flex flex-col flex-1"><h3 class="font-serif font-bold text-xs text-charcoal-800 mb-0.5 leading-tight">'+p.name+'</h3><p class="text-charcoal-700 font-semibold text-sm mb-0.5">$'+p.price+'</p>'+
           '<div class="card-colors flex gap-0.5 mb-1">'+colorsHtml+'</div>'+
           '<div class="card-sizes flex flex-wrap gap-0.5 mb-2">'+sizesHtml+'</div>'+
