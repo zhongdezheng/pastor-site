@@ -16,7 +16,6 @@ const appProducts = products.filter(p => p.category === 'apparel');
 const jewelryProducts = products.filter(p => p.category !== 'apparel');
 
 // Duplicate product cards for seamless infinite scroll
-const duplicated = [...appProducts, ...appProducts, ...appProducts];
 const allProducts = products;
 ---
 
@@ -34,10 +33,12 @@ const allProducts = products;
     <div id="product-carousel" class="product-carousel relative select-none" style="height: 360px;">
       <div id="product-track" class="product-track overflow-hidden" style="position:relative; height:100%;">
         <div class="carousel-scroll-track flex items-start" id="scroll-inner" style="gap:14px;">
-          {duplicated.map((p, i) => (
-            <div class="carousel-card-item shrink-0 bg-white rounded-2xl border border-beige-200 shadow-sm transition-all duration-300 cursor-pointer" data-index={i % appProducts.length} data-category={p.category} data-id={p.id} data-sid={i} style="width:180px; min-height:300px;">
+          {appProducts.map((p, pi) => {
+            const pImages = p.images && p.images.length > 0 ? p.images : [null];
+            return pImages.map((img, imgIdx) => (
+            <div class="carousel-card-item shrink-0 bg-white rounded-2xl border border-beige-200 shadow-sm transition-all duration-300 cursor-pointer" data-index={pi * 10 + imgIdx} data-category={p.category} data-id={p.id} data-sid={pi * 10 + imgIdx} style="width:180px; min-height:300px;">
               <div class="aspect-square bg-beige-100 rounded-t-2xl flex items-center justify-center text-3xl relative overflow-hidden">
-                {p.images && p.images[0] ? <img src={p.images[0]} alt="" class="w-full h-full object-cover" loading="lazy" style="object-position:center 20%" /> : <span>👕</span>}
+                {img ? <img src={img} alt="" class="w-full h-full object-cover" loading="lazy" /> : <span>👕</span>}
                 {p.stock === 0 && <div class="absolute inset-0 bg-black/20 flex items-center justify-center"><span class="bg-red-500 text-white text-xs px-2 py-0.5 rounded">{t.outOfStock}</span></div>}
               </div>
               <div class="p-3 flex flex-col flex-1">
@@ -59,7 +60,7 @@ const allProducts = products;
                 </div>
               </div>
             </div>
-          ))}
+          ))}); })}
         </div>
       </div>
 
@@ -89,7 +90,7 @@ const allProducts = products;
   #scroll-inner { transition: none; }
 </style>
 
-<script type="application/json" id="__carouselData" set:html={JSON.stringify(allProducts.map(p=>({id:p.id,name:p.name[lang],price:p.price,colors:p.colors,sizes:p.sizes,category:p.category,stock:p.stock,image:p.images?p.images[0]:''})))}></script>
+<script type="application/json" id="__carouselData" set:html={JSON.stringify(allProducts.map(p=>({id:p.id,name:p.name[lang],price:p.price,colors:p.colors,sizes:p.sizes,category:p.category,stock:p.stock,image:p.images?p.images[0]:'',images:p.images||[]})))}></script>
 <script is:inline>
   (function() {
     var ALLPRODS = JSON.parse(document.getElementById("__carouselData").textContent);
