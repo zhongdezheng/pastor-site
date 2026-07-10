@@ -15,19 +15,13 @@ const t = labels[lang];
 const appProducts = products.filter(p => p.category === 'apparel');
 const allProducts = products;
 
-// One card per product image
 const carouselCards = appProducts.map((p, pi) => ({
-  id: p.id,
-  name: p.name[lang],
-  price: p.price,
-  weight: p.weight,
-  colors: p.colors,
-  sizes: p.sizes,
-  stock: p.stock,
-  category: p.category,
-  image: p.images && p.images[0] ? p.images[0] : null,
-  gid: pi,
+  id: p.id, name: p.name[lang], price: p.price, weight: p.weight,
+  colors: p.colors, sizes: p.sizes, stock: p.stock, category: p.category,
+  image: p.images && p.images[0] ? p.images[0] : null, gid: pi,
 }));
+// Duplicate for seamless looping (need at least 2x)
+const loopCards = [...carouselCards, ...carouselCards];
 ---
 
 <section id="products" class="py-24 lg:py-32 px-4 sm:px-6 bg-white overflow-hidden">
@@ -42,13 +36,12 @@ const carouselCards = appProducts.map((p, pi) => ({
     <div id="product-carousel" class="product-carousel relative select-none" style="height: 370px;">
       <div id="product-track" class="product-track overflow-hidden" style="position:relative; height:100%;">
         <div class="carousel-scroll-track flex items-start" id="scroll-inner" style="gap:14px;">
-          {carouselCards.map(card => (
+          {loopCards.map(card => (
             <div
               class="carousel-card-item shrink-0 bg-white rounded-2xl border border-beige-200 shadow-sm transition-all duration-300 cursor-pointer"
               data-index={card.gid}
               data-category={card.category}
               data-id={card.id}
-              data-sid={card.gid}
               style="width:180px; min-height:310px;"
             >
               <div class="aspect-square bg-beige-100 rounded-t-2xl flex items-center justify-center text-3xl relative overflow-hidden">
@@ -80,28 +73,27 @@ const carouselCards = appProducts.map((p, pi) => ({
 
       <div class="absolute inset-y-0 left-0 w-12 md:w-24 pointer-events-none bg-gradient-to-r from-white/95 to-transparent z-10 rounded-l-2xl"></div>
       <div class="absolute inset-y-0 right-0 w-12 md:w-24 pointer-events-none bg-gradient-to-l from-white/95 to-transparent z-10 rounded-r-2xl"></div>
-
-      <button id="prod-prev" class="absolute left-1 md:left-3 top-1/2 -translate-y-1/2 w-11 h-11 rounded-full bg-white/85 backdrop-blur-sm shadow-md border border-beige-300 flex items-center justify-center text-charcoal-500 hover:bg-white hover:text-charcoal-800 hover:shadow-lg transition-all z-20">‹</button>
-      <button id="prod-next" class="absolute right-1 md:right-3 top-1/2 -translate-y-1/2 w-11 h-11 rounded-full bg-white/85 backdrop-blur-sm shadow-md border border-beige-300 flex items-center justify-center text-charcoal-500 hover:bg-white hover:text-charcoal-800 hover:shadow-lg transition-all z-20">›</button>
     </div>
   </div>
 </section>
 
 <style>
   .carousel-card-item.active-card {
-    transform: scale(1.12) !important;
+    transform: scale(1.12) perspective(800px) rotateY(0deg) !important;
     box-shadow: 0 20px 60px rgba(120,100,80,0.15), 0 8px 20px rgba(120,100,80,0.08) !important;
     z-index: 5 !important;
   }
-  .carousel-card-item.pop-in {
-    animation: pop3d 0.5s cubic-bezier(0.34,1.56,0.64,1);
+  @keyframes scroll-rtl {
+    0% { transform: translateX(0); }
+    100% { transform: translateX(-50%); }
   }
-  @keyframes pop3d {
-    0% { transform:scale(0.9) perspective(800px) rotateY(15deg); }
-    50% { transform:scale(1.15) perspective(800px) rotateY(-5deg); }
-    100% { transform:scale(1.12) perspective(800px) rotateY(0deg); }
+  #scroll-inner {
+    animation: scroll-rtl 20s linear infinite;
+    width: fit-content;
   }
-  #scroll-inner { transition: none; }
+  #product-track.paused #scroll-inner {
+    animation-play-state: paused;
+  }
 </style>
 
 <script type="application/json" id="__carouselData" set:html={JSON.stringify(allProducts.map(p=>({id:p.id,name:p.name[lang],price:p.price,colors:p.colors,sizes:p.sizes,category:p.category,stock:p.stock,image:p.images?p.images[0]:'',images:p.images||[]})))}></script>
@@ -110,128 +102,46 @@ const carouselCards = appProducts.map((p, pi) => ({
     var ALLPRODS = JSON.parse(document.getElementById("__carouselData").textContent);
     var CURRCAT = 'all';
     var FILTERED = ALLPRODS.filter(function(p){ return CURRCAT==='all'||p.category===CURRCAT; });
-    var track, inner, prevBtn, nextBtn;
-    var scrollX = 0, speed = 1.2, paused = false, raf = null;
-    var cardW = 180, gap = 14, step = cardW + gap;
-    var activeIdx = 0;
+    var track, inner;
 
     function init() {
       track = document.getElementById('product-track');
       inner = document.getElementById('scroll-inner');
-      prevBtn = document.getElementById('prod-prev');
-      nextBtn = document.getElementById('prod-next');
       if (!track || !inner) return;
-      rebuildInner();
-      startScroll();
+
+      // Pause on hover
+      track.addEventListener('mouseenter', function(){ track.classList.add('paused'); });
+      track.addEventListener('mouseleave', function(){ track.classList.remove('paused'); });
+
+      // Click card to highlight center
+      inner.addEventListener('click', function(e) {
+        if (e.target.closest('button')) return;
+        var card = e.target.closest('.carousel-card-item');
+        if (!card) return;
+        inner.querySelectorAll('.carousel-card-item').forEach(function(c){ c.classList.remove('active-card'); });
+        card.classList.add('active-card');
+      });
     }
 
-    function rebuildInner() {
-      var items = [];
-      FILTERED.forEach(function(p) {
-        items.push({product:p, image: p.image || null});
-      });
-      var triple = items.concat(items).concat(items);
-      inner.innerHTML = triple.map(function(item, i) {
-        var p = item.product, img = item.image;
+    function rebuildCards() {
+      var cards = FILTERED.concat(FILTERED); // 2x for seamless loop
+      var speed = FILTERED.length > 1 ? Math.max(8, FILTERED.length * 10) : 20;
+      inner.style.animationDuration = speed + 's';
+      inner.innerHTML = cards.map(function(p, i) {
         var colorsHtml = (p.colors||[]).map(function(c) {
           var bg = c==='白色'?'#f0f0f0':c==='黑色'?'#222':c==='灰色'?'#999':c==='深蓝'?'#1e3a5f':c;
           return '<span class="inline-block w-3 h-3 rounded-full border border-charcoal-300" style="background:'+bg+'" title="'+c+'"></span>';
         }).join('');
-        var sizesHtml = (p.sizes||[]).map(function(s) { return '<span class="text-[9px] border border-charcoal-200 rounded px-1 py-0 text-charcoal-500">'+s+'</span>'; }).join('');
-        var sid = i % items.length;
-        return '<div class="carousel-card-item shrink-0 bg-white rounded-2xl border border-beige-200 shadow-sm transition-all duration-300 cursor-pointer" data-index="'+sid+'" data-sid="'+i+'" data-id="'+p.id+'" data-category="'+p.category+'" style="width:'+cardW+'px; min-height:310px;">'+
-          '<div class="aspect-square bg-beige-100 rounded-t-2xl flex items-center justify-center text-3xl relative overflow-hidden">'+(img?'<img src="'+img+'" alt="" class="w-full h-full object-cover" loading="lazy" />':'<span>👕</span>')+(p.stock===0?'<div class="absolute inset-0 bg-black/20 flex items-center justify-center"><span class="bg-red-500 text-white text-xs px-2 py-0.5 rounded">售罄</span></div>':'')+'</div>'+
+        var sizesHtml = (p.sizes||[]).map(function(s){ return '<span class="text-[9px] border border-charcoal-200 rounded px-1 py-0 text-charcoal-500">'+s+'</span>'; }).join('');
+        return '<div class="carousel-card-item shrink-0 bg-white rounded-2xl border border-beige-200 shadow-sm transition-all duration-300 cursor-pointer" data-index="'+(i%FILTERED.length)+'" data-id="'+p.id+'" data-category="'+p.category+'" style="width:180px; min-height:310px;">'+
+          '<div class="aspect-square bg-beige-100 rounded-t-2xl flex items-center justify-center text-3xl relative overflow-hidden">'+(p.image?'<img src="'+p.image+'" alt="" class="w-full h-full object-cover" loading="lazy" />':'<span>👕</span>')+(p.stock===0?'<div class="absolute inset-0 bg-black/20 flex items-center justify-center"><span class="bg-red-500 text-white text-xs px-2 py-0.5 rounded">售罄</span></div>':'')+'</div>'+
           '<div class="p-3 flex flex-col flex-1"><h3 class="font-serif font-bold text-xs text-charcoal-800 mb-0.5 leading-tight">'+p.name+'</h3><p class="text-charcoal-700 font-semibold text-sm mb-0.5">$'+p.price+'</p>'+
           '<div class="card-colors flex gap-0.5 mb-1">'+colorsHtml+'</div>'+
           '<div class="card-sizes flex flex-wrap gap-0.5 mb-2">'+sizesHtml+'</div>'+
           '<div class="mt-auto flex items-center justify-between"><span class="text-[10px] font-medium '+(p.stock>0?'text-green-600':'text-red-400')+'">'+(p.stock>0?'库存:'+p.stock:'售罄')+'</span>'+
           '<button class="carousel-add-cart px-2 py-1.5 bg-charcoal-800 text-white text-[10px] rounded-lg hover:bg-charcoal-700 transition-colors" data-product="'+p.id+'" data-name="'+p.name+'" data-price="'+p.price+'">加入购物车</button></div></div></div>';
       }).join('');
-      inner.style.gap = gap+'px';
-      // Reset scroll to show cards from the right
-      var totalW = items.length * step;
-      scrollX = Math.max(0, totalW - track.clientWidth - step);
     }
-
-    function scroll(ts) {
-      if (!paused) {
-        scrollX += speed;
-        var itemsLen = inner.querySelectorAll('.carousel-card-item').length;
-        var totalW = (itemsLen / 3) * step; // original items count * step
-        if (scrollX >= totalW) scrollX -= totalW;
-        inner.style.transform = 'translateX(' + (-scrollX) + 'px)';
-        var containerW = track.clientWidth;
-        var center = containerW / 2;
-        var bestIdx = -1, bestDist = Infinity;
-        var cards = inner.querySelectorAll('.carousel-card-item');
-        cards.forEach(function(card) {
-          var rect = card.getBoundingClientRect();
-          var cardCenter = rect.left + rect.width/2 - track.getBoundingClientRect().left;
-          var d = Math.abs(cardCenter - center);
-          if (d < bestDist) { bestDist = d; bestIdx = parseInt(card.dataset.sid); }
-        });
-        if (bestIdx >= 0 && bestIdx !== activeIdx) {
-          cards.forEach(function(c) { c.classList.remove('active-card','pop-in'); });
-          var target = inner.querySelector('.carousel-card-item[data-sid="'+bestIdx+'"]');
-          if (target && bestDist < cardW * 0.6) {
-            target.classList.add('active-card','pop-in');
-            activeIdx = bestIdx;
-          }
-        }
-      }
-      raf = requestAnimationFrame(scroll);
-    }
-
-    function startScroll() { raf = requestAnimationFrame(scroll); }
-
-    function go(dir) {
-      paused = true;
-      var cards = inner.querySelectorAll('.carousel-card-item');
-      var count = cards.length / 3; // items count
-      // Find currently active mid-point
-      var mid = Math.floor(activeIdx / count) * count; // 0, count, 2*count
-      var offset = activeIdx - mid;
-      var newOffset = (offset + dir + count) % count;
-      activeIdx = (mid === count*2 ? 0 : count) + newOffset;
-      // Recalculate scrollX
-      var totalW = count * step; // wrapped total
-      // The position of the target card in the middle segment
-      var targetIdx = (mid === count*2) ? newOffset : count + newOffset;
-      scrollX = targetIdx * step - track.clientWidth / 2 + cardW / 2;
-      if (scrollX < 0) scrollX += totalW;
-      if (scrollX >= totalW) scrollX -= totalW;
-      inner.style.transform = 'translateX(' + (-scrollX) + 'px)';
-      // Highlight
-      cards.forEach(function(c) { c.classList.remove('active-card','pop-in'); });
-      var target = inner.querySelector('.carousel-card-item[data-sid="'+activeIdx+'"]');
-      if (target) target.classList.add('active-card','pop-in');
-      setTimeout(function(){ paused = false; }, 2000);
-    }
-
-    prevBtn.onclick = function(){ go(-1); };
-    nextBtn.onclick = function(){ go(1); };
-
-    inner.addEventListener('click', function(e) {
-      if (e.target.closest('button')) return;
-      var card = e.target.closest('.carousel-card-item');
-      if (card) {
-        paused = true;
-        activeIdx = parseInt(card.dataset.sid);
-        var itemsLen = inner.querySelectorAll('.carousel-card-item').length;
-        var count = itemsLen / 3;
-        var totalW = count * step;
-        scrollX = activeIdx * step - track.clientWidth / 2 + cardW / 2;
-        if (scrollX < 0) scrollX += totalW;
-        if (scrollX >= totalW) scrollX -= totalW;
-        inner.style.transform = 'translateX(' + (-scrollX) + 'px)';
-        inner.querySelectorAll('.carousel-card-item').forEach(function(c) { c.classList.remove('active-card','pop-in'); });
-        card.classList.add('active-card','pop-in');
-        setTimeout(function(){ paused = false; }, 2000);
-      }
-    });
-
-    track.addEventListener('mouseenter', function(){ paused = true; });
-    track.addEventListener('mouseleave', function(){ paused = false; });
 
     document.querySelectorAll('.carousel-cat-btn').forEach(function(btn) {
       btn.onclick = function() {
@@ -240,16 +150,8 @@ const carouselCards = appProducts.map((p, pi) => ({
           b.classList.toggle('bg-charcoal-800', b.dataset.cat===CURRCAT);
           b.classList.toggle('text-white', b.dataset.cat===CURRCAT);
         });
-        paused = true;
         FILTERED = ALLPRODS.filter(function(p){ return CURRCAT==='all'||p.category===CURRCAT; });
-        scrollX = 0; activeIdx = 0;
-        rebuildInner();
-        scrollX = Math.max(0, (inner.querySelectorAll('.carousel-card-item').length / 3) * step - track.clientWidth - step);
-        inner.style.transform = 'translateX(' + (-scrollX) + 'px)';
-        inner.querySelectorAll('.carousel-card-item').forEach(function(c) { c.classList.remove('active-card','pop-in'); });
-        var first = inner.querySelector('.carousel-card-item[data-sid]');
-        if (first) { activeIdx = parseInt(first.dataset.sid); first.classList.add('active-card','pop-in'); }
-        setTimeout(function(){ paused = false; }, 300);
+        rebuildCards();
       };
     });
 
