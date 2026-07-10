@@ -21,7 +21,6 @@ const carouselCards = appProducts.map((p, pi) => ({
   image: p.images && p.images[0] ? p.images[0] : null, gid: pi,
 }));
 // Duplicate for seamless looping (need at least 2x)
-const loopCards = [...carouselCards, ...carouselCards];
 ---
 
 <section id="products" class="py-24 lg:py-32 px-4 sm:px-6 bg-white overflow-hidden">
@@ -36,7 +35,7 @@ const loopCards = [...carouselCards, ...carouselCards];
     <div id="product-carousel" class="product-carousel relative select-none" style="height: 370px;">
       <div id="product-track" class="product-track overflow-hidden" style="position:relative; height:100%;">
         <div class="carousel-scroll-track flex items-start" id="scroll-inner" style="gap:14px;">
-          {loopCards.map(card => (
+          {carouselCards.map(card => (
             <div
               class="carousel-card-item shrink-0 bg-white rounded-2xl border border-beige-200 shadow-sm transition-all duration-300 cursor-pointer"
               data-index={card.gid}
@@ -83,16 +82,8 @@ const loopCards = [...carouselCards, ...carouselCards];
     box-shadow: 0 20px 60px rgba(120,100,80,0.15), 0 8px 20px rgba(120,100,80,0.08) !important;
     z-index: 5 !important;
   }
-  @keyframes scroll-rtl {
-    0% { transform: translateX(0); }
-    100% { transform: translateX(-50%); }
-  }
   #scroll-inner {
-    animation: scroll-rtl 20s linear infinite;
     width: fit-content;
-  }
-  #product-track.paused #scroll-inner {
-    animation-play-state: paused;
   }
 </style>
 
@@ -124,8 +115,8 @@ const loopCards = [...carouselCards, ...carouselCards];
     }
 
     function rebuildCards() {
-      var cards = FILTERED.concat(FILTERED); // 2x for seamless loop
-      var speed = FILTERED.length > 1 ? Math.max(8, FILTERED.length * 10) : 20;
+      var cards = FILTERED; // single set
+      
       inner.style.animationDuration = speed + 's';
       inner.innerHTML = cards.map(function(p, i) {
         var colorsHtml = (p.colors||[]).map(function(c) {
