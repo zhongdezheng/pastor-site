@@ -16,21 +16,18 @@ const appProducts = products.filter(p => p.category === 'apparel');
 const allProducts = products;
 
 // One card per product image
-const carouselCards = appProducts.flatMap((p, pi) => {
-  const imgs = (p.images && p.images.length) ? p.images : [null];
-  return imgs.map((img, imgIdx) => ({
-    id: p.id,
-    name: p.name[lang],
-    price: p.price,
-    weight: p.weight,
-    colors: p.colors,
-    sizes: p.sizes,
-    stock: p.stock,
-    category: p.category,
-    image: img,
-    gid: pi * 100 + imgIdx,
-  }));
-});
+const carouselCards = appProducts.map((p, pi) => ({
+  id: p.id,
+  name: p.name[lang],
+  price: p.price,
+  weight: p.weight,
+  colors: p.colors,
+  sizes: p.sizes,
+  stock: p.stock,
+  category: p.category,
+  image: p.images && p.images[0] ? p.images[0] : null,
+  gid: pi,
+}));
 ---
 
 <section id="products" class="py-24 lg:py-32 px-4 sm:px-6 bg-white overflow-hidden">
@@ -131,8 +128,7 @@ const carouselCards = appProducts.flatMap((p, pi) => {
     function rebuildInner() {
       var items = [];
       FILTERED.forEach(function(p) {
-        var imgs = (p.images && p.images.length) ? p.images : [p.image || null];
-        imgs.forEach(function(img) { items.push({product:p, image:img}); });
+        items.push({product:p, image: p.image || null});
       });
       var triple = items.concat(items).concat(items);
       inner.innerHTML = triple.map(function(item, i) {
