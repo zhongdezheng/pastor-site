@@ -146,11 +146,7 @@ const carouselCards = appProducts.map((p, pi) => ({
           '<div class="card-colors flex gap-0.5 mb-1">'+colorsHtml+'</div>'+
           '<div class="card-sizes flex flex-wrap gap-0.5 mb-2">'+sizesHtml+'</div>'+
           '<div class="mt-auto flex items-center justify-between"><span class="text-[10px] font-medium '+(p.stock>0?'text-green-600':'text-red-400')+'">'+(p.stock>0?'库存:'+p.stock:'售罄')+'</span>'+
-<<<<<<< Updated upstream
-          '<button class="carousel-add-cart px-2 py-1.5 bg-charcoal-800 text-white text-[10px] rounded-lg hover:bg-charcoal-700 transition-colors" data-product="'+p.id+'" data-name="'+p.name+'" data-price="'+p.price+'">'+t.addToCart+'</button></div></div></div>';
-=======
           '<button class="carousel-add-cart px-2 py-1.5 bg-charcoal-800 text-white text-[10px] rounded-lg hover:bg-charcoal-700 transition-colors" data-product="'+p.id+'" data-name="'+p.name+'" data-price="'+p.price+'">'+LABELS.addToCart+'</button></div></div></div>';
->>>>>>> Stashed changes
       }).join('');
       inner.innerHTML = html + html; // duplicate for seamless loop
     }
@@ -176,11 +172,7 @@ const carouselCards = appProducts.map((p, pi) => ({
       var exist = cart.find(function(i){ return i.id===pid; });
       if (exist) exist.quantity++; else cart.push({id:pid, name:name, price:price, color:'', size:'', quantity:1});
       localStorage.setItem('ps-cart', JSON.stringify(cart));
-<<<<<<< Updated upstream
-      add.textContent = '✓ Added'; setTimeout(function(){ add.textContent = '加入购物车'; }, 1000);
-=======
       add.textContent = '✓'; setTimeout(function(){ add.textContent = LABELS.addToCart; }, 1000);
->>>>>>> Stashed changes
       // update floating cart badge
       var badge = document.getElementById('cart-badge-main');
       if (badge) {

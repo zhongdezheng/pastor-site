@@ -11,8 +11,8 @@ const otherLang = lang === 'en' ? 'zh' : 'en';
 const currentPathRaw = Astro.url.pathname.replace(/^\/(en|zh)\//, '/');
 const otherPath = `/${otherLang}${currentPathRaw}`;
 const labels = {
-  en: { home: 'Home', vision: 'Vision', products: 'Products', designer: 'Design', prayer: 'Prayer', testimonies: 'Testimonies', courses: 'Courses', give: 'Give', langSwitch: '中文', menu: 'Menu' },
-  zh: { home: '首页', vision: '异象', products: '产品', designer: '设计', prayer: '代祷', testimonies: '见证', courses: '课程', give: '奉献', langSwitch: 'English', menu: '菜单' },
+  en: { home: 'Home', vision: 'Vision', products: 'Products', designer: 'Design', prayer: 'Prayer', testimonies: 'Testimonies', courses: 'Courses', give: 'Give', auth: 'Account', langSwitch: '中文', menu: 'Menu' },
+  zh: { home: '首页', vision: '异象', products: '产品', designer: '设计', prayer: '代祷', testimonies: '见证', courses: '课程', give: '奉献', auth: '账号', langSwitch: 'English', menu: '菜单' },
 };
 const t = labels[lang];
 
@@ -55,6 +55,7 @@ const navLinks = [
 
       <!-- Mobile: hamburger + lang -->
       <div class="flex items-center gap-3 md:hidden">
+        <a href={`/${lang}/auth/`} class="text-xs text-charcoal-500 border border-charcoal-300 rounded-full px-2 py-1">{t.auth}</a>
         <a href={otherPath} class="text-xs text-charcoal-500 border border-charcoal-300 rounded-full px-2 py-1">{t.langSwitch}</a>
         <button id="menu-toggle" class="w-9 h-9 flex items-center justify-center rounded-lg hover:bg-beige-100 transition-colors" aria-label={t.menu}>
           <svg class="w-6 h-6 text-charcoal-700" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path id="menu-icon-open" stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16"/><path id="menu-icon-close" stroke-linecap="round" stroke-linejoin="round" d="M6 6l12 12M18 6L6 18" class="hidden"/></svg>
