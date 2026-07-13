@@ -6,7 +6,7 @@ import BaseLayout from '../../../layouts/BaseLayout.astro';
   <section class="pt-24 pb-16 px-4 sm:px-6 bg-white min-h-screen">
     <div class="max-w-3xl mx-auto text-center">
       <h1 class="font-serif text-3xl font-bold text-charcoal-800 mb-3">奉献支持</h1>
-      <p class="text-charcoal-500 mb-8 text-sm">「各人要随本心所酌定的，不要作难，不要勉强，因为捐得乐意的人是神所喜爱的。」— 哥林多后书 9:7</p>
+      <p class="text-charcoal-500 mb-8 text-sm max-w-xl mx-auto">邀请你成为这片庄稼地上的国度同工。用你的金钱在职场与全地共同服侍，将天国的文化带下，一同见证那不可震动的国！</p>
 
       <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-10">
         <div class="bg-beige-50 rounded-2xl p-6 border border-beige-200 hover:shadow-lg transition-shadow cursor-pointer" onclick="selectAmount(10)"><p class="text-3xl font-bold text-charcoal-800">$10</p><p class="text-xs text-charcoal-400 mt-1">一次性奉献</p></div>
@@ -24,13 +24,13 @@ import BaseLayout from '../../../layouts/BaseLayout.astro';
         </div>
         <button class="w-full py-3 bg-charcoal-800 hover:bg-charcoal-700 text-white rounded-xl font-medium text-sm transition-colors" onclick="submitGive()">通过 PayPal 奉献</button>
       </div>
-      <p class="text-xs text-charcoal-400 mt-4">PayPal: pastorjeffinchina@gmail.com</p>
+      
     </div>
   </section>
 </BaseLayout>
 
 <script is:inline>
   function selectAmount(amt){document.getElementById('give-amount').value=amt;}
-  function submitGive(){var a=document.getElementById('give-amount').value,n=document.getElementById('give-name').value.trim(),e=document.getElementById('give-email').value.trim(),m=document.getElementById('give-note').value.trim();var lines=['我想奉献 $'+a,'姓名: '+n,'邮箱: '+e,'留言: '+m,'支付: PayPal'];window.open('https://wa.me/8613602812927?text='+encodeURIComponent(lines.join('\n')),'_blank');}
+  function submitGive(){var a=document.getElementById('give-amount').value,n=document.getElementById('give-name').value.trim(),e=document.getElementById('give-email').value.trim(),m=document.getElementById('give-note').value.trim();var lines=['我想奉献 $'+a,'姓名: '+n,'邮箱: '+e,'留言: '+m,'支付: PayPal'];window.open('https://www.paypal.com/paypalme/pastorjeffinchina/'+a,'_blank');}
 </script>
 </BaseLayout>

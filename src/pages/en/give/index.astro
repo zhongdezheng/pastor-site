@@ -6,7 +6,7 @@ import BaseLayout from '../../../layouts/BaseLayout.astro';
   <section class="pt-24 pb-16 px-4 sm:px-6 bg-white min-h-screen">
     <div class="max-w-3xl mx-auto text-center">
       <h1 class="font-serif text-3xl font-bold text-charcoal-800 mb-3">Give &amp; Support</h1>
-      <p class="text-charcoal-500 mb-8 text-sm">"Each one must give as he has decided in his heart, not reluctantly or under compulsion, for God loves a cheerful giver." — 2 Corinthians 9:7</p>
+      <p class="text-charcoal-500 mb-8 text-sm max-w-xl mx-auto">We invite you to become a Kingdom partner in this harvest field. Use your financial resources to co-labor across the marketplace and the entire world, bringing down God's culture as we witness His unshakable Kingdom together!</p>
 
       <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-10">
         <div class="bg-beige-50 rounded-2xl p-6 border border-beige-200 hover:shadow-lg transition-shadow cursor-pointer" onclick="selectAmount(10)">
@@ -36,7 +36,7 @@ import BaseLayout from '../../../layouts/BaseLayout.astro';
         </div>
         <button class="w-full py-3 bg-charcoal-800 hover:bg-charcoal-700 text-white rounded-xl font-medium text-sm transition-colors" onclick="submitGive()">Continue with PayPal</button>
       </div>
-      <p class="text-xs text-charcoal-400 mt-4">PayPal: pastorjeffinchina@gmail.com</p>
+      
     </div>
   </section>
 </BaseLayout>
@@ -46,7 +46,7 @@ import BaseLayout from '../../../layouts/BaseLayout.astro';
   function submitGive(){
     var a=document.getElementById('give-amount').value,n=document.getElementById('give-name').value.trim(),e=document.getElementById('give-email').value.trim(),m=document.getElementById('give-note').value.trim();
     var lines=['I would like to give $'+a,'Name: '+n,'Email: '+e,'Message: '+m,'Payment: PayPal'];
-    window.open('https://wa.me/8613602812927?text='+encodeURIComponent(lines.join('\n')),'_blank');
+    window.open('https://www.paypal.com/paypalme/pastorjeffinchina/'+a,'_blank');
   }
 </script>
 </BaseLayout>

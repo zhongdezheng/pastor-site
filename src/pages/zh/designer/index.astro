@@ -3,102 +3,297 @@ import BaseLayout from '../../../layouts/BaseLayout.astro';
 ---
 
 <BaseLayout lang="zh" title="定制设计 — 活石">
-  <section class="pt-24 pb-16 px-4 sm:px-6 bg-white min-h-screen">
-    <div class="max-w-6xl mx-auto">
-      <a href="/zh/products/" class="text-sm text-charcoal-500 hover:text-charcoal-700 mb-4 inline-block">&larr; 返回产品列表</a>
-      <h1 class="font-serif text-2xl font-bold text-charcoal-800 mb-2">定制设计工坊</h1>
-      <p class="text-sm text-charcoal-400 mb-6">上传你的设计图案，定制专属服饰</p>
+<section class="pt-16 min-h-screen bg-white">
+  <div class="flex h-[calc(100vh-4rem)]">
+    
+    <!-- ===== LEFT PANEL 25% ===== -->
+    <div class="w-[25%] min-w-[220px] max-w-[320px] bg-beige-50 border-r border-beige-200 overflow-y-auto p-3 flex flex-col gap-3">
+      
+      <!-- 产品选择 -->
+      <div class="bg-white rounded-lg p-3 shadow-sm">
+        <h3 class="text-xs font-bold text-charcoal-700 mb-2 uppercase tracking-wide">产品</h3>
+        <div id="designer-products" class="space-y-1.5"></div>
+      </div>
 
-      <div class="flex flex-col lg:flex-row gap-6">
-        <!-- Left: Products + Gallery -->
-        <div class="lg:w-64 flex-shrink-0 space-y-4">
-          <div class="bg-beige-50 rounded-xl p-4">
-            <h3 class="text-sm font-bold text-charcoal-800 mb-3">选择产品</h3>
-            <div id="designer-products" class="space-y-2">
-              <div class="product-opt bg-white rounded-lg p-2 flex items-center gap-2 cursor-pointer border-2 border-charcoal-800" data-product="tee">
-                <span class="text-xl">👕</span>
-                <div><p class="text-xs font-bold">T 恤</p><p class="text-[10px] text-green-600">¥69</p></div>
-              </div>
-              <div class="product-opt bg-white rounded-lg p-2 flex items-center gap-2 cursor-pointer border-2 border-transparent hover:border-charcoal-300" data-product="hoodie">
-                <span class="text-xl">🧥</span>
-                <div><p class="text-xs font-bold">卫衣</p><p class="text-[10px] text-green-600">¥349</p></div>
-              </div>
-              <div class="product-opt bg-white rounded-lg p-2 flex items-center gap-2 cursor-pointer border-2 border-transparent hover:border-charcoal-300" data-product="cap">
-                <span class="text-xl">🧢</span>
-                <div><p class="text-xs font-bold">帽子</p><p class="text-[10px] text-green-600">¥139</p></div>
-              </div>
+      <!-- 产品参数 -->
+      <div class="bg-white rounded-lg p-3 shadow-sm hidden" id="product-params">
+        <h3 class="text-xs font-bold text-charcoal-700 mb-2 uppercase tracking-wide">产品参数</h3>
+        <div class="space-y-2">
+          <div><label class="text-[10px] font-medium text-charcoal-400">颜色</label>
+            <div class="flex flex-wrap gap-1 mt-0.5" id="color-options"></div>
+          </div>
+          <div><label class="text-[10px] font-medium text-charcoal-400">尺码</label>
+            <div class="flex flex-wrap gap-1 mt-0.5" id="size-options"></div>
+          </div>
+          <div><label class="text-[10px] font-medium text-charcoal-400">数量</label>
+            <div class="flex items-center gap-1.5 mt-0.5">
+              <button class="w-5 h-5 border rounded text-[10px] leading-tight" onclick="chgQty(-1)">−</button>
+              <span class="text-xs font-bold min-w-[20px] text-center" id="design-qty">1</span>
+              <button class="w-5 h-5 border rounded text-[10px] leading-tight" onclick="chgQty(1)">+</button>
             </div>
           </div>
-
-          <div class="bg-beige-50 rounded-xl p-4">
-            <h3 class="text-sm font-bold text-charcoal-800 mb-3">上传图案</h3>
-            <div class="upload-zone border-2 border-dashed border-charcoal-300 rounded-xl p-4 text-center cursor-pointer hover:border-charcoal-500 transition-colors">
-              <p class="text-xs text-charcoal-500">点击或拖拽图片到这里</p>
-              <p class="text-[10px] text-charcoal-400 mt-1">PNG、JPG，最大 5MB</p>
-              <input type="file" accept="image/*" id="designer-upload" class="hidden" onchange="handleDesignerUpload(this)">
-            </div>
-            <div id="designer-gallery" class="grid grid-cols-2 gap-2 mt-3"></div>
-          </div>
-        </div>
-
-        <!-- Center: Preview Canvas -->
-        <div class="flex-1 bg-beige-50 rounded-2xl p-4 flex items-center justify-center min-h-[400px] relative">
-          <div id="designer-canvas" class="relative w-full max-w-[400px] aspect-square bg-white rounded-xl shadow-inner flex items-center justify-center">
-            <div id="canvas-base" class="absolute inset-0 flex items-center justify-center">
-              <span class="text-6xl opacity-20">👕</span>
-            </div>
-            <div id="canvas-overlay" class="absolute inset-0 flex items-center justify-center">
-              <p class="text-xs text-charcoal-400">上传图案后可预览效果</p>
-            </div>
-          </div>
-        </div>
-
-        <!-- Right: Options -->
-        <div class="lg:w-56 flex-shrink-0 space-y-4">
-          <div class="bg-white rounded-xl border p-4">
-            <label class="text-xs font-bold text-charcoal-500 uppercase tracking-wide">颜色</label>
-            <div class="flex gap-2 mt-1.5" id="designer-colors">
-              <div class="w-8 h-8 rounded-full border-2 border-charcoal-800 cursor-pointer bg-[#f0f0f0]" data-color="white"></div>
-              <div class="w-8 h-8 rounded-full border-2 border-transparent cursor-pointer bg-[#222]" data-color="black"></div>
-              <div class="w-8 h-8 rounded-full border-2 border-transparent cursor-pointer bg-[#1e3a5f]" data-color="navy"></div>
-              <div class="w-8 h-8 rounded-full border-2 border-transparent cursor-pointer bg-[#999]" data-color="grey"></div>
-            </div>
-          </div>
-          <div class="bg-white rounded-xl border p-4">
-            <label class="text-xs font-bold text-charcoal-500 uppercase tracking-wide">尺码</label>
-            <div class="flex flex-wrap gap-1.5 mt-1.5" id="designer-sizes">
-              {['S','M','L','XL','2XL','3XL'].map(s => <div class="px-2.5 py-1 border rounded-lg text-xs cursor-pointer hover:border-charcoal-500 border-charcoal-300" data-size={s}>{s}</div>)}
-            </div>
-          </div>
-          <div class="bg-white rounded-xl border p-4">
-            <label class="text-xs font-bold text-charcoal-500 uppercase tracking-wide">数量</label>
-            <div class="flex items-center gap-2 mt-1.5">
-              <button class="w-7 h-7 border rounded-full text-sm" onclick="chgDesignQty(-1)">−</button>
-              <span class="w-6 text-center font-bold text-sm" id="design-qty">1</span>
-              <button class="w-7 h-7 border rounded-full text-sm" onclick="chgDesignQty(1)">+</button>
-            </div>
-          </div>
-
-          <button class="w-full py-2.5 bg-charcoal-800 hover:bg-charcoal-700 text-white rounded-xl font-medium text-sm transition-colors">加入购物车</button>
-          <button class="w-full py-2.5 bg-green-600 hover:bg-green-500 text-white rounded-xl font-medium text-sm transition-colors">通过 WhatsApp 下单</button>
         </div>
       </div>
-    </div>
-  </section>
-</BaseLayout>
 
+      <!-- 图库 -->
+      <div class="bg-white rounded-lg p-3 shadow-sm">
+        <h3 class="text-xs font-bold text-charcoal-700 mb-2 uppercase tracking-wide">图库</h3>
+        <div id="upload-zone" class="border-2 border-dashed border-charcoal-200 rounded-lg p-3 text-center cursor-pointer hover:border-charcoal-400 transition-colors mb-2">
+          <p class="text-[10px] text-charcoal-400">📁 点击上传图片</p>
+          <input type="file" id="design-upload" accept="image/*" class="hidden">
+        </div>
+        <div id="image-gallery" class="grid grid-cols-3 gap-1.5"></div>
+      </div>
+
+      <!-- 文字工具 -->
+      <div class="bg-white rounded-lg p-3 shadow-sm">
+        <h3 class="text-xs font-bold text-charcoal-700 mb-2 uppercase tracking-wide">文字</h3>
+        <input type="text" id="text-input" placeholder="输入文字..." class="w-full px-2 py-1.5 border rounded text-[11px] mb-2">
+        <div class="flex flex-wrap gap-1 mb-2">
+          {['Arial','Georgia','Impact','serif','monospace'].map(f => 
+            <button class="px-2 py-0.5 border rounded text-[10px] hover:bg-charcoal-100 font-btn" data-font={f} 
+              onclick="addText('{f}')">{f}</button>)}
+        </div>
+        <div class="flex gap-1">
+          <button class="flex-1 py-1 border rounded text-[10px]" onclick="addText('Impact')">➕ 添加文字</button>
+        </div>
+      </div>
+
+      <!-- 操作按钮 -->
+      <div class="flex gap-2">
+        <button id="btn-reset" class="flex-1 py-1.5 border rounded text-[10px] hover:bg-beige-100">重置设计</button>
+        <button id="btn-center" class="flex-1 py-1.5 border rounded text-[10px] hover:bg-beige-100">居中图案</button>
+      </div>
+    </div>
+
+    <!-- ===== CENTER CANVAS 50% ===== -->
+    <div class="flex-[0_0_50%] bg-gray-100 flex items-center justify-center relative">
+      <div class="relative" style="width: min(100% - 2rem, 480px); aspect-ratio: 3/4;">
+        <canvas id="design-canvas"></canvas>
+      </div>
+    </div>
+
+    <!-- ===== RIGHT PANEL 25% ===== -->
+    <div class="w-[25%] min-w-[200px] max-w-[320px] bg-white border-l border-beige-200 overflow-y-auto p-3 flex flex-col gap-3">
+      
+      <!-- 产品信息 -->
+      <div class="bg-beige-50 rounded-lg p-3">
+        <h3 class="text-xs font-bold text-charcoal-700 mb-2 uppercase tracking-wide">已选产品</h3>
+        <p class="text-sm font-bold text-charcoal-800" id="info-name">选择左侧产品</p>
+        <p class="text-[11px] text-charcoal-400 mt-0.5" id="info-detail"></p>
+        <p class="text-base font-bold text-charcoal-800 mt-1" id="info-price"></p>
+      </div>
+
+      <!-- 效果预览 (clickable) -->
+      <div class="bg-beige-50 rounded-lg p-3 flex-1 flex flex-col">
+        <h3 class="text-xs font-bold text-charcoal-700 mb-2 uppercase tracking-wide">效果预览</h3>
+        <div id="preview-thumb" class="flex-1 bg-white rounded-lg flex items-center justify-center overflow-hidden cursor-pointer border min-h-[200px]"
+             onclick="openPreview()">
+          <span class="text-3xl opacity-15">👕</span>
+        </div>
+        <p class="text-[9px] text-charcoal-400 mt-1 text-center">点击放大查看效果</p>
+      </div>
+
+      <!-- 加入购物车 -->
+      <button id="btn-cart" class="w-full py-2.5 bg-charcoal-800 hover:bg-charcoal-700 text-white rounded-lg font-medium text-sm transition-colors">加入购物车</button>
+    </div>
+  </div>
+</section>
+
+<!-- Preview Modal -->
+<div id="preview-modal" class="fixed inset-0 z-50 bg-black/80 hidden flex items-center justify-center p-4" onclick="closePreview()">
+  <div class="relative max-w-[90vw] max-h-[90vh]" onclick="event.stopPropagation()">
+    <img id="preview-modal-img" class="max-w-full max-h-[85vh] object-contain rounded-lg shadow-2xl" src="" alt="Preview">
+    <button class="absolute -top-3 -right-3 w-8 h-8 bg-white rounded-full shadow flex items-center justify-center text-lg font-bold hover:bg-gray-100" onclick="closePreview()">✕</button>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/5.3.1/fabric.min.js"></script>
 <script is:inline>
-  var dQty=1;
-  function chgDesignQty(d){dQty=Math.max(1,dQty+d);document.getElementById('design-qty').textContent=dQty;}
-  document.querySelector('.upload-zone').onclick=function(){document.getElementById('designer-upload').click();};
-  function handleDesignerUpload(input){
-    var f=input.files[0];if(!f)return;
-    var r=new FileReader();r.onload=function(e){
-      document.getElementById('canvas-overlay').innerHTML='<img src="'+e.target.result+'" alt="" class="max-w-[60%] max-h-[60%] object-contain">';
-      var g=document.getElementById('designer-gallery');
-      g.innerHTML+='<img src="'+e.target.result+'" class="w-full aspect-square object-cover rounded-lg border cursor-pointer">';
-    };r.readAsDataURL(f);
+  var state = { currentProduct: null, currentColor: '', currentSize: '', qty: 1, galleryImages: [] };
+  var canvas = null, baseImg = null;
+
+  function initCanvas() {
+    var wrap = document.querySelector('#design-canvas').parentElement;
+    var w = wrap.clientWidth;
+    canvas = new fabric.Canvas('design-canvas', {
+      width: w, height: w * 1.33,
+      backgroundColor: '#e8e4db',
+      selection: true,
+      preserveObjectStacking: true,
+    });
+    canvas.on('object:modified', updatePreview);
+    canvas.on('object:moving', updatePreview);
   }
-  document.querySelectorAll('#designer-colors > div').forEach(function(el){el.onclick=function(){document.querySelectorAll('#designer-colors > div').forEach(function(e){e.classList.toggle('border-charcoal-800',e===el);e.classList.toggle('border-transparent',e!==el);});};});
-  document.querySelectorAll('#designer-sizes > div').forEach(function(el){el.onclick=function(){document.querySelectorAll('#designer-sizes > div').forEach(function(e){e.classList.remove('bg-charcoal-800','text-white');e.classList.add('border-charcoal-300');});el.classList.add('bg-charcoal-800','text-white');el.classList.remove('border-charcoal-300');};});
+
+  function addBaseImage(src) {
+    if (baseImg) { canvas.remove(baseImg); }
+    fabric.Image.fromURL(src, function(img) {
+      var cw = canvas.width, ch = canvas.height;
+      var s = Math.min(cw/img.width, ch/img.height) * 0.88;
+      img.set({ left: (cw - img.width*s)/2, top: (ch - img.height*s)/2, scaleX: s, scaleY: s, selectable: false, evented: false });
+      canvas.add(img); canvas.sendToBack(img); baseImg = img;
+      canvas.renderAll(); updatePreview();
+    }, { crossOrigin: 'anonymous' });
+  }
+
+  function addDesignImage(src) {
+    fabric.Image.fromURL(src, function(img) {
+      var s = Math.min(canvas.width, canvas.height) * 0.4 / Math.max(img.width, img.height);
+      img.set({ left: canvas.width/2, top: canvas.height*0.4, scaleX: s, scaleY: s, originX: 'center', originY: 'center', cornerColor: '#5B6D61', cornerSize: 10, transparentCorners: false });
+      canvas.add(img); canvas.setActiveObject(img);
+      canvas.renderAll(); updatePreview();
+    }, { crossOrigin: 'anonymous' });
+  }
+
+  function addText(font) {
+    var txt = document.getElementById('text-input').value || '你的文字';
+    var t = new fabric.IText(txt, {
+      left: canvas.width/2, top: canvas.height*0.35, originX: 'center',
+      fontFamily: font, fontSize: 28, fill: '#333',
+      cornerColor: '#5B6D61', cornerSize: 10, transparentCorners: false,
+    });
+    canvas.add(t); canvas.setActiveObject(t);
+    canvas.renderAll(); updatePreview();
+  }
+
+  function updatePreview() {
+    if (!canvas) return;
+    var dataUrl = canvas.toDataURL({ format: 'png', multiplier: 0.5 });
+    var thumb = document.getElementById('preview-thumb');
+    thumb.innerHTML = '<img src="'+dataUrl+'" class="w-full h-full object-contain" alt="Preview">';
+  }
+
+  function openPreview() {
+    if (!canvas) return;
+    var dataUrl = canvas.toDataURL({ format: 'png', multiplier: 1.5 });
+    document.getElementById('preview-modal-img').src = dataUrl;
+    document.getElementById('preview-modal').classList.remove('hidden');
+  }
+
+  function closePreview() {
+    document.getElementById('preview-modal').classList.add('hidden');
+  }
+
+  function chgQty(d) { state.qty = Math.max(1, state.qty + d); document.getElementById('design-qty').textContent = state.qty; }
+
+  // Product loading
+  async function loadProducts() {
+    var resp = await fetch('/api/products');
+    var products = await resp.json();
+    var map = {};
+    products.forEach(function(p) {
+      var key = p.name_zh.replace(/\s*—.*/, '');
+      if (!map[key]) map[key] = { name: key, name_en: (p.name_en||'').replace(/\s*—.*/, ''), products: [] };
+      try { map[key].products.push({ ...p, colors: typeof p.colors==='string' ? JSON.parse(p.colors) : (p.colors||[]), sizes: typeof p.sizes==='string' ? JSON.parse(p.sizes) : (p.sizes||[]) }); } catch(e) {}
+    });
+    var html = '';
+    var first = true;
+    Object.values(map).forEach(function(g) {
+      html += '<div class="product-item bg-white rounded-lg p-2 flex items-center gap-2 cursor-pointer border-2 '+(first?'border-charcoal-700':'border-transparent hover:border-charcoal-200')+'" data-name="'+g.name+'">'
+        + '<span class="text-base">👕</span><div class="min-w-0"><p class="text-[11px] font-bold truncate">'+g.name+'</p><p class="text-[10px] text-green-600">¥'+g.products[0].price+'</p></div></div>';
+      if (first) first = false;
+    });
+    document.getElementById('designer-products').innerHTML = html || '<p class="text-[11px] text-charcoal-400">暂无产品</p>';
+    document.querySelectorAll('.product-item').forEach(function(el) {
+      el.onclick = function() {
+        document.querySelectorAll('.product-item').forEach(function(e) { e.classList.remove('border-charcoal-700'); e.classList.add('border-transparent'); });
+        el.classList.add('border-charcoal-700'); el.classList.remove('border-transparent');
+        selectProduct(el.dataset.name, map);
+      };
+    });
+    if (Object.keys(map).length > 0) { selectProduct(Object.values(map)[0].name, map); }
+  }
+
+  function selectProduct(name, map) {
+    var g = Object.values(map).find(function(x) { return x.name === name; });
+    if (!g) return;
+    state.currentProduct = g;
+    state.currentColor = g.products[0].colors[0] || '';
+    state.currentSize = g.products[0].sizes[0] || '';
+    document.getElementById('product-params').classList.remove('hidden');
+    document.getElementById('info-name').textContent = name;
+    document.getElementById('info-price').textContent = '¥' + g.products[0].price;
+    updateDetail();
+
+    var colors = g.products[0].colors || [];
+    document.getElementById('color-options').innerHTML = colors.map(function(c) {
+      return '<div class="px-2 py-0.5 border rounded-full text-[10px] cursor-pointer '+(c===state.currentColor?'bg-charcoal-700 text-white':'border-charcoal-300 hover:border-charcoal-500')+'" data-c="'+c+'">'+c+'</div>';
+    }).join('');
+    document.querySelectorAll('#color-options > div').forEach(function(el) {
+      el.onclick = function() { state.currentColor = el.dataset.c; updateDetail(); reloadColor(); resetHighlight('#color-options', el); };
+    });
+
+    var sizes = g.products[0].sizes || [];
+    document.getElementById('size-options').innerHTML = sizes.map(function(s) {
+      return '<div class="px-2 py-0.5 border rounded-full text-[10px] cursor-pointer '+(s===state.currentSize?'bg-charcoal-700 text-white':'border-charcoal-300 hover:border-charcoal-500')+'" data-s="'+s+'">'+s+'</div>';
+    }).join('');
+    document.querySelectorAll('#size-options > div').forEach(function(el) {
+      el.onclick = function() { state.currentSize = el.dataset.s; updateDetail(); resetHighlight('#size-options', el); };
+    });
+
+    loadProductImage();
+  }
+
+  function updateDetail() {
+    document.getElementById('info-detail').textContent = state.currentColor + ' / ' + state.currentSize + ' × ' + state.qty;
+  }
+
+  function resetHighlight(sel, el) {
+    document.querySelectorAll(sel+' > div').forEach(function(e) { e.classList.remove('bg-charcoal-700','text-white'); e.classList.add('border-charcoal-300'); });
+    el.classList.add('bg-charcoal-700','text-white'); el.classList.remove('border-charcoal-300');
+  }
+
+  function loadProductImage() { reloadColor(); }
+  function reloadColor() {
+    var tag = state.currentColor === '黑色' ? '黑色' : '白色';
+    addBaseImage('/images/products/180g-tee/962802505245275392_'+tag+'_3.jpeg');
+  }
+
+  // Upload
+  document.getElementById('upload-zone').onclick = function() { document.getElementById('design-upload').click(); };
+  document.getElementById('design-upload').onchange = function(e) {
+    var file = e.target.files[0]; if (!file) return;
+    var reader = new FileReader();
+    reader.onload = function(ev) {
+      var src = ev.target.result;
+      state.galleryImages.push(src);
+      renderGallery();
+      addDesignImage(src);
+    };
+    reader.readAsDataURL(file);
+  };
+
+  function renderGallery() {
+    document.getElementById('image-gallery').innerHTML = state.galleryImages.map(function(src) {
+      return '<div class="aspect-square bg-beige-100 rounded overflow-hidden cursor-pointer border hover:border-charcoal-400" onclick="var img=new Image();img.onload=function(){addDesignImage(\''+src+'\');};img.src=\''+src+'\'"><img src="'+src+'" class="w-full h-full object-cover"></div>';
+    }).join('');
+  }
+
+  // Buttons
+  document.getElementById('btn-reset').onclick = function() {
+    canvas.getObjects().forEach(function(o) { if (o !== baseImg) canvas.remove(o); });
+    canvas.renderAll(); updatePreview();
+  };
+  document.getElementById('btn-center').onclick = function() {
+    var obj = canvas.getActiveObject();
+    if (obj && obj !== baseImg) { obj.set({ left: canvas.width/2, top: canvas.height*0.4, originX: 'center', originY: 'center' }); canvas.renderAll(); updatePreview(); }
+  };
+
+  document.getElementById('btn-cart').onclick = function() {
+    if (!state.currentProduct) return alert('请先选择产品');
+    var cart = JSON.parse(localStorage.getItem('ps-cart') || '[]');
+    cart.push({ id: 'custom-'+Date.now(), name: state.currentProduct.name, color: state.currentColor, size: state.currentSize, quantity: state.qty, price: state.currentProduct.products[0].price, preview: canvas.toDataURL({format:'png',multiplier:0.5}) });
+    localStorage.setItem('ps-cart', JSON.stringify(cart));
+    alert('已加入购物车！');
+  };
+
+  window.addEventListener('DOMContentLoaded', function() {
+    setTimeout(function() { initCanvas(); loadProducts(); }, 300);
+  });
+
+  window.addEventListener('resize', function() {
+    if (canvas) { var w = document.querySelector('#design-canvas').parentElement.clientWidth; canvas.setDimensions({width: w, height: w*1.33}); canvas.renderAll(); updatePreview(); }
+  });
 </script>
+</BaseLayout>
