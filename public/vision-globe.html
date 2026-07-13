@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Night Globe</title>
+<style>
+  html, body { margin:0; padding:0; width:100%; height:100%; overflow:hidden; background:transparent; }
+  canvas { display:block; }
+</style>
+</head>
+<body>
+<script type="importmap">
+{
+  "imports": {
+    "three": "https://unpkg.com/three@0.160.0/build/three.module.js"
+  }
+}
+</script>
+<script type="module">
+import * as THREE from 'three';
+
+const scene = new THREE.Scene();
+const camera = new THREE.PerspectiveCamera(45, 1, 0.1, 1000);
+camera.position.set(0, 0.3, 3.2);
+
+const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+renderer.setSize(800, 800);
+renderer.setClearColor(0x000000, 0);
+document.body.appendChild(renderer.domElement);
+
+// Stars
+const starsGeo = new THREE.BufferGeometry();
+const starsCount = 2000;
+const starsPos = new Float32Array(starsCount * 3);
+for (let i = 0; i < starsCount; i++) {
+  starsPos[i * 3] = (Math.random() - 0.5) * 20;
+  starsPos[i * 3 + 1] = (Math.random() - 0.5) * 20;
+  starsPos[i * 3 + 2] = (Math.random() - 0.5) * 20;
+}
+starsGeo.setAttribute('position', new THREE.BufferAttribute(starsPos, 3));
+const starsMat = new THREE.PointsMaterial({ color: 0xffffff, size: 0.015, transparent: true, opacity: 0.8 });
+const stars = new THREE.Points(starsGeo, starsMat);
+scene.add(stars);
+
+// Earth with night lights
+const textureLoader = new THREE.TextureLoader();
+const earthNightUrl = 'https://upload.wikimedia.org/wikipedia/commons/thumb/e/e5/Black_Marble_2012_-_Asia_and_Oceania_%28crop%29.jpg/1280px-Black_Marble_2012_-_Asia_and_Oceania_%28crop%29.jpg';
+const earthGeo = new THREE.SphereGeometry(1.2, 64, 64);
+
+// Fallback: create a dark earth with procedural city lights
+const earthMat = new THREE.MeshPhongMaterial({
+  color: 0x0a0a1a,
+  emissive: 0x000000,
+  shininess: 5,
+  specular: 0x111111,
+});
+
+const earth = new THREE.Mesh(earthGeo, earthMat);
+scene.add(earth);
+
+// Load real night texture
+textureLoader.load(earthNightUrl,
+  (texture) => {
+    earthMat.map = texture;
+    earthMat.color.set(0xffffff);
+    earthMat.emissive.set(0x222222);
+    earthMat.emissiveMap = texture;
+    earthMat.emissiveIntensity = 0.8;
+    earthMat.needsUpdate = true;
+  },
+  undefined,
+  () => {
+    // Use fallback procedural lights if image fails
+    createProceduralNightLights();
+  }
+);
+
+function createProceduralNightLights() {
+  const canvas = document.createElement('canvas');
+  canvas.width = 2048;
+  canvas.height = 1024;
+  const ctx = canvas.getContext('2d');
+  
+  // Dark blue background
+  ctx.fillStyle = '#0a0a1e';
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+  
+  // City clusters - approximate real city locations
+  const cities = [
+    // North America
+    {x:0.18,y:0.35,r:8}, {x:0.22,y:0.32,r:10}, {x:0.15,y:0.38,r:6}, // NYC, DC
+    {x:0.17,y:0.42,r:5}, {x:0.14,y:0.45,r:7}, // Florida
+    {x:0.10,y:0.38,r:6}, {x:0.08,y:0.35,r:5}, // Chicago
+    {x:0.05,y:0.42,r:7}, {x:0.03,y:0.40,r:6}, // Texas
+    {x:0.02,y:0.35,r:5}, {x:0.01,y:0.33,r:5}, // Denver/LA
+    {x:0.01,y:0.30,r:4}, // Seattle
+    // Europe
+    {x:0.48,y:0.30,r:8}, {x:0.49,y:0.28,r:7}, {x:0.47,y:0.31,r:6}, // UK
+    {x:0.50,y:0.35,r:7}, {x:0.51,y:0.37,r:6}, {x:0.50,y:0.39,r:5}, // France/Spain
+    {x:0.53,y:0.32,r:6}, {x:0.54,y:0.30,r:5}, {x:0.55,y:0.33,r:6}, // Germany
+    {x:0.57,y:0.37,r:6}, {x:0.58,y:0.35,r:5}, // Italy
+    {x:0.62,y:0.28,r:4}, {x:0.63,y:0.26,r:3}, // Scandinavia
+    // Africa
+    {x:0.52,y:0.48,r:5}, // Nigeria
+    {x:0.55,y:0.52,r:5}, // Congo
+    {x:0.56,y:0.60,r:5}, // South Africa
+    {x:0.50,y:0.42,r:4}, // Morocco
+    // Middle East
+    {x:0.60,y:0.40,r:5}, {x:0.61,y:0.38,r:4}, // Egypt/Israel
+    {x:0.63,y:0.42,r:4}, // Saudi
+    {x:0.65,y:0.38,r:3}, // Iraq
+    // India
+    {x:0.68,y:0.42,r:7}, {x:0.70,y:0.40,r:8}, {x:0.69,y:0.44,r:6},
+    // Southeast Asia
+    {x:0.75,y:0.45,r:5}, {x:0.76,y:0.48,r:4}, // Thailand/Vietnam
+    {x:0.85,y:0.48,r:4}, // Philippines/Indonesia
+    // East Asia
+    {x:0.78,y:0.35,r:10}, {x:0.80,y:0.33,r:8}, {x:0.79,y:0.37,r:8}, // China east
+    {x:0.75,y:0.33,r:4}, {x:0.73,y:0.32,r}, // China central
+    {x:0.82,y:0.30,r:6}, // Beijing
+    {x:0.83,y:0.35,r:5}, {x:0.84,y:0.36,r:5}, // Shanghai/Korea
+    {x:0.86,y:0.33,r:7}, {x:0.87,y:0.34,r:6}, {x:0.88,y:0.35,r:5}, // Japan
+    // Oceania
+    {x:0.87,y:0.65,r:4}, // Australia east
+    {x:0.85,y:0.60,r:3}, // Australia west
+    // South America
+    {x:0.25,y:0.60,r:5}, {x:0.24,y:0.62,r:4}, // Brazil
+    {x:0.23,y:0.58,r:3}, {x:0.22,y:0.55,r}, // Argentina
+  ];
+  
+  cities.forEach(c => {
+    if (typeof c.r !== 'number' || c.r <= 0) c.r = 3;
+    const gradient = ctx.createRadialGradient(c.x * canvas.width, c.y * canvas.height, 0, c.x * canvas.width, c.y * canvas.height, c.r * 12);
+    gradient.addColorStop(0, 'rgba(255,200,80,0.9)');
+    gradient.addColorStop(0.1, 'rgba(255,180,50,0.7)');
+    gradient.addColorStop(0.3, 'rgba(255,150,30,0.3)');
+    gradient.addColorStop(0.6, 'rgba(100,80,200,0.15)');
+    gradient.addColorStop(1, 'rgba(10,10,30,0)');
+    ctx.fillStyle = gradient;
+    ctx.fillRect(c.x * canvas.width - c.r * 12, c.y * canvas.height - c.r * 12, c.r * 24, c.r * 24);
+  });
+  
+  // Scattered smaller lights
+  for (let i = 0; i < 3000; i++) {
+    const x = Math.random() * canvas.width;
+    const y = Math.random() * canvas.height;
+    const alpha = Math.random() * 0.4;
+    ctx.fillStyle = `rgba(255,${180 + Math.random()*75},${30 + Math.random()*60},${alpha})`;
+    ctx.beginPath();
+    ctx.arc(x, y, Math.random() * 1.5, 0, Math.PI*2);
+    ctx.fill();
+  }
+  
+  const tex = new THREE.CanvasTexture(canvas);
+  earthMat.map = tex;
+  earthMat.color.set(0xffffff);
+  earthMat.emissive.set(0x666655);
+  earthMat.emissiveMap = tex;
+  earthMat.emissiveIntensity = 0.7;
+  earthMat.needsUpdate = true;
+}
+initLights();
+
+// Lights
+function initLights() {
+  scene.add(new THREE.AmbientLight(0x111122, 1.0));
+  const sun = new THREE.DirectionalLight(0x334466, 1.2);
+  sun.position.set(5, 2, 3);
+  scene.add(sun);
+  const fill = new THREE.DirectionalLight(0x222244, 0.4);
+  fill.position.set(-3, -1, -2);
+  scene.add(fill);
+}
+
+// Cursor particles
+const cursorGroup = new THREE.Group();
+for (let i = 0; i < 12; i++) {
+  const dotGeo = new THREE.SphereGeometry(0.008, 4, 4);
+  const dotMat = new THREE.MeshBasicMaterial({ color: 0x66aaff, transparent: true, opacity: 0.6 });
+  const dot = new THREE.Mesh(dotGeo, dotMat);
+  dot.userData = { angle: (i / 12) * Math.PI * 2, speed: 0.3 + Math.random() * 0.6, radius: 1.8 + Math.random() * 0.6, height: (Math.random() - 0.5) * 1.2 };
+  cursorGroup.add(dot);
+}
+scene.add(cursorGroup);
+
+// Atmo glow
+const atmoGeo = new THREE.SphereGeometry(1.25, 64, 64);
+const atmoMat = new THREE.ShaderMaterial({
+  vertexShader: `
+    varying vec3 vNormal;
+    void main() { vNormal = normalize(normalMatrix * normal); gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }
+  `,
+  fragmentShader: `
+    varying vec3 vNormal;
+    void main() {
+      float intensity = pow(0.7 - dot(vNormal, vec3(0.0, 0.0, 1.0)), 3.0);
+      gl_FragColor = vec4(0.3, 0.5, 1.0, 1.0) * intensity * 0.25;
+    }
+  `,
+  blending: THREE.AdditiveBlending,
+  side: THREE.FrontSide,
+  transparent: true,
+  depthWrite: false,
+});
+const atmo = new THREE.Mesh(atmoGeo, atmoMat);
+scene.add(atmo);
+
+// Animation
+function animate() {
+  requestAnimationFrame(animate);
+  
+  const t = performance.now() * 0.001;
+  
+  earth.rotation.y += 0.0008;
+  stars.rotation.y += 0.0001;
+  stars.rotation.x += 0.00005;
+  
+  cursorGroup.children.forEach(dot => {
+    dot.userData.angle += dot.userData.speed * 0.001;
+    const a = dot.userData.angle;
+    const r = dot.userData.radius;
+    dot.position.set(Math.cos(a) * r, dot.userData.height, Math.sin(a) * r);
+    dot.material.opacity = 0.3 + Math.sin(t * 2 + dot.userData.angle) * 0.3;
+  });
+  cursorGroup.rotation.y += 0.0003;
+  
+  renderer.render(scene, camera);
+}
+
+animate();
+
+// Resize
+function onResize() {
+  const size = Math.min(window.innerWidth, window.innerHeight, 600);
+  renderer.setSize(size, size);
+}
+window.addEventListener('resize', onResize);
+onResize();
+</script>
+</body>
+</html>
