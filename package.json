@@ -13,7 +13,6 @@
     "@astrojs/cloudflare": "^12.2.2",
     "@astrojs/tailwind": "^5.1.5",
     "@nanostores/persistent": "^0.10.2",
-    "@supabase/supabase-js": "^2.110.3",
     "astro": "^5.18.2",
     "nanostores": "^0.11.4",
     "swiper": "^11.2.10",
