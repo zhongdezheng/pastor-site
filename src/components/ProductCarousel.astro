@@ -7,7 +7,7 @@ interface Props { lang: 'en' | 'zh' }
 const { lang } = Astro.props;
 
 const labels = {
-  en: { sizes:'Sizes', weight:'Weight', stock:'In Stock', outOfStock:'Out of Stock', addToCart:'Add to Cart', color:'Color', qty:'Qty', all:'All', clothing:'Clothing', jewelry:'Jewelry' },
+  en: { sizes:'Sizes', weight:'Weight', stock:'In Stock', outOfStock:'Out of Stock', addToCart:'Cart', color:'Color', qty:'Qty', all:'All', clothing:'Clothing', jewelry:'Jewelry' },
   zh: { sizes:'尺码', weight:'克重', stock:'库存', outOfStock:'已售罄', addToCart:'加入购物车', color:'颜色', qty:'数量', all:'全部', clothing:'服装', jewelry:'首饰' },
 };
 const t = labels[lang];
@@ -96,12 +96,21 @@ const carouselCards = appProducts.map((p, pi) => ({
 </style>
 
 <script type="application/json" id="__carouselData" set:html={JSON.stringify(allProducts.map(p=>({id:p.id,name:p.name[lang],price:p.price,colors:p.colors,sizes:p.sizes,category:p.category,stock:p.stock,image:p.images?p.images[0]:'',images:p.images||[]})))}></script>
+<script type="application/json" id="__carouselLabels" set:html={JSON.stringify(labels[lang])}></script>
 <script is:inline>
   (function() {
     var ALLPRODS = JSON.parse(document.getElementById("__carouselData").textContent);
+    var LABELS = JSON.parse(document.getElementById("__carouselLabels").textContent);
     var CURRCAT = 'all';
     var FILTERED = ALLPRODS.filter(function(p){ return CURRCAT==='all'||p.category===CURRCAT; });
     var track, inner;
+
+    // Update category buttons
+    document.querySelectorAll('.carousel-cat-btn').forEach(function(b){
+      if (b.dataset.cat === 'all') b.textContent = LABELS.all;
+      if (b.dataset.cat === 'apparel') b.textContent = LABELS.clothing;
+      if (b.dataset.cat === 'accessories') b.textContent = LABELS.jewelry;
+    });
 
     function init() {
       track = document.getElementById('product-track');
@@ -137,7 +146,7 @@ const carouselCards = appProducts.map((p, pi) => ({
           '<div class="card-colors flex gap-0.5 mb-1">'+colorsHtml+'</div>'+
           '<div class="card-sizes flex flex-wrap gap-0.5 mb-2">'+sizesHtml+'</div>'+
           '<div class="mt-auto flex items-center justify-between"><span class="text-[10px] font-medium '+(p.stock>0?'text-green-600':'text-red-400')+'">'+(p.stock>0?'库存:'+p.stock:'售罄')+'</span>'+
-          '<button class="carousel-add-cart px-2 py-1.5 bg-charcoal-800 text-white text-[10px] rounded-lg hover:bg-charcoal-700 transition-colors" data-product="'+p.id+'" data-name="'+p.name+'" data-price="'+p.price+'">加入购物车</button></div></div></div>';
+          '<button class="carousel-add-cart px-2 py-1.5 bg-charcoal-800 text-white text-[10px] rounded-lg hover:bg-charcoal-700 transition-colors" data-product="'+p.id+'" data-name="'+p.name+'" data-price="'+p.price+'">'+t.addToCart+'</button></div></div></div>';
       }).join('');
       inner.innerHTML = html + html; // duplicate for seamless loop
     }
