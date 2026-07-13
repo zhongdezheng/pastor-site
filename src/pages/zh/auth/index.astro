@@ -1,0 +1,113 @@
+---
+import BaseLayout from '../../../layouts/BaseLayout.astro';
+---
+
+<BaseLayout lang="zh" title="登录 — 活石">
+  <section class="pt-24 pb-16 px-4 sm:px-6 min-h-screen" style="background: linear-gradient(180deg, #fefcf5 0%, #f0ece0 100%);">
+    <div class="max-w-md mx-auto">
+      <h1 class="text-2xl font-serif font-bold text-charcoal-900 text-center mb-2">登录</h1>
+      <p class="text-center text-charcoal-500 text-sm mb-8">追踪你的订单和代祷请求</p>
+
+      <div id="auth-form" class="bg-white rounded-2xl shadow-lg p-6 md:p-8 border border-beige-200 space-y-4">
+        <div id="auth-mode-login">
+          <div>
+            <label class="block text-xs font-medium text-charcoal-500 mb-1">邮箱</label>
+            <input type="email" id="auth-email" placeholder="you@example.com" class="w-full px-4 py-2.5 rounded-lg border border-beige-300 bg-beige-50 focus:outline-none focus:ring-2 focus:ring-sage-400 text-charcoal-800 text-sm">
+          </div>
+          <div>
+            <label class="block text-xs font-medium text-charcoal-500 mb-1">密码</label>
+            <input type="password" id="auth-password" placeholder="••••••" class="w-full px-4 py-2.5 rounded-lg border border-beige-300 bg-beige-50 focus:outline-none focus:ring-2 focus:ring-sage-400 text-charcoal-800 text-sm">
+          </div>
+          <button id="btn-login" class="w-full py-3 bg-sage-500 hover:bg-sage-600 text-white font-medium rounded-xl transition-colors">登录</button>
+          <p class="text-center text-xs text-charcoal-400 mt-3">
+            还没有账号？<a href="#" id="show-register" class="text-sage-600 underline">注册</a>
+          </p>
+        </div>
+
+        <div id="auth-mode-register" class="hidden">
+          <div>
+            <label class="block text-xs font-medium text-charcoal-500 mb-1">姓名</label>
+            <input type="text" id="reg-name" placeholder="张三" class="w-full px-4 py-2.5 rounded-lg border border-beige-300 bg-beige-50 focus:outline-none focus:ring-2 focus:ring-sage-400 text-charcoal-800 text-sm">
+          </div>
+          <div>
+            <label class="block text-xs font-medium text-charcoal-500 mb-1">邮箱</label>
+            <input type="email" id="reg-email" placeholder="you@example.com" class="w-full px-4 py-2.5 rounded-lg border border-beige-300 bg-beige-50 focus:outline-none focus:ring-2 focus:ring-sage-400 text-charcoal-800 text-sm">
+          </div>
+          <div>
+            <label class="block text-xs font-medium text-charcoal-500 mb-1">密码</label>
+            <input type="password" id="reg-password" placeholder="至少6位" class="w-full px-4 py-2.5 rounded-lg border border-beige-300 bg-beige-50 focus:outline-none focus:ring-2 focus:ring-sage-400 text-charcoal-800 text-sm">
+          </div>
+          <button id="btn-register" class="w-full py-3 bg-sage-500 hover:bg-sage-600 text-white font-medium rounded-xl transition-colors">创建账号</button>
+          <p class="text-center text-xs text-charcoal-400 mt-3">
+            已有账号？<a href="#" id="show-login" class="text-sage-600 underline">登录</a>
+          </p>
+        </div>
+
+        <p id="auth-error" class="text-red-500 text-xs text-center hidden"></p>
+        <p id="auth-success" class="text-sage-600 text-xs text-center hidden"></p>
+      </div>
+
+      <div id="auth-logged-in" class="hidden bg-white rounded-2xl shadow-lg p-6 md:p-8 border border-beige-200 text-center">
+        <p class="text-4xl mb-3">✅</p>
+        <p class="text-charcoal-700 text-sm mb-4">已登录。<a href="/zh/account" class="text-sage-600 underline">前往我的账号</a></p>
+        <button id="btn-logout" class="text-charcoal-400 text-xs underline hover:text-charcoal-600">退出登录</button>
+      </div>
+    </div>
+  </section>
+</BaseLayout>
+
+<script is:inline>
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+
+const supabase = createClient(
+  'https://uwebpdtjkucbcyscfzmq.supabase.co',
+  'sb_publishable_TfquiTSSQip7GcF4Sodsjg_PNc_OzNl'
+);
+
+(function(){
+  var form = document.getElementById('auth-form');
+  var loggedIn = document.getElementById('auth-logged-in');
+  var errorEl = document.getElementById('auth-error');
+  var successEl = document.getElementById('auth-success');
+  var loginDiv = document.getElementById('auth-mode-login');
+  var regDiv = document.getElementById('auth-mode-register');
+
+  document.getElementById('show-register')?.addEventListener('click', function(e){ e.preventDefault(); loginDiv.classList.add('hidden'); regDiv.classList.remove('hidden'); errorEl.classList.add('hidden'); });
+  document.getElementById('show-login')?.addEventListener('click', function(e){ e.preventDefault(); regDiv.classList.add('hidden'); loginDiv.classList.remove('hidden'); errorEl.classList.add('hidden'); });
+
+  supabase.auth.getSession().then(function(r){
+    if (r.data.session) { form.classList.add('hidden'); loggedIn.classList.remove('hidden'); }
+  });
+
+  document.getElementById('btn-login')?.addEventListener('click', async function(){
+    var email = document.getElementById('auth-email').value.trim();
+    var password = document.getElementById('auth-password').value;
+    if (!email || !password) { errorEl.textContent = '请填写所有字段。'; errorEl.classList.remove('hidden'); return; }
+    errorEl.classList.add('hidden');
+    var { error } = await supabase.auth.signInWithPassword({ email: email, password: password });
+    if (error) { errorEl.textContent = error.message; errorEl.classList.remove('hidden'); return; }
+    form.classList.add('hidden'); loggedIn.classList.remove('hidden');
+  });
+
+  document.getElementById('btn-register')?.addEventListener('click', async function(){
+    var name = document.getElementById('reg-name').value.trim();
+    var email = document.getElementById('reg-email').value.trim();
+    var password = document.getElementById('reg-password').value;
+    if (!name || !email || !password) { errorEl.textContent = '请填写所有字段。'; errorEl.classList.remove('hidden'); return; }
+    if (password.length < 6) { errorEl.textContent = '密码至少需要6位。'; errorEl.classList.remove('hidden'); return; }
+    errorEl.classList.add('hidden');
+    var { error } = await supabase.auth.signUp({ email: email, password: password, options: { data: { full_name: name } } });
+    if (error) { errorEl.textContent = error.message; errorEl.classList.remove('hidden'); return; }
+    successEl.textContent = '注册成功！请查看邮箱确认。';
+    successEl.classList.remove('hidden');
+    regDiv.classList.add('hidden'); loginDiv.classList.remove('hidden');
+  });
+
+  document.getElementById('btn-logout')?.addEventListener('click', async function(){
+    await supabase.auth.signOut();
+    loggedIn.classList.add('hidden'); form.classList.remove('hidden');
+  });
+
+  document.getElementById('auth-password')?.addEventListener('keydown', function(e){ if (e.key === 'Enter') document.getElementById('btn-login').click(); });
+})();
+</script>

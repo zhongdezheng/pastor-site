@@ -1,0 +1,99 @@
+---
+import BaseLayout from '../../../layouts/BaseLayout.astro';
+---
+
+<BaseLayout lang="en" title="My Account — Livingstone">
+  <section class="pt-24 pb-16 px-4 sm:px-6 min-h-screen" style="background: linear-gradient(180deg, #fefcf5 0%, #f0ece0 100%);">
+    <div class="max-w-4xl mx-auto">
+      <div id="not-logged-in">
+        <p class="text-center text-charcoal-600 py-20">Please <a href="/en/auth" class="text-sage-600 underline">sign in</a> to view your account.</p>
+      </div>
+
+      <div id="account-content" class="hidden space-y-8">
+        <div class="flex items-center justify-between">
+          <h1 class="text-2xl font-serif font-bold text-charcoal-900">My Account</h1>
+          <button id="btn-logout" class="text-xs text-charcoal-400 underline hover:text-charcoal-600">Sign Out</button>
+        </div>
+
+        <!-- Orders -->
+        <div>
+          <h2 class="text-lg font-semibold text-charcoal-800 mb-4">My Orders</h2>
+          <div id="order-list" class="space-y-3">
+            <p class="text-charcoal-400 text-sm">Loading...</p>
+          </div>
+        </div>
+
+        <!-- Prayer History -->
+        <div>
+          <h2 class="text-lg font-semibold text-charcoal-800 mb-4">My Prayer Requests</h2>
+          <div id="prayer-list" class="space-y-3">
+            <p class="text-charcoal-400 text-sm">Loading...</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+</BaseLayout>
+
+<script is:inline>
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+
+const supabase = createClient(
+  'https://uwebpdtjkucbcyscfzmq.supabase.co',
+  'sb_publishable_TfquiTSSQip7GcF4Sodsjg_PNc_OzNl'
+);
+
+async function init(){
+  var { data } = await supabase.auth.getSession();
+  if (!data.session) return;
+
+  var user = data.session.user;
+  document.getElementById('not-logged-in').classList.add('hidden');
+  document.getElementById('account-content').classList.remove('hidden');
+
+  // Load orders
+  var { data: orders } = await supabase.from('orders').select('*').eq('user_id', user.id).order('created_at', { ascending: false });
+  var ol = document.getElementById('order-list');
+  if (!orders || orders.length === 0) {
+    ol.innerHTML = '<p class="text-charcoal-400 text-sm">No orders yet. <a href="/en/designer" class="text-sage-600 underline">Design your own</a></p>';
+  } else {
+    ol.innerHTML = orders.map(function(o){
+      var items = [];
+      try { items = typeof o.items === 'string' ? JSON.parse(o.items) : o.items; } catch(e) {}
+      var statusColors = {pending:'text-yellow-600 bg-yellow-50',confirmed:'text-blue-600 bg-blue-50',shipped:'text-purple-600 bg-purple-50',delivered:'text-green-600 bg-green-50',cancelled:'text-red-600 bg-red-50'};
+      return '<div class="bg-white rounded-xl p-4 border border-beige-200 shadow-sm">' +
+        '<div class="flex justify-between items-center mb-2">' +
+        '<span class="text-charcoal-800 font-medium">Order #' + o.id + '</span>' +
+        '<span class="text-xs px-2 py-0.5 rounded ' + (statusColors[o.status] || 'text-gray-500') + '">' + o.status + '</span>' +
+        '</div>' +
+        '<p class="text-charcoal-500 text-xs">' + items.length + ' items · $' + o.total + ' · ' + new Date(o.created_at).toLocaleString() + '</p>' +
+        '</div>';
+    }).join('');
+  }
+
+  // Load prayer history by email
+  var { data: prayers } = await supabase.from('prayer_requests').select('*').eq('email', user.email).order('created_at', { ascending: false }).limit(20);
+  var pl = document.getElementById('prayer-list');
+  if (!prayers || prayers.length === 0) {
+    pl.innerHTML = '<p class="text-charcoal-400 text-sm">No prayer requests yet. <a href="/en/prayer" class="text-sage-600 underline">Submit a prayer</a></p>';
+  } else {
+    pl.innerHTML = prayers.map(function(p){
+      return '<div class="bg-white rounded-xl p-4 border border-beige-200 shadow-sm">' +
+        '<div class="flex justify-between items-start mb-1">' +
+        '<span class="text-charcoal-500 text-xs">' + new Date(p.created_at).toLocaleString() + '</span>' +
+        '<span class="text-xs ' + (p.prayed ? 'text-green-600' : 'text-charcoal-400') + '">' + (p.prayed ? '🙏 Prayed' : 'Waiting') + '</span>' +
+        '</div>' +
+        '<p class="text-charcoal-700 text-sm">' + h(p.request) + '</p>' +
+        '</div>';
+    }).join('');
+  }
+}
+
+document.getElementById('btn-logout')?.addEventListener('click', function(){
+  supabase.auth.signOut().then(function(){ location.href = '/en/auth'; });
+});
+
+function h(s) { return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+init();
+</script>
