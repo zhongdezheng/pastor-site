@@ -5,31 +5,47 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Night Globe</title>
 <style>
+<<<<<<< Updated upstream
   html, body { margin:0; padding:0; width:100%; height:100%; overflow:hidden; background:transparent; }
+=======
+  html, body { margin:0; padding:0; width:100%; height:100%; overflow:hidden; background:#0a0a14; }
+>>>>>>> Stashed changes
   canvas { display:block; }
 </style>
 </head>
 <body>
 <script type="importmap">
+<<<<<<< Updated upstream
 {
   "imports": {
     "three": "https://unpkg.com/three@0.160.0/build/three.module.js"
   }
 }
+=======
+{"imports":{"three":"https://unpkg.com/three@0.160.0/build/three.module.js"}}
+>>>>>>> Stashed changes
 </script>
 <script type="module">
 import * as THREE from 'three';
 
 const scene = new THREE.Scene();
+<<<<<<< Updated upstream
 const camera = new THREE.PerspectiveCamera(45, 1, 0.1, 1000);
 camera.position.set(0, 0.3, 3.2);
 
 const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+=======
+const camera = new THREE.PerspectiveCamera(42, 1, 0.1, 1000);
+camera.position.set(0, 0.15, 3.6);
+
+const renderer = new THREE.WebGLRenderer({ antialias: true });
+>>>>>>> Stashed changes
 renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 renderer.setSize(800, 800);
 renderer.setClearColor(0x000000, 0);
 document.body.appendChild(renderer.domElement);
 
+<<<<<<< Updated upstream
 // Stars
 const starsGeo = new THREE.BufferGeometry();
 const starsCount = 2000;
@@ -199,17 +215,296 @@ const atmoMat = new THREE.ShaderMaterial({
       gl_FragColor = vec4(0.3, 0.5, 1.0, 1.0) * intensity * 0.25;
     }
   `,
+=======
+// Container background
+const bg = document.createElement('div');
+bg.style.cssText = 'position:absolute;inset:0;background:radial-gradient(circle at center,#0d0d24 0%,#000010 100%);z-index:-1';
+document.body.appendChild(bg);
+
+// Stars — more realistic distribution
+const starsGeo = new THREE.BufferGeometry();
+const starsCount = 4000;
+const starsPos = new Float32Array(starsCount * 3);
+const starsSizes = new Float32Array(starsCount);
+for (let i = 0; i < starsCount; i++) {
+  const theta = Math.random() * Math.PI * 2;
+  const phi = Math.acos(2 * Math.random() - 1);
+  const r = 6 + Math.random() * 4;
+  starsPos[i * 3] = r * Math.sin(phi) * Math.cos(theta);
+  starsPos[i * 3 + 1] = r * Math.sin(phi) * Math.sin(theta);
+  starsPos[i * 3 + 2] = r * Math.cos(phi);
+  starsSizes[i] = Math.random() * 1.5 + 0.3;
+}
+starsGeo.setAttribute('position', new THREE.BufferAttribute(starsPos, 3));
+starsGeo.setAttribute('size', new THREE.BufferAttribute(starsSizes, 1));
+const starsMat = new THREE.PointsMaterial({ color: 0xffffff, size: 0.012, transparent: true, opacity: 0.9, blending: THREE.AdditiveBlending, depthWrite: false });
+const stars = new THREE.Points(starsGeo, starsMat);
+scene.add(stars);
+
+// Earth group
+const earthGroup = new THREE.Group();
+scene.add(earthGroup);
+
+// Load high-quality NASA night lights texture
+const textureLoader = new THREE.TextureLoader();
+
+// Primary: NASA Black Marble 2016 (high res)
+const nightUrls = [
+  'https://eoimages.gsfc.nasa.gov/images/imagerecords/144000/144897/BlackMarble_2016_3km.jpg',
+  'https://upload.wikimedia.org/wikipedia/commons/thumb/6/61/BlackMarble20161km.jpg/2560px-BlackMarble20161km.jpg',
+];
+
+const earthGeo = new THREE.SphereGeometry(1.1, 96, 96);
+const earthMat = new THREE.MeshStandardMaterial({
+  roughness: 0.95,
+  metalness: 0.05,
+  color: 0x111122,
+});
+const earth = new THREE.Mesh(earthGeo, earthMat);
+earthGroup.add(earth);
+
+// Load night texture
+let loaded = false;
+function tryLoad(urls, idx) {
+  if (idx >= urls.length) { useProcedural(); return; }
+  textureLoader.load(urls[idx],
+    (tex) => {
+      tex.colorSpace = THREE.SRGBColorSpace;
+      earthMat.map = tex;
+      earthMat.color.set(0x888888);
+      earthMat.emissive = new THREE.Color(0xffffff);
+      earthMat.emissiveMap = tex;
+      earthMat.emissiveIntensity = 0.45;
+      earthMat.roughness = 0.7;
+      earthMat.needsUpdate = true;
+      loaded = true;
+      console.log('Night texture loaded');
+    },
+    undefined,
+    () => tryLoad(urls, idx + 1)
+  );
+}
+tryLoad(nightUrls, 0);
+
+// Procedural fallback with high-density city lights
+function useProcedural() {
+  const canvas = document.createElement('canvas');
+  canvas.width = 4096;
+  canvas.height = 2048;
+  const ctx = canvas.getContext('2d');
+
+  // Deep black-blue ocean
+  ctx.fillStyle = '#040814';
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+  const w = canvas.width, h = canvas.height;
+
+  // Major city clusters (lon/lat mapped to x/y)
+  // Each: [lon_0-1, lat_0-1, radius_px, brightness]
+  const cities = [
+    // East Asia
+    [0.85, 0.325, 22, 1.0],  // Tokyo
+    [0.84, 0.315, 18, 0.9],  // Osaka
+    [0.81, 0.350, 20, 1.0],  // Shanghai
+    [0.80, 0.335, 16, 0.9],  // Beijing
+    [0.79, 0.365, 14, 0.85], // Guangzhou/Shenzhen
+    [0.83, 0.345, 12, 0.8],  // Seoul
+    [0.82, 0.360, 10, 0.75], // Taipei
+    [0.78, 0.355, 10, 0.8],  // Chengdu/Chongqing
+    [0.79, 0.385, 8, 0.7],   // HK
+
+    // Southeast Asia
+    [0.755, 0.440, 8, 0.75], // Bangkok
+    [0.80, 0.455, 6, 0.65],  // Manila
+    [0.76, 0.465, 7, 0.7],   // Jakarta
+    [0.775, 0.425, 5, 0.6],  // Hanoi
+    [0.755, 0.470, 5, 0.6],  // Singapore
+
+    // South Asia
+    [0.72, 0.410, 18, 1.0],  // Mumbai
+    [0.68, 0.395, 16, 0.95], // Delhi
+    [0.70, 0.420, 12, 0.85], // Bangalore
+    [0.71, 0.435, 8, 0.7],   // Chennai
+    [0.69, 0.405, 8, 0.7],   // Karachi
+    [0.675, 0.385, 6, 0.65], // Lahore
+
+    // Middle East
+    [0.615, 0.400, 10, 0.85], // Dubai/Abu Dhabi
+    [0.64, 0.380, 8, 0.75],   // Tehran
+    [0.60, 0.395, 7, 0.7],    // Cairo
+    [0.605, 0.375, 7, 0.7],   // Riyadh
+    [0.58, 0.388, 6, 0.65],   // Istanbul
+
+    // Europe
+    [0.49, 0.305, 16, 1.0],   // London
+    [0.51, 0.310, 12, 0.9],   // Paris
+    [0.535, 0.320, 10, 0.85], // Berlin
+    [0.57, 0.365, 10, 0.8],   // Rome
+    [0.52, 0.345, 8, 0.75],   // Madrid
+    [0.52, 0.355, 7, 0.7],    // Barcelona
+    [0.56, 0.330, 8, 0.7],    // Warsaw
+    [0.56, 0.350, 6, 0.65],   // Vienna
+    [0.545, 0.325, 7, 0.7],   // Amsterdam/Brussels
+    [0.61, 0.315, 5, 0.6],    // Stockholm
+    [0.58, 0.390, 8, 0.7],    // Moscow
+
+    // Africa
+    [0.545, 0.480, 8, 0.8],   // Lagos
+    [0.565, 0.520, 6, 0.65],  // Kinshasa
+    [0.585, 0.565, 7, 0.7],   // Johannesburg
+    [0.60, 0.545, 5, 0.6],    // Nairobi
+    [0.50, 0.425, 5, 0.6],    // Casablanca
+
+    // North America
+    [0.18, 0.320, 20, 1.0],   // NYC
+    [0.19, 0.325, 16, 0.9],   // Boston/DC corridor
+    [0.07, 0.330, 12, 0.85],  // Chicago
+    [0.13, 0.355, 10, 0.8],   // Atlanta
+    [0.07, 0.375, 12, 0.85],  // Dallas/Houston
+    [0.03, 0.310, 14, 0.9],   // LA
+    [0.04, 0.320, 10, 0.8],   // San Francisco
+    [0.08, 0.345, 8, 0.7],    // Detroit
+    [0.15, 0.378, 6, 0.65],   // Miami
+    [0.01, 0.300, 5, 0.6],    // Seattle
+    [0.12, 0.395, 5, 0.6],    // Orlando
+    [0.22, 0.365, 8, 0.7],    // Mexico City
+
+    // South America
+    [0.25, 0.565, 14, 0.9],   // São Paulo
+    [0.23, 0.555, 10, 0.8],   // Rio de Janeiro
+    [0.26, 0.575, 8, 0.7],    // Buenos Aires
+    [0.22, 0.520, 6, 0.65],   // Lima
+    [0.24, 0.505, 5, 0.6],    // Bogotá
+    [0.235, 0.575, 5, 0.6],   // Santiago
+
+    // Oceania
+    [0.845, 0.590, 8, 0.75],  // Sydney
+    [0.845, 0.600, 6, 0.65],  // Melbourne
+    [0.82, 0.620, 4, 0.55],   // Perth
+  ];
+
+  cities.forEach(([lon, lat, radius, brightness]) => {
+    const x = lon * w, y = lat * h;
+    const r = radius * 3;
+    const grad = ctx.createRadialGradient(x, y, 0, x, y, r);
+    grad.addColorStop(0, `rgba(255,220,140,${0.95 * brightness})`);
+    grad.addColorStop(0.05, `rgba(255,190,90,${0.8 * brightness})`);
+    grad.addColorStop(0.2, `rgba(255,150,40,${0.45 * brightness})`);
+    grad.addColorStop(0.5, `rgba(180,140,220,${0.15 * brightness})`);
+    grad.addColorStop(1, 'rgba(10,10,30,0)');
+    ctx.fillStyle = grad;
+    ctx.fillRect(x - r, y - r, r * 2, r * 2);
+  });
+
+  // Dense scattered lights (roads, small towns)
+  const imageData = ctx.getImageData(0, 0, w, h);
+  for (let i = 0; i < 80000; i++) {
+    const x = Math.floor(Math.random() * w);
+    const y = Math.floor(Math.random() * h);
+    // Clustered near cities
+    for (const [cx, cy, r] of cities) {
+      const dx = (x - cx * w), dy = (y - cy * h);
+      if (Math.sqrt(dx * dx + dy * dy) < r * 3) {
+        const idx = (y * w + x) * 4;
+        const alpha = 0.1 + Math.random() * 0.5;
+        imageData.data[idx] = Math.min(255, imageData.data[idx] + Math.floor(255 * alpha));
+        imageData.data[idx + 1] = Math.min(255, imageData.data[idx + 1] + Math.floor(200 * alpha));
+        imageData.data[idx + 2] = Math.min(255, imageData.data[idx + 2] + Math.floor(100 * alpha));
+        imageData.data[idx + 3] = 255;
+        break;
+      }
+    }
+  }
+  ctx.putImageData(imageData, 0, 0);
+
+  // Highway-like lines between nearby cities
+  const roadPairs = [
+    [0.18,0.32, 0.19,0.325], [0.19,0.325, 0.13,0.355],  // NYC-DC-Atlanta
+    [0.03,0.31, 0.04,0.32], [0.03,0.31, 0.07,0.33],       // LA-SF, LA-Chicago
+    [0.85,0.325, 0.84,0.315], [0.84,0.315, 0.81,0.35],    // Tokyo-Osaka-Shanghai
+    [0.81,0.35, 0.80,0.335], [0.81,0.35, 0.79,0.365],     // Shanghai-Beijing-Guangzhou
+    [0.72,0.41, 0.68,0.395], [0.68,0.395, 0.69,0.405],    // Mumbai-Delhi
+    [0.49,0.305, 0.51,0.31], [0.51,0.31, 0.535,0.32],     // London-Paris-Berlin
+    [0.57,0.365, 0.56,0.33], [0.56,0.33, 0.535,0.32],     // Rome-Warsaw-Berlin
+    [0.25,0.565, 0.23,0.555],                               // SP-Rio
+    [0.07,0.375, 0.07,0.33],                                // Houston-Chicago
+    [0.18,0.32, 0.07,0.33],                                  // NYC-Chicago
+  ];
+  roadPairs.forEach(([x1,y1,x2,y2]) => {
+    ctx.beginPath();
+    ctx.moveTo(x1*w, y1*h);
+    ctx.lineTo(x2*w, y2*h);
+    ctx.strokeStyle = 'rgba(255,200,100,0.15)';
+    ctx.lineWidth = 2;
+    ctx.stroke();
+  });
+
+  const tex = new THREE.CanvasTexture(canvas);
+  tex.colorSpace = THREE.SRGBColorSpace;
+  earthMat.map = tex;
+  earthMat.color.set(0x888888);
+  earthMat.emissive = new THREE.Color(0xffffff);
+  earthMat.emissiveMap = tex;
+  earthMat.emissiveIntensity = 0.4;
+  earthMat.roughness = 0.7;
+  earthMat.needsUpdate = true;
+}
+useProcedural();
+
+// Lighting
+const ambientLight = new THREE.AmbientLight(0x111122, 0.8);
+scene.add(ambientLight);
+const directionalLight = new THREE.DirectionalLight(0x334466, 1.0);
+directionalLight.position.set(5, 3, 5);
+scene.add(directionalLight);
+
+// Atmosphere glow — realistic blue rim
+const atmoGeo = new THREE.SphereGeometry(1.15, 96, 96);
+const atmoMat = new THREE.ShaderMaterial({
+  vertexShader: `varying vec3 vNormal; varying vec3 vPosition;
+    void main() { vec4 worldPos = modelMatrix * vec4(position,1.0); vPosition = worldPos.xyz; vNormal = normalize(mat3(modelMatrix) * normal); gl_Position = projectionMatrix * modelViewMatrix * vec4(position,1.0); }`,
+  fragmentShader: `varying vec3 vNormal; varying vec3 vPosition;
+    void main() { vec3 viewDir = normalize(cameraPosition - vPosition); float rim = 1.0 - abs(dot(vNormal, viewDir)); float intensity = pow(rim, 3.5) * 0.35;
+    vec3 color = mix(vec3(0.3,0.55,1.0), vec3(0.15,0.35,0.8), rim); gl_FragColor = vec4(color, 1.0) * intensity; }`,
+>>>>>>> Stashed changes
   blending: THREE.AdditiveBlending,
   side: THREE.FrontSide,
   transparent: true,
   depthWrite: false,
 });
 const atmo = new THREE.Mesh(atmoGeo, atmoMat);
+<<<<<<< Updated upstream
 scene.add(atmo);
+=======
+earthGroup.add(atmo);
+
+// Grid lines (latitude/longitude — subtle)
+const gridGroup = new THREE.Group();
+const gridMaterial = new THREE.MeshBasicMaterial({ color: 0x224466, transparent: true, opacity: 0.06, side: THREE.DoubleSide, depthWrite: false });
+// Lat circles
+for (let lat = -60; lat <= 60; lat += 30) {
+  const r = 1.105 * Math.cos(lat * Math.PI / 180);
+  const y = 1.105 * Math.sin(lat * Math.PI / 180);
+  const ringGeo = new THREE.TorusGeometry(r, 0.003, 8, 64);
+  const ring = new THREE.Mesh(ringGeo, gridMaterial);
+  ring.position.y = y;
+  ring.rotation.x = Math.PI / 2;
+  gridGroup.add(ring);
+}
+// Lon circles
+for (let lon = 0; lon < 180; lon += 30) {
+  const ringGeo = new THREE.TorusGeometry(1.105, 0.003, 8, 64);
+  const ring = new THREE.Mesh(ringGeo, gridMaterial);
+  ring.rotation.y = lon * Math.PI / 180;
+  gridGroup.add(ring);
+}
+earthGroup.add(gridGroup);
+>>>>>>> Stashed changes
 
 // Animation
 function animate() {
   requestAnimationFrame(animate);
+<<<<<<< Updated upstream
   
   const t = performance.now() * 0.001;
   
@@ -229,12 +524,26 @@ function animate() {
   renderer.render(scene, camera);
 }
 
+=======
+  earthGroup.rotation.y += 0.0006;
+  stars.rotation.y += 0.00008;
+  stars.rotation.x += 0.00004;
+  renderer.render(scene, camera);
+}
+>>>>>>> Stashed changes
 animate();
 
 // Resize
 function onResize() {
+<<<<<<< Updated upstream
   const size = Math.min(window.innerWidth, window.innerHeight, 600);
   renderer.setSize(size, size);
+=======
+  const size = Math.min(window.innerWidth, window.innerHeight, 440);
+  renderer.setSize(size, size);
+  renderer.domElement.style.width = size + 'px';
+  renderer.domElement.style.height = size + 'px';
+>>>>>>> Stashed changes
 }
 window.addEventListener('resize', onResize);
 onResize();
