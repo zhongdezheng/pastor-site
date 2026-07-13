@@ -27,12 +27,9 @@ const hasMore = moreParagraphs.length > 0;
       <span class="text-beige-400 text-base">✦</span>
       <span class="block w-10 h-px bg-beige-400"></span>
     </div>
-    <h2 class="text-xl sm:text-2xl lg:text-3xl font-serif font-bold text-charcoal-800 mb-2">
+    <h2 class="text-xl sm:text-2xl lg:text-3xl font-serif font-bold text-charcoal-800 mb-6">
       {v.title}
     </h2>
-    <div class="flex justify-center mb-8">
-      <iframe src="/vision-globe.html" class="w-full max-w-[500px] aspect-square border-0" style="background:transparent;" title="Global Vision Globe"></iframe>
-    </div>
     <div class="text-charcoal-600 leading-relaxed font-serif max-w-4xl mx-auto space-y-4 text-[15px] sm:text-base">
       {previewParagraphs.map((p: string) => <p>{p}</p>)}
     </div>
