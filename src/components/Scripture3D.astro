@@ -111,191 +111,129 @@ const { lang } = Astro.props;
   }
 </style>
 
-<script>
+<script is:inline>
   function initScriptureCarousel() {
-    const track = document.getElementById('scripture-track');
-    const cards = document.querySelectorAll<HTMLElement>('.scripture-card');
-    const dots = document.querySelectorAll<HTMLElement>('.scr-dot');
-    const prevBtn = document.getElementById('scr-prev');
-    const nextBtn = document.getElementById('scr-next');
-
+    var track = document.getElementById('scripture-track');
+    var cards = document.querySelectorAll('.scripture-card');
+    var dots = document.querySelectorAll('.scr-dot');
+    var prevBtn = document.getElementById('scr-prev');
+    var nextBtn = document.getElementById('scr-next');
     if (!track || cards.length === 0) return;
+    var total = cards.length;
 
-    const total = cards.length;
-
-    // ── Calculate card width for centering ──
-    function getCardWidth(): number {
-      const w = window.innerWidth;
-      return w >= 768 ? 340 : 280;
+    function getCardWidth(){
+      return window.innerWidth >= 768 ? 340 : 280;
     }
-    function getGap(): number {
+    function getGap(){
       return window.innerWidth >= 768 ? 24 : 16;
     }
 
+    var animFrame = null;
+    var scrollPos = 0;
+    var targetCard = 0;
+    var paused = false;
+    var lastTime = 0;
+    var SCROLL_SPEED = 30;
 
-
-    // ── Continuous auto-scroll animation ──
-    let animFrame: number | null = null;
-    let scrollPos = 0;               // current scroll offset in px (fractional, for smooth animation)
-    let targetCard = 0;             // which card index is closest to center
-    let paused = false;
-    let lastTime = 0;
-    const SCROLL_SPEED = 30;        // px per second
-
-    function getCardUnit(): number {
+    function getCardUnit(){
       return getCardWidth() + getGap();
     }
 
-    function animate(timestamp: number) {
-      if (paused) {
-        animFrame = null;
-        return;
-      }
-
+    function animate(timestamp){
+      if (paused) { animFrame = null; return; }
       if (!lastTime) lastTime = timestamp;
-      const dt = Math.min(timestamp - lastTime, 100); // cap to avoid jump after tab switch
+      var dt = Math.min(timestamp - lastTime, 100);
       lastTime = timestamp;
-
-      // Advance scroll position (right-to-left flow: cards move left, so offset decreases)
       scrollPos += SCROLL_SPEED * (dt / 1000);
-
-      const unit = getCardUnit();
-      const totalWidth = total * unit;
-
-      // Wrap around
+      var unit = getCardUnit();
+      var totalWidth = total * unit;
       while (scrollPos >= totalWidth) scrollPos -= totalWidth;
-
-      // Determine which card is closest to center
-      // scrollPos / unit = floating-point card index offset
-      const floatIdx = (scrollPos / unit) % total;
+      var floatIdx = (scrollPos / unit) % total;
       targetCard = Math.round(floatIdx) % total;
-
-      // Render with fractional offset for smooth sub-pixel positioning
-      renderSmooth(floatIdx);
-
+      renderSmooth(targetCard);
       animFrame = requestAnimationFrame(animate);
     }
 
-    function renderSmooth(floatIdx: number) {
-      const cw = getCardWidth();
-      const gap = getGap();
-      const unit = cw + gap;
-
-      // Set data-offset for each card based on distance from floatIdx
-      cards.forEach((card, i) => {
-        let dist = i - floatIdx;
-        // Wrap around for circular
-        if (dist < -total / 2) dist += total;
-        if (dist > total / 2) dist -= total;
-        const rounded = Math.round(dist);
-        card.setAttribute('data-offset', String(Math.max(-3, Math.min(3, rounded))));
-        if (Math.abs(rounded) <= 2) {
-          card.style.display = '';
-        } else {
-          card.style.display = 'none';
-        }
+    function renderSmooth(targetIndex){
+      var unit = getCardUnit();
+      var idx = targetIndex;
+      var centerX = (window.innerWidth / 2) - (getCardWidth() / 2);
+      var offset = idx * unit - scrollPos % (total * unit);
+      if (offset < -unit * 2) offset += total * unit;
+      if (offset > total * unit - unit * 2) offset -= total * unit;
+      var translateX = centerX - offset;
+      track.style.transform = 'translateX(' + translateX + 'px)';
+      cards.forEach(function(card, i){
+        var relIdx = (i - idx + total) % total;
+        if (relIdx > total/2) relIdx -= total;
+        var o = Math.abs(relIdx);
+        var el = card;
+        el.setAttribute('data-offset', String(relIdx));
       });
-
-      // Smooth translateX: center the floatIdx position
-      const containerCenter = track.parentElement!.clientWidth / 2;
-      const offsetPx = floatIdx * unit;
-      const translateX = containerCenter - (cw / 2) - offsetPx;
-      track.style.transform = `translateX(${translateX}px)`;
-
-      // Update dots
-      dots.forEach((dot, i) => {
-        dot.classList.toggle('active', i === targetCard);
+      dots.forEach(function(d, i){
+        d.classList.toggle('active', i === idx);
       });
     }
 
-    // ── Pause/resume ──
-    function pauseAuto() { paused = true; if (animFrame) { cancelAnimationFrame(animFrame); animFrame = null; } }
-    function resumeAuto() {
-      if (paused) { paused = false; lastTime = 0; animFrame = requestAnimationFrame(animate); }
-      else if (!animFrame) { lastTime = 0; animFrame = requestAnimationFrame(animate); }
+    function go(dir){
+      paused = true;
+      var unit = getCardUnit();
+      scrollPos = ((targetCard + dir + total) % total) * unit;
+      targetCard = (targetCard + dir + total) % total;
+      renderSmooth(targetCard);
+      setTimeout(function(){ resumeAuto(); }, 3000);
     }
 
-    // Snap to a specific card index
-    function jumpTo(idx: number) {
-      const unit = getCardUnit();
-      const totalWidth = total * unit;
-      // Position so that idx is at center: scrollPos should be idx * unit (mod totalWidth)
-      scrollPos = idx * unit;
-      // Ensure within [0, totalWidth)
-      while (scrollPos < 0) scrollPos += totalWidth;
-      while (scrollPos >= totalWidth) scrollPos -= totalWidth;
-      targetCard = idx;
-      renderSmooth(idx);
+    function pauseAuto(){
+      paused = true;
+      if (animFrame) { cancelAnimationFrame(animFrame); animFrame = null; }
     }
 
-    // ── Events ──
-    function go(dir: 1 | -1) {
-      pauseAuto();
-      const idx = (targetCard + dir + total) % total;
-      jumpTo(idx);
-      // Resume after a short pause so user can see the result
-      setTimeout(resumeAuto, 1500);
+    function resumeAuto(){
+      paused = false;
+      lastTime = 0;
+      animFrame = requestAnimationFrame(animate);
     }
 
-    prevBtn?.addEventListener('click', () => go(-1));
-    nextBtn?.addEventListener('click', () => go(1));
+    if (prevBtn) prevBtn.addEventListener('click', function(){ go(-1); });
+    if (nextBtn) nextBtn.addEventListener('click', function(){ go(1); });
 
-    dots.forEach(dot => {
-      dot.addEventListener('click', () => {
-        const idx = parseInt(dot.getAttribute('data-sdot') || '0');
-        pauseAuto();
-        jumpTo(idx);
-        setTimeout(resumeAuto, 1500);
+    dots.forEach(function(dot, i){
+      dot.addEventListener('click', function(){
+        paused = true;
+        var unit = getCardUnit();
+        scrollPos = i * unit;
+        targetCard = i;
+        renderSmooth(i);
+        setTimeout(function(){ resumeAuto(); }, 3000);
       });
     });
 
-    // Click a side card → jump to it
-    cards.forEach(card => {
-      card.addEventListener('click', () => {
-        const idx = parseInt(card.getAttribute('data-index') || '0');
-        if (idx !== targetCard) {
-          pauseAuto();
-          jumpTo(idx);
-          setTimeout(resumeAuto, 1500);
-        }
-      });
-    });
-
-    // Pause on hover
     track.addEventListener('mouseenter', pauseAuto);
     track.addEventListener('mouseleave', resumeAuto);
 
-    // Touch swipe
-    let touchStartX = 0;
-    track.addEventListener('touchstart', (e: TouchEvent) => {
+    var touchStartX = 0;
+    track.addEventListener('touchstart', function(e){
       touchStartX = e.changedTouches[0].screenX;
       pauseAuto();
-    }, { passive: true });
-    track.addEventListener('touchend', (e: TouchEvent) => {
-      const diff = touchStartX - e.changedTouches[0].screenX;
-      if (Math.abs(diff) > 40) {
-        go(diff > 0 ? 1 : -1);
-      } else {
-        resumeAuto();
-      }
-    }, { passive: true });
+    }, {passive: true});
+    track.addEventListener('touchend', function(e){
+      var diff = touchStartX - e.changedTouches[0].screenX;
+      if (Math.abs(diff) > 40) go(diff > 0 ? 1 : -1);
+      else resumeAuto();
+    }, {passive: true});
 
-    // Resize handler
-    window.addEventListener('resize', () => renderSmooth(targetCard));
-
-    // Keyboard
-    document.addEventListener('keydown', (e) => {
+    window.addEventListener('resize', function(){ renderSmooth(targetCard); });
+    document.addEventListener('keydown', function(e){
       if (e.key === 'ArrowLeft') go(-1);
       if (e.key === 'ArrowRight') go(1);
     });
 
-    // Init: start at card 0 with smooth auto-scroll
     scrollPos = 0;
     targetCard = 0;
     renderSmooth(0);
     resumeAuto();
   }
-
   initScriptureCarousel();
   document.addEventListener('astro:page-load', initScriptureCarousel);
 </script>

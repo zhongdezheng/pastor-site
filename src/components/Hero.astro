@@ -11,9 +11,9 @@ const photos = [
 ];
 ---
 
-<section id="hero" class="min-h-screen pt-16 flex items-center">
+<section id="hero" class="min-h-screen pt-8 flex items-center">
   <div class="max-w-7xl mx-auto px-6 w-full">
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-20 items-center py-16 lg:py-24">
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-16 items-center py-8 lg:py-12">
       <!-- Left: Text -->
       <div class="order-2 lg:order-1">
         <h1 class="text-3xl sm:text-4xl lg:text-5xl font-serif font-bold text-charcoal-900 leading-tight mb-6">
@@ -62,52 +62,37 @@ const photos = [
   </div>
 </section>
 
-<script>
-  // Photo carousel — inline script, no framework needed
-  function initPhotoCarousel() {
-    const container = document.querySelector('photo-carousel');
+<script is:inline>
+  (function(){
+    var container = document.querySelector('photo-carousel');
     if (!container) return;
-    const photos = container.querySelectorAll('[data-photo-index]');
-    const dots = container.querySelectorAll('[data-dot]');
+    var photos = container.querySelectorAll('[data-photo-index]');
+    var dots = container.querySelectorAll('[data-dot]');
     if (photos.length < 2) return;
-
-    let current = 0;
-    let interval: ReturnType<typeof setInterval>;
-
-    function show(index: number) {
-      photos.forEach((p, i) => {
-        (p as HTMLElement).classList.toggle('opacity-100', i === index);
-        (p as HTMLElement).classList.toggle('opacity-0', i !== index);
+    var current = 0, interval;
+    function show(idx){
+      photos.forEach(function(p,i){
+        p.classList.toggle('opacity-100', i===idx);
+        p.classList.toggle('opacity-0', i!==idx);
       });
-      dots.forEach((d, i) => {
-        d.classList.toggle('bg-white', i === index);
-        d.classList.toggle('bg-white/50', i !== index);
-        d.classList.toggle('w-6', i === index);
-        d.classList.toggle('w-2.5', i !== index);
+      dots.forEach(function(d,i){
+        d.classList.toggle('bg-white', i===idx);
+        d.classList.toggle('bg-white/50', i!==idx);
+        d.classList.toggle('w-6', i===idx);
+        d.classList.toggle('w-2.5', i!==idx);
       });
-      current = index;
+      current = idx;
     }
-
-    function next() {
-      show((current + 1) % photos.length);
-    }
-
-    dots.forEach((dot) => {
-      dot.addEventListener('click', () => {
-        const idx = parseInt(dot.getAttribute('data-dot') || '0');
-        show(idx);
+    function next(){ show((current+1) % photos.length); }
+    dots.forEach(function(dot){
+      dot.addEventListener('click', function(){
+        show(parseInt(dot.getAttribute('data-dot')||'0'));
         clearInterval(interval);
         interval = setInterval(next, 5000);
       });
     });
-
     interval = setInterval(next, 5000);
-
-    // Pause on hover
-    container.addEventListener('mouseenter', () => clearInterval(interval));
-    container.addEventListener('mouseleave', () => { interval = setInterval(next, 5000); });
-  }
-
-  initPhotoCarousel();
-  document.addEventListener('astro:page-load', initPhotoCarousel);
+    container.addEventListener('mouseenter', function(){ clearInterval(interval); });
+    container.addEventListener('mouseleave', function(){ interval = setInterval(next, 5000); });
+  })();
 </script>

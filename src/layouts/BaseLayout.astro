@@ -11,20 +11,20 @@ const otherLang = lang === 'en' ? 'zh' : 'en';
 const currentPathRaw = Astro.url.pathname.replace(/^\/(en|zh)\//, '/');
 const otherPath = `/${otherLang}${currentPathRaw}`;
 const labels = {
-  en: { home: 'Home', products: 'Products', designer: 'Design', prayer: 'Prayer', testimonies: 'Testimonies', courses: 'Courses', give: 'Give', contact: 'Contact', langSwitch: '中文', menu: 'Menu' },
-  zh: { home: '首页', products: '产品', designer: '设计', prayer: '代祷', testimonies: '见证', courses: '课程', give: '奉献', contact: '联系', langSwitch: 'English', menu: '菜单' },
+  en: { home: 'Home', vision: 'Vision', products: 'Products', designer: 'Design', prayer: 'Prayer', testimonies: 'Testimonies', courses: 'Courses', give: 'Give', langSwitch: '中文', menu: 'Menu' },
+  zh: { home: '首页', vision: '异象', products: '产品', designer: '设计', prayer: '代祷', testimonies: '见证', courses: '课程', give: '奉献', langSwitch: 'English', menu: '菜单' },
 };
 const t = labels[lang];
 
 const navLinks = [
   { key: 'home', href: `/${lang}/` },
+  { key: 'vision', href: `/${lang}/vision/` },
   { key: 'products', href: `/${lang}/products/` },
   { key: 'designer', href: `/${lang}/designer/` },
   { key: 'prayer', href: `/${lang}/prayer/` },
   { key: 'testimonies', href: `/${lang}/testimonies/` },
   { key: 'courses', href: `/${lang}/courses/` },
   { key: 'give', href: `/${lang}/give/` },
-  { key: 'contact', href: `/${lang}/contact/` },
 ];
 ---
 
@@ -46,7 +46,10 @@ const navLinks = [
 
       <!-- Desktop nav -->
       <div class="hidden md:flex items-center gap-6 text-sm font-medium text-charcoal-500">
-        {navLinks.map(l => <a href={l.href} class="hover:text-charcoal-800 transition-colors">{t[l.key]}</a>)}
+        {navLinks.map(l => {
+          const isActive = Astro.url.pathname === l.href || Astro.url.pathname.startsWith(l.href.replace(/\/$/, '/') + '/');
+          return <a href={l.href} class={`hover:text-charcoal-800 transition-colors ${isActive ? 'font-bold text-charcoal-800' : ''}`}>{t[l.key]}</a>;
+        })}
         <a href={otherPath} class="ml-2 px-3 py-1.5 border border-charcoal-300 rounded-full text-xs text-charcoal-500 hover:text-charcoal-700 hover:border-charcoal-400 transition-colors">{t.langSwitch}</a>
       </div>
 
@@ -62,7 +65,10 @@ const navLinks = [
     <!-- Mobile menu dropdown -->
     <div id="mobile-menu" class="hidden md:hidden bg-beige-50 border-b border-beige-200/50 px-4 pb-4">
       <div class="flex flex-col gap-1 pt-2">
-        {navLinks.map(l => <a href={l.href} class="block px-3 py-2.5 rounded-lg text-sm font-medium text-charcoal-600 hover:bg-beige-100 hover:text-charcoal-800 transition-colors">{t[l.key]}</a>)}
+        {navLinks.map(l => {
+          const isActive = Astro.url.pathname === l.href || Astro.url.pathname.startsWith(l.href.replace(/\/$/, '/') + '/');
+          return <a href={l.href} class={`block px-3 py-2.5 rounded-lg text-sm ${isActive ? 'font-bold text-charcoal-800 bg-beige-100' : 'font-medium text-charcoal-600 hover:bg-beige-100 hover:text-charcoal-800'} transition-colors`}>{t[l.key]}</a>;
+        })}
       </div>
     </div>
   </nav>
@@ -74,7 +80,8 @@ const navLinks = [
   <footer class="bg-charcoal-900 text-beige-300 py-12 px-4 sm:px-6">
     <div class="max-w-4xl mx-auto text-center">
       <p class="font-serif text-xl sm:text-2xl font-bold text-beige-100 mb-2">✝ {site.name[lang]}</p>
-      <p class="text-sm text-beige-500 mb-6">{site.tagline[lang]}</p>
+      <p class="text-sm text-beige-500 mb-2">{site.tagline[lang]}</p>
+      <p class="text-xs text-beige-400 mb-6">{site.email}</p>
       <p class="text-xs text-beige-600">
         &copy; {new Date().getFullYear()} {site.name.en}. {
           lang === 'en'

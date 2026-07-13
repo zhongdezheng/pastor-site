@@ -12,7 +12,7 @@ if (!product) return Astro.redirect('/en/products/');
 ---
 
 <BaseLayout lang="en" title={product.name.en}>
-  <script type="application/json" id="__prodData" set:html={JSON.stringify({colors: product.colors, sizes: product.sizes, id: product.id, name: product.name.en, price: product.price})}></script>
+  <script type="application/json" id="__prodData" set:html={JSON.stringify({colors: product.colors, sizes: product.sizes, id: product.id, slug: product.id, name: product.name.en, price: product.price, image: product.images?.[0]||''})}></script>
 
   <section class="pt-24 pb-16 px-4 sm:px-6 bg-white min-h-screen">
     <div class="max-w-5xl mx-auto">
@@ -75,7 +75,7 @@ if (!product) return Astro.redirect('/en/products/');
   <script is:inline>
     (function(){
       var d = JSON.parse(document.getElementById('__prodData').textContent);
-      var COLORS = d.colors, SIZES = d.sizes, PID = d.id, PNAME = d.name, PPRICE = d.price;
+      var DATA = d, COLORS = d.colors, SIZES = d.sizes, PID = d.id, PNAME = d.name, PPRICE = d.price;
       var selColor = COLORS[0], selSize = SIZES[0], qty = 1;
       var cm = {'白色':'#f0f0f0','黑色':'#222','灰色':'#999','深蓝':'#1e3a5f','米白':'#f5f0e8'};
 
@@ -93,7 +93,7 @@ if (!product) return Astro.redirect('/en/products/');
       document.getElementById('btn-add-cart').onclick = addToCart;
       document.getElementById('btn-buy-now').onclick = function(){ addToCart(); location.href = '/en/cart/'; };
 
-      function addToCart(){ var c = JSON.parse(localStorage.getItem('ps-cart')||'[]'), x = c.find(function(i){ return i.id===PID && i.color===selColor && i.size===selSize; }); if(x) x.quantity += qty; else c.push({id:PID,name:PNAME,price:PPRICE,color:selColor,size:selSize,quantity:qty}); localStorage.setItem('ps-cart',JSON.stringify(c)); updateBadge(); }
+      function addToCart(){ var c = JSON.parse(localStorage.getItem('ps-cart')||'[]'), x = c.find(function(i){ return i.id===PID && i.color===selColor && i.size===selSize; }); if(x) x.quantity += qty; else c.push({id:PID,slug:PID,name:PNAME,price:PPRICE,color:selColor,size:selSize,quantity:qty,image:DATA.image}); localStorage.setItem('ps-cart',JSON.stringify(c)); updateBadge(); }
       function updateBadge(){ var c = JSON.parse(localStorage.getItem('ps-cart')||'[]'), n = c.reduce(function(s,i){ return s+i.quantity; },0), b = document.getElementById('cart-badge'); if(n>0){ b.textContent = n; b.classList.remove('hidden'); } else b.classList.add('hidden'); }
       updateBadge();
     })();

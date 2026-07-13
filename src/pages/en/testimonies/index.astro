@@ -11,7 +11,7 @@ import testimonies from '../../../content/testimonies.json';
       <div class="space-y-1">
         {testimonies.map((t) => (
           <a href={`/en/testimonies/${t.id}/`} class="block py-4 border-b border-beige-200 hover:bg-beige-50/50 transition-colors">
-            <p class="font-serif font-bold text-charcoal-800 text-lg text-left">{t.title.en}</p>
+            <p class="font-serif font-bold text-charcoal-800 text-xl text-left">{t.title.en}</p>
             <p class="text-charcoal-400 text-sm mt-0.5">{t.date} · {t.author.en}</p>
           </a>
         ))}

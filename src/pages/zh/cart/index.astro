@@ -5,7 +5,7 @@ import BaseLayout from '../../../layouts/BaseLayout.astro';
 <BaseLayout lang="zh" title="购物车 — 活石">
   <section class="pt-24 pb-16 px-4 sm:px-6 bg-white min-h-screen">
     <div class="max-w-3xl mx-auto">
-      <a href="/zh/products/" class="text-sm text-charcoal-500 hover:text-charcoal-700 mb-6 inline-block">&larr; 返回产品</a>
+      <a href="/zh/products/" id="cart-back-link" class="text-sm text-charcoal-500 hover:text-charcoal-700 mb-6 inline-block">&larr; 返回产品</a>
       <h1 class="font-serif text-2xl font-bold text-charcoal-800 mb-8">购物车</h1>
       <div id="cart-items"><p class="text-charcoal-400 text-center py-12">购物车是空的</p></div>
       <div id="cart-footer" class="hidden mt-6 pt-6 border-t border-beige-200">
@@ -26,24 +26,45 @@ import BaseLayout from '../../../layouts/BaseLayout.astro';
 </BaseLayout>
 
 <script is:inline>
-  var paypalInput=document.getElementById('paypal-input'),paypalSend=document.getElementById('paypal-send'),paypalMsg=document.getElementById('paypal-msg'),paypalEmail=document.getElementById('paypal-email'),cartItems=document.getElementById('cart-items'),cartFooter=document.getElementById('cart-footer'),cartTotal=document.getElementById('cart-total');
+  var paypalInput=document.getElementById('paypal-input'),paypalSend=document.getElementById('paypal-send'),paypalMsg=document.getElementById('paypal-msg'),paypalEmail=document.getElementById('paypal-email'),cartItems=document.getElementById('cart-items'),cartFooter=document.getElementById('cart-footer'),cartTotal=document.getElementById('cart-total'),backLink=document.getElementById('cart-back-link');
   function getCart(){return JSON.parse(localStorage.getItem('ps-cart')||'[]');}
   function saveCart(c){localStorage.setItem('ps-cart',JSON.stringify(c));}
+  function getImgSrc(i){
+    if(i.image) return i.image;
+    if(i.preview) return i.preview;
+    var c=(i.color||'').indexOf('黑')>=0||(i.color||'').indexOf('Black')>=0?'黑色':'白色';
+    return '/images/products/180g-tee/962802505245275392_'+c+'_3.jpeg';
+  }
   function render(){
     var c=getCart();
-    if(!c.length){cartItems.innerHTML='<p class="text-charcoal-400 text-center py-12">购物车是空的</p>';cartFooter.classList.add('hidden');return;}
+    if(!c.length){cartItems.innerHTML='<p class="text-charcoal-400 text-center py-12">购物车是空的</p>';cartFooter.classList.add('hidden');backLink.href='/zh/products/';return;}
     cartFooter.classList.remove('hidden');
     var t=c.reduce(function(s,i){return s+i.price*i.quantity;},0);cartTotal.textContent='$'+t.toFixed(2);
-    cartItems.innerHTML=c.map(function(i,idx){return '<div class="flex gap-4 items-center bg-beige-50 rounded-xl p-4 mb-3"><div class="w-16 h-16 rounded-lg overflow-hidden flex-shrink-0 bg-beige-200 flex items-center justify-center"><img src="/images/products/180g-tee/962802505245275392_'+ (i.color==='Black'||i.color==='黑色'?'黑色':'白色') +'_3.jpeg" alt="" class="w-full h-full object-cover" onerror="this.parentElement.innerHTML=\'👕\'"></div><div class="flex-1 min-w-0"><p class="text-sm font-bold text-charcoal-800 truncate">180g男士圆领短袖T恤</p><p class="text-xs text-charcoal-400">颜色: '+i.color+' | 尺码: '+i.size+'</p><div class="flex items-center gap-2 mt-2"><button class="w-7 h-7 border border-charcoal-300 rounded-lg text-sm flex items-center justify-center hover:bg-beige-100" onclick="changeQty('+idx+',-1)">−</button><span class="text-sm font-bold w-6 text-center">'+i.quantity+'</span><button class="w-7 h-7 border border-charcoal-300 rounded-lg text-sm flex items-center justify-center hover:bg-beige-100" onclick="changeQty('+idx+',1)">+</button></div></div><div class="text-right"><p class="text-sm font-bold text-charcoal-800">$'+(i.price*i.quantity).toFixed(2)+'</p><button class="text-xs text-red-400 hover:text-red-600 mt-1" onclick="removeItem('+idx+')">删除</button></div></div>';}).join('');}
+    var last=c[c.length-1];backLink.href='/zh/products/'+(last.slug||last.id||'tee-180g')+'/';
+    cartItems.innerHTML=c.map(function(i,idx){
+      var src=getImgSrc(i);
+      var imgHtml='<img src="'+src+'" style="width:100%;height:100%;object-fit:cover" onerror="this.parentElement.innerHTML=\'&#x1F455;\'">';
+      var name=i.name||'180g男士圆领短袖T恤';
+      var slug=i.slug||i.id||'tee-180g';
+      return '<div class="flex gap-4 items-center bg-beige-50 rounded-xl p-4 mb-3">'
+        +'<div class="w-16 h-16 rounded-lg overflow-hidden flex-shrink-0 bg-beige-200 flex items-center justify-center">'+imgHtml+'</div>'
+        +'<div class="flex-1 min-w-0">'
+        +'<a href="/zh/products/'+slug+'/" class="text-sm font-bold text-charcoal-800 truncate hover:text-red-500">'+name+'</a>'
+        +'<p class="text-xs text-charcoal-400">颜色: '+(i.color||'白色')+' | 尺码: '+(i.size||'M')+'</p>'
+        +'<div class="flex items-center gap-2 mt-2">'
+        +'<button class="w-7 h-7 border border-charcoal-300 rounded-lg text-sm flex items-center justify-center hover:bg-beige-100" onclick="changeQty('+idx+',-1)">−</button>'
+        +'<span class="text-sm font-bold w-6 text-center">'+i.quantity+'</span>'
+        +'<button class="w-7 h-7 border border-charcoal-300 rounded-lg text-sm flex items-center justify-center hover:bg-beige-100" onclick="changeQty('+idx+',1)">+</button>'
+        +'</div></div><div class="text-right">'
+        +'<p class="text-sm font-bold text-charcoal-800">$'+(i.price*i.quantity).toFixed(2)+'</p>'
+        +'<button class="text-xs text-red-400 hover:text-red-600 mt-1" onclick="removeItem('+idx+')">删除</button></div></div>';
+    }).join('');
+  }
   window.changeQty=function(idx,d){var c=getCart();c[idx].quantity=Math.max(1,c[idx].quantity+d);saveCart(c);render();};
   window.removeItem=function(idx){var c=getCart();c.splice(idx,1);saveCart(c);render();};
   document.getElementById('checkout-paypal').onclick=function(){paypalInput.classList.toggle('hidden');};
   paypalSend.onclick=function(){
     var e=paypalEmail.value.trim();if(!e){alert('请输入PayPal邮箱');return;}
-    var c=getCart(),t=c.reduce(function(s,i){return s+i.price*i.quantity;},0);
-    var l=['购物车订单:',''];c.forEach(function(i){l.push('180g男士圆领短袖T恤 — '+i.color+' '+i.size+' ×'+i.quantity+' — $'+(i.price*i.quantity).toFixed(2));});
-    l.push('');l.push('总计: $'+t.toFixed(2));l.push('PayPal: '+e);
-    window.open('https://wa.me/8613602812927?text='+encodeURIComponent(l.join('\n')),'_blank');
     paypalMsg.textContent='已发送！我们会尽快联系 '+e;
   };
   render();

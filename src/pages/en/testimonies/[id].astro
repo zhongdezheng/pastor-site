@@ -21,11 +21,11 @@ if (!t) return Astro.redirect('/en/testimonies/');
 
       <article class="bg-white rounded-2xl shadow-lg border border-beige-200 p-8 md:p-12">
         <header class="mb-10">
-          <h1 class="text-2xl md:text-3xl font-serif font-bold text-charcoal-900 mb-3">{t.title.en}</h1>
+          <h1 class="text-3xl md:text-4xl font-serif font-bold text-charcoal-900 mb-3">{t.title.en}</h1>
           <p class="text-charcoal-400 text-sm">{t.date} &middot; {t.author.en}</p>
         </header>
 
-        <div class="text-charcoal-700 leading-relaxed font-serif text-lg">
+        <div class="text-charcoal-700 leading-relaxed font-serif text-xl">
           {t.content.en.split('\n\n').map(para => <p class="mb-6">{para}</p>)}
         </div>
 

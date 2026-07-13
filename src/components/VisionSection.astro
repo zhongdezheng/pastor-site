@@ -1,0 +1,62 @@
+---
+import visionData from '../content/vision.json';
+
+interface Props {
+  lang: 'en' | 'zh';
+}
+
+const { lang } = Astro.props;
+const v = visionData[lang];
+
+const allParagraphs = v.content.split('\n\n').filter((p: string) => p.trim());
+const previewParagraphs = allParagraphs.slice(0, 4);
+const moreParagraphs = allParagraphs.slice(4);
+
+const labels = {
+  en: { more: 'Read More ↓', less: 'Show Less ↑', goFull: 'Read Full Vision →' },
+  zh: { more: '展开更多 ↓', less: '收起 ↑', goFull: '阅读完整异象 →' },
+};
+const t = labels[lang];
+const hasMore = moreParagraphs.length > 0;
+---
+
+<section class="py-12 lg:py-16 px-4 sm:px-6" style="background: linear-gradient(180deg, #f7f3e8 0%, #fefcf5 100%);">
+  <div class="max-w-4xl mx-auto text-center">
+    <div class="flex items-center justify-center gap-3 mb-4">
+      <span class="block w-10 h-px bg-beige-400"></span>
+      <span class="text-beige-400 text-base">✦</span>
+      <span class="block w-10 h-px bg-beige-400"></span>
+    </div>
+    <h2 class="text-xl sm:text-2xl lg:text-3xl font-serif font-bold text-charcoal-800 mb-6">
+      {v.title}
+    </h2>
+    <div class="text-charcoal-600 leading-relaxed font-serif max-w-4xl mx-auto space-y-4 text-[15px] sm:text-base">
+      {previewParagraphs.map((p: string) => <p>{p}</p>)}
+    </div>
+    {hasMore && (
+      <div>
+        <div id="vision-more" class="hidden text-charcoal-600 leading-relaxed font-serif max-w-4xl mx-auto space-y-4 text-[15px] sm:text-base mt-4">
+          {moreParagraphs.map((p: string) => <p>{p}</p>)}
+        </div>
+        <button id="vision-toggle" class="inline-flex items-center gap-1 mt-4 px-4 py-1.5 text-sm text-sage-600 hover:text-sage-700 border border-sage-300 rounded-full transition-colors">{t.more}</button>
+      </div>
+    )}
+    <div class="mt-5">
+      <a href={`/${lang}/vision/`} class="inline-flex items-center gap-1 px-5 py-2 bg-charcoal-800 hover:bg-charcoal-700 text-white text-sm rounded-full transition-colors">
+        {t.goFull}
+      </a>
+    </div>
+  </div>
+</section>
+
+<script is:inline>
+  (function(){
+    var btn = document.getElementById('vision-toggle');
+    var more = document.getElementById('vision-more');
+    if (!btn || !more) return;
+    btn.onclick = function(){
+      var hidden = more.classList.toggle('hidden');
+      btn.textContent = hidden ? 'Read More ↓' : 'Show Less ↑';
+    };
+  })();
+</script>
