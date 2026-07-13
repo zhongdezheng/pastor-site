@@ -10,14 +10,12 @@ import BaseLayout from '../../../layouts/BaseLayout.astro';
         <button id="btn-logout" class="text-xs text-gray-400 hover:text-white px-3 py-1 border border-gray-600 rounded">Logout</button>
       </div>
 
-      <!-- Nav tabs -->
       <div class="flex gap-2 mb-6 overflow-x-auto">
         <button class="tab-btn active px-4 py-2 rounded-lg text-sm font-medium bg-sage-500 text-white" data-tab="prayers">Prayers</button>
         <button class="tab-btn px-4 py-2 rounded-lg text-sm font-medium bg-white/10 text-gray-300 hover:bg-white/20" data-tab="orders">Orders</button>
         <button class="tab-btn px-4 py-2 rounded-lg text-sm font-medium bg-white/10 text-gray-300 hover:bg-white/20" data-tab="content">Content</button>
       </div>
 
-      <!-- Prayers tab -->
       <div id="tab-prayers">
         <div class="flex gap-4 mb-4 flex-wrap">
           <select id="prayer-filter" class="px-3 py-1.5 rounded bg-white/10 text-white border border-white/20 text-sm">
@@ -33,7 +31,6 @@ import BaseLayout from '../../../layouts/BaseLayout.astro';
         </div>
       </div>
 
-      <!-- Orders tab -->
       <div id="tab-orders" class="hidden">
         <div class="flex gap-4 mb-4 flex-wrap">
           <select id="order-filter" class="px-3 py-1.5 rounded bg-white/10 text-white border border-white/20 text-sm">
@@ -52,7 +49,6 @@ import BaseLayout from '../../../layouts/BaseLayout.astro';
         </div>
       </div>
 
-      <!-- Content tab -->
       <div id="tab-content" class="hidden">
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
           <select id="content-key" class="px-3 py-1.5 rounded bg-white/10 text-white border border-white/20 text-sm">
@@ -87,7 +83,6 @@ const supabase = createClient(
   'sb_publishable_TfquiTSSQip7GcF4Sodsjg_PNc_OzNl'
 );
 
-// === Auth guard ===
 async function checkAdmin() {
   var { data } = await supabase.auth.getSession();
   if (!data.session) {
@@ -98,8 +93,6 @@ async function checkAdmin() {
 }
 
 var currentTab = 'prayers';
-
-// === Tabs ===
 document.querySelectorAll('.tab-btn').forEach(function(btn) {
   btn.addEventListener('click', function() {
     document.querySelectorAll('.tab-btn').forEach(function(b){ b.classList.remove('active','bg-sage-500','text-white'); b.classList.add('bg-white/10','text-gray-300'); });
@@ -115,81 +108,64 @@ document.querySelectorAll('.tab-btn').forEach(function(btn) {
   });
 });
 
-// === Logout ===
 document.getElementById('btn-logout')?.addEventListener('click', function(){
   supabase.auth.signOut().then(function(){ location.href = '/en/auth'; });
 });
 
-// === PRAYERS ===
 async function loadPrayers() {
+  var res = await fetch('https://admin.pastorjeffnchina.com/api/prayers');
+  if (!res.ok) { document.getElementById('prayer-list').innerHTML = '<p class="text-gray-400 text-sm">Backend not reachable.</p>'; return; }
+  var data = await res.json();
   var filter = document.getElementById('prayer-filter').value;
-  var query = supabase.from('prayer_requests').select('*').order('created_at', { ascending: false }).limit(200);
-  if (filter !== 'all') query = query.eq('prayed', filter === 'true');
-  var { data } = await query;
+  if (filter !== 'all') data = data.filter(function(p){ return p.replied === (filter === 'true'); });
   var list = document.getElementById('prayer-list');
-  document.getElementById('prayer-count').textContent = data ? data.length + ' prayers' : '0 prayers';
-  if (!data || data.length === 0) { list.innerHTML = '<p class="text-gray-400 text-sm">No prayers yet.</p>'; return; }
+  document.getElementById('prayer-count').textContent = data.length + ' prayers';
+  if (data.length === 0) { list.innerHTML = '<p class="text-gray-400 text-sm">No prayers yet.</p>'; return; }
   list.innerHTML = data.map(function(p){
     return '<div class="bg-white/5 rounded-xl p-4 border border-white/10">' +
       '<div class="flex justify-between items-start mb-2">' +
-      '<div><span class="text-white font-medium">' + h(p.name || 'Anonymous') + '</span><span class="text-gray-400 text-xs ml-2">' + h(p.country) + '</span></div>' +
+      '<div><span class="text-white font-medium">' + h(p.name || 'Anonymous') + '</span><span class="text-gray-400 text-xs ml-2">' + h(p.email||'') + '</span></div>' +
       '<div class="flex gap-2 items-center">' +
-      '<span class="text-gray-500 text-xs">' + new Date(p.created_at).toLocaleString() + '</span>' +
-      '<button class="pray-btn px-2 py-0.5 rounded text-xs ' + (p.prayed ? 'bg-green-500/20 text-green-300' : 'bg-white/10 text-white hover:bg-white/20') + '" data-id="' + p.id + '" data-prayed="' + p.prayed + '">' + (p.prayed ? '✓ Prayed' : 'Mark Prayed') + '</button>' +
+      '<span class="text-gray-500 text-xs">' + (p.created_at||'') + '</span>' +
+      '<span class="text-xs px-2 py-0.5 rounded ' + (p.replied ? 'bg-green-500/20 text-green-300' : 'bg-yellow-500/20 text-yellow-300') + '">' + (p.replied ? 'Replied' : 'Pending') + '</span>' +
       '</div></div>' +
-      '<p class="text-gray-300 text-sm">' + h(p.request) + '</p>' +
-      (p.email ? '<p class="text-gray-500 text-xs mt-1">' + h(p.email) + '</p>' : '') +
+      '<p class="text-gray-300 text-sm">' + h(p.content) + '</p>' +
       '</div>';
   }).join('');
-
-  document.querySelectorAll('.pray-btn').forEach(function(btn){
-    btn.addEventListener('click', async function(){
-      var id = parseInt(this.dataset.id);
-      var prayed = this.dataset.prayed === 'true';
-      await supabase.from('prayer_requests').update({ prayed: !prayed }).eq('id', id);
-      loadPrayers();
-    });
-  });
 }
 
-// === ORDERS ===
 async function loadOrders() {
+  var res = await fetch('https://admin.pastorjeffnchina.com/api/orders');
+  if (!res.ok) { document.getElementById('order-list').innerHTML = '<p class="text-gray-400 text-sm">Backend not reachable.</p>'; return; }
+  var data = await res.json();
   var filter = document.getElementById('order-filter').value;
-  var query = supabase.from('orders').select('*').order('created_at', { ascending: false }).limit(200);
-  if (filter !== 'all') query = query.eq('status', filter);
-  var { data, error } = await query;
+  if (filter !== 'all') data = data.filter(function(o){ return o.status === filter; });
+  document.getElementById('order-count').textContent = data.length + ' orders';
   var list = document.getElementById('order-list');
-  document.getElementById('order-count').textContent = data ? data.length + ' orders' : '0 orders';
-  if (!data || data.length === 0) { list.innerHTML = '<p class="text-gray-400 text-sm">No orders yet.</p>'; return; }
+  if (data.length === 0) { list.innerHTML = '<p class="text-gray-400 text-sm">No orders yet.</p>'; return; }
   list.innerHTML = data.map(function(o){
-    var items = [];
-    try { items = typeof o.items === 'string' ? JSON.parse(o.items) : o.items; } catch(e) {}
-    var statusColors = { pending: 'yellow', confirmed: 'blue', shipped: 'purple', delivered: 'green', cancelled: 'red' };
     return '<div class="bg-white/5 rounded-xl p-4 border border-white/10">' +
       '<div class="flex justify-between items-start mb-2">' +
-      '<div><span class="text-white font-medium">Order #' + o.id + '</span><span class="text-gray-400 text-xs ml-2">' + h(o.shipping_name) + '</span></div>' +
+      '<div><span class="text-white font-medium">Order #' + o.id + '</span><span class="text-gray-400 text-xs ml-2">' + h(o.customer_name||'') + '</span></div>' +
       '<div class="flex gap-2 items-center">' +
-      '<span class="text-xs px-2 py-0.5 rounded bg-' + (statusColors[o.status] || 'gray') + '-500/20 text-' + (statusColors[o.status] || 'gray') + '-300">' + o.status + '</span>' +
-      '<span class="text-gray-500 text-xs">' + new Date(o.created_at).toLocaleString() + '</span>' +
+      '<span class="text-xs px-2 py-0.5 rounded bg-white/10 text-gray-300">' + o.status + '</span>' +
+      '<span class="text-gray-500 text-xs">' + (o.created_at||'') + '</span>' +
       '</div></div>' +
-      '<div class="text-gray-400 text-xs mb-2">' + h(o.shipping_address + ', ' + o.shipping_city + ', ' + o.shipping_country) + ' | ' + h(o.shipping_phone) + ' | ' + h(o.email) + '</div>' +
-      '<div class="text-gray-300 text-xs">Items: ' + items.length + ' | Total: $' + o.total + '</div>' +
-      '<div class="mt-2">' +
-      '<select class="status-select text-xs px-2 py-1 rounded bg-white/10 text-white border border-white/20" data-id="' + o.id + '">' +
+      '<div class="text-gray-300 text-xs">' + h(o.product_name||'') + ' x' + (o.quantity||1) + ' | $' + (o.total_price||0) + '</div>' +
+      '<select class="status-select text-xs px-2 py-1 mt-2 rounded bg-white/10 text-white border border-white/20" data-id="' + o.id + '">' +
       ['pending','confirmed','shipped','delivered','cancelled'].map(function(s){ return '<option value="' + s + '"' + (o.status === s ? ' selected' : '') + '>' + s + '</option>'; }).join('') +
       '</select>' +
-      '</div></div>';
+      '</div>';
   }).join('');
-
-  document.querySelectorAll('.status-select').forEach(function(sel){
-    sel.addEventListener('change', async function(){
-      var id = parseInt(this.dataset.id);
-      await supabase.from('orders').update({ status: this.value, updated_at: new Date().toISOString() }).eq('id', id);
+  document.querySelectorAll('.status-select').forEach(function(s){
+    s.addEventListener('change', async function(){
+      await fetch('https://admin.pastorjeffnchina.com/api/orders/' + this.dataset.id + '/status', {
+        method: 'PUT', headers: {'Content-Type':'application/json'}, body: JSON.stringify({status: this.value})
+      });
     });
   });
 }
 
-// === CONTENT ===
 document.getElementById('btn-load-content')?.addEventListener('click', async function(){
   var key = document.getElementById('content-key').value;
   var lang = document.getElementById('content-lang').value;
@@ -214,8 +190,7 @@ document.getElementById('order-filter')?.addEventListener('change', loadOrders);
 document.getElementById('btn-refresh-prayers')?.addEventListener('click', loadPrayers);
 document.getElementById('btn-refresh-orders')?.addEventListener('click', loadOrders);
 
-function h(s) { return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function h(s) { return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
 
-// Init
 checkAdmin().then(function(ok){ if (ok) loadPrayers(); });
 </script>
