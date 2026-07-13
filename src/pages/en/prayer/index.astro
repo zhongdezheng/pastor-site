@@ -46,13 +46,6 @@ import BaseLayout from '../../../layouts/BaseLayout.astro';
 </BaseLayout>
 
 <script is:inline>
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
-
-const supabase = createClient(
-  'https://uwebpdtjkucbcyscfzmq.supabase.co',
-  'sb_publishable_TfquiTSSQip7GcF4Sodsjg_PNc_OzNl'
-);
-
 (function(){
   var f = document.getElementById('prayer-form');
   if (!f) return;
@@ -72,14 +65,12 @@ const supabase = createClient(
     err.classList.add('hidden');
 
     try {
-      var { error } = await supabase.from('prayer_requests').insert({
-        name: d.get('name')||'',
-        email: d.get('email')||'',
-        country: country,
-        request: request,
-        lang: 'en'
+      var res = await fetch('https://admin.pastorjeffnchina.com/api/prayers', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({name: d.get('name')||'', email: d.get('email')||'', content: country + ': ' + request})
       });
-      if (error) throw error;
+      if (!res.ok) throw new Error('fail');
       f.classList.add('hidden');
       s.classList.remove('hidden');
     } catch(e) {
