@@ -10,7 +10,7 @@ import testimonies from '../../../content/testimonies.json';
       <p class="text-charcoal-400 text-sm text-left mb-12">Stories of faith and transformation</p>
 
       <div class="space-y-1">
-        {testimonies.map((t) => (
+        {testimonies.map((t, idx) => (
           <a href={`/en/testimonies/${t.id}/`} class="block py-4 border-b border-beige-200 hover:bg-beige-50/50 transition-colors">
             <p class="text-charcoal-800 text-sm sm:text-base text-left"><span class="font-serif font-bold">{t.title.en}</span><span class="text-charcoal-500 mx-1">——</span><span class="text-charcoal-400">{t.date} · {t.author.en}</span></p>
           </a>
