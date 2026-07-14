@@ -160,7 +160,18 @@ import products from '../../../content/products.json';
   </div>
 </div>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/5.3.1/fabric.min.js"></script>
+<script is:inline>
+  // Load fabric.js dynamically (Astro strips external script tags in SSR)
+  var fabricScript = document.createElement('script');
+  fabricScript.src = 'https://cdnjs.cloudflare.com/ajax/libs/fabric.js/5.3.1/fabric.min.js';
+  fabricScript.onload = function() {
+    console.log('fabric.js loaded');
+    setTimeout(function() {
+      try { initCanvas(); loadProducts(); } catch(e) { console.error('Init error:', e); }
+    }, 300);
+  };
+  document.head.appendChild(fabricScript);
+</script>
 <script is:inline>
   var state = { currentProduct: null, currentColor: '', currentSize: '', qty: 1, galleryImages: [] };
   var canvas = null, baseImg = null, isMobile = false;
@@ -457,21 +468,8 @@ import products from '../../../content/products.json';
     alert('已加入购物车！');
   }
 
-  window.addEventListener('DOMContentLoaded', function() {
-    // Step 1: Init canvas when fabric.js is ready
-    setTimeout(function() {
-      if (typeof fabric === 'undefined') { console.error('fabric.js not loaded'); return; }
-      try {
-        initCanvas();
-        console.log('Canvas ready, loading products...');
-        loadProducts();
-      } catch(e) {
-        console.error('Init failed:', e);
-        // Retry once
-        setTimeout(function() { try { initCanvas(); loadProducts(); } catch(e2) { console.error('Retry failed:', e2); } }, 1000);
-      }
-    }, 800);
-  });
+  // Initialization handled by fabric.js onload callback above
+  // (no DOMContentLoaded needed — fabric loads dynamically)
   window.addEventListener('resize', function() {
     if (canvas) { var el = document.getElementById(getCanvasId()); if (!el) return; var w = el.parentElement.clientWidth; canvas.setDimensions({width: w, height: w}); clearGuidelines(); canvas.renderAll(); updatePreview(); }
   });
