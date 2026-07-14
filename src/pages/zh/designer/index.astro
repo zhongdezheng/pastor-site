@@ -3,7 +3,7 @@ import BaseLayout from '../../../layouts/BaseLayout.astro';
 import products from '../../../content/products.json';
 ---
 
-<BaseLayout lang="zh" title="Custom Design — Livingstone">
+<BaseLayout lang="zh" title="定制设计 — 活石">
 
 <script type="application/json" id="__designerProducts" set:html={JSON.stringify(products)}></script>
 <section class="h-screen bg-gray-100 flex flex-col">
@@ -12,7 +12,7 @@ import products from '../../../content/products.json';
   <div class="hidden md:flex flex-1 overflow-hidden">
     
     <!-- LEFT PANEL -->
-    <div class="w-[24%] min-w-[240px] max-w-[320px] bg-white border-r border-gray-200 overflow-y-auto p-2 flex flex-col gap-1.5">
+    <div class="w-[24%] min-w-[240px] max-w-[320px] bg-white border-r border-gray-200 overflow-y-auto p-1.5 flex flex-col gap-1">
       
       <!-- 产品选择 -->
       <div class="bg-gray-50 rounded-lg p-2">
@@ -84,7 +84,7 @@ import products from '../../../content/products.json';
     </div>
 
     <!-- RIGHT PANEL -->
-    <div class="w-[24%] min-w-[240px] max-w-[320px] bg-white border-l border-gray-200 overflow-y-auto p-2 flex flex-col gap-1.5">
+    <div class="w-[24%] min-w-[240px] max-w-[320px] bg-white border-l border-gray-200 overflow-y-auto p-1.5 flex flex-col gap-1">
       
       <div class="bg-gray-50 rounded-lg p-2">
         <h3 class="text-[11px] font-bold text-gray-700 mb-1 uppercase tracking-wide">已选产品</h3>
@@ -434,11 +434,11 @@ import products from '../../../content/products.json';
   }
 
   window.addEventListener('DOMContentLoaded', function() {
-    // Load products first (doesn't need canvas)
-    loadProducts();
-    // Init canvas with delay for fabric.js
+    // Init canvas first (fabric.js needs DOM ready)
     setTimeout(function() {
       try { initCanvas(); } catch(e) { console.error('Canvas init failed:', e); }
+      // Load products after canvas is ready
+      loadProducts();
     }, 500);
   });
   window.addEventListener('resize', function() {
