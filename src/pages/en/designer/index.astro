@@ -15,6 +15,15 @@ import BaseLayout from '../../../layouts/BaseLayout.astro';
         <div id="designer-products" class="space-y-1.5"></div>
       </div>
 
+      <!-- Products图片 → 点击添加 -->
+      <div class="bg-white rounded-lg p-3 shadow-sm">
+        <h3 class="text-xs font-bold text-charcoal-700 mb-2 uppercase tracking-wide">Product Images</h3>
+        <p class="text-[9px] text-charcoal-400 mb-1">点击图片添加到设计区</p>
+        <div id="product-images-menu" class="grid grid-cols-3 gap-1.5 max-h-[300px] overflow-y-auto">
+          <p class="text-[10px] text-charcoal-400 col-span-3">选择产品后显示</p>
+        </div>
+      </div>
+
       <!-- Products参数 -->
       <div class="bg-white rounded-lg p-3 shadow-sm hidden" id="product-params">
         <h3 class="text-xs font-bold text-charcoal-700 mb-2 uppercase tracking-wide">Products参数</h3>
@@ -244,10 +253,43 @@ import BaseLayout from '../../../layouts/BaseLayout.astro';
     el.classList.add('bg-charcoal-700','text-white'); el.classList.remove('border-charcoal-300');
   }
 
-  function loadProductImage() { reloadColor(); }
+  function loadProductImage() { reloadColor(); loadProductImagesMenu(); }
   function reloadColor() {
     var tag = state.currentColor === '黑色' ? '黑色' : '白色';
     addBaseImage('/images/products/180g-tee/962802505245275392_'+tag+'_3.jpeg');
+  }
+
+  function loadProductImagesMenu() {
+    var container = document.getElementById('product-images-menu');
+    if (!state.currentProduct) return;
+    var allImages = [];
+    state.currentProduct.products.forEach(function(p) {
+      var imgs = typeof p.images === 'string' ? JSON.parse(p.images || '[]') : (p.images || []);
+      imgs.forEach(function(img) { if (allImages.indexOf(img) === -1) allImages.push(img); });
+    });
+    // Also fetch from products.json if needed
+    if (allImages.length === 0) {
+      fetch('/api/products').then(function(r){ return r.json(); }).then(function(prods){
+        prods.forEach(function(p) {
+          var imgs = typeof p.images === 'string' ? JSON.parse(p.images || '[]') : (p.images || []);
+          imgs.forEach(function(img) { if (allImages.indexOf(img) === -1) allImages.push(img); });
+        });
+        renderProductImages(allImages);
+      });
+    } else {
+      renderProductImages(allImages);
+    }
+  }
+
+  function renderProductImages(images) {
+    var container = document.getElementById('product-images-menu');
+    if (!images || images.length === 0) {
+      container.innerHTML = '<p class="text-[10px] text-charcoal-400 col-span-3">暂无产品图片</p>';
+      return;
+    }
+    container.innerHTML = images.map(function(src) {
+      return '<div class="aspect-square bg-beige-100 rounded overflow-hidden cursor-pointer border hover:border-charcoal-400" onclick="addDesignImage(\''+src+'\')"><img src="'+src+'" class="w-full h-full object-cover" loading="lazy" onerror="this.parentElement.style.display=\'none\'"></div>';
+    }).join('');
   }
 
   // Upload

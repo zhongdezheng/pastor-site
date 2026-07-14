@@ -244,10 +244,42 @@ import BaseLayout from '../../../layouts/BaseLayout.astro';
     el.classList.add('bg-charcoal-700','text-white'); el.classList.remove('border-charcoal-300');
   }
 
-  function loadProductImage() { reloadColor(); }
+  function loadProductImage() { reloadColor(); loadProductImagesMenu(); }
   function reloadColor() {
     var tag = state.currentColor === '黑色' ? '黑色' : '白色';
     addBaseImage('/images/products/180g-tee/962802505245275392_'+tag+'_3.jpeg');
+  }
+
+  function loadProductImagesMenu() {
+    var container = document.getElementById('product-images-menu');
+    if (!state.currentProduct) return;
+    var allImages = [];
+    state.currentProduct.products.forEach(function(p) {
+      var imgs = typeof p.images === 'string' ? JSON.parse(p.images || '[]') : (p.images || []);
+      imgs.forEach(function(img) { if (allImages.indexOf(img) === -1) allImages.push(img); });
+    });
+    if (allImages.length === 0) {
+      fetch('/api/products').then(function(r){ return r.json(); }).then(function(prods){
+        prods.forEach(function(p) {
+          var imgs = typeof p.images === 'string' ? JSON.parse(p.images || '[]') : (p.images || []);
+          imgs.forEach(function(img) { if (allImages.indexOf(img) === -1) allImages.push(img); });
+        });
+        renderProductImages(allImages);
+      });
+    } else {
+      renderProductImages(allImages);
+    }
+  }
+
+  function renderProductImages(images) {
+    var container = document.getElementById('product-images-menu');
+    if (!images || images.length === 0) {
+      container.innerHTML = '<p class="text-[10px] text-charcoal-400 col-span-3">暂无产品图片</p>';
+      return;
+    }
+    container.innerHTML = images.map(function(src) {
+      return '<div class="aspect-square bg-beige-100 rounded overflow-hidden cursor-pointer border hover:border-charcoal-400" onclick="addDesignImage(\''+src+'\')"><img src="'+src+'" class="w-full h-full object-cover" loading="lazy" onerror="this.parentElement.style.display=\'none\'"></div>';
+    }).join('');
   }
 
   // Upload
