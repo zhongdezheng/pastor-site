@@ -7,7 +7,12 @@ import products from '../../../content/products.json';
 
 <script type="application/json" id="__designerProducts" set:html={JSON.stringify(products)}></script>
 
-<section class="h-screen bg-gray-100 flex flex-col">
+<!-- Hide footer & floating buttons on designer page -->
+<style is:inline>
+  footer, #cart-floating, #wa-btn { display: none !important; }
+</style>
+
+<section class="h-screen md:h-screen bg-gray-100 flex flex-col">
   <!-- ===== DESKTOP: 3-panel layout ===== -->
   <div class="hidden md:flex flex-1 overflow-hidden">
     <!-- LEFT PANEL: 24% -->
@@ -120,44 +125,53 @@ import products from '../../../content/products.json';
 
   <!-- ===== MOBILE: single column ===== -->
   <div class="md:hidden flex flex-col flex-1">
-    <div class="flex-1 bg-gray-200 flex items-center justify-center p-3">
-      <div class="relative bg-white rounded-2xl shadow-lg overflow-hidden w-full" style="max-width: 360px; aspect-ratio: 1/1;">
+    <!-- Canvas area -->
+    <div class="flex-1 bg-gray-200 flex items-center justify-center p-2">
+      <div class="relative bg-white rounded-2xl shadow-lg overflow-hidden w-full" style="max-width: min(92vw, 360px); aspect-ratio: 1/1;">
         <canvas id="design-canvas-mobile"></canvas>
       </div>
     </div>
-    <div class="bg-white border-t border-gray-200 px-3 py-2.5 space-y-2.5">
-      <div>
-        <span class="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Select Product</span>
-        <div id="designer-products-mobile" class="flex gap-1.5 overflow-x-auto pb-1 mt-1"></div>
+
+    <!-- Toolbar: compact single-row scroll -->
+    <div class="bg-white border-t border-gray-200 px-2 py-2">
+      <!-- Product pills -->
+      <div class="flex items-center gap-1.5 mb-2">
+        <span class="text-[10px] font-bold text-gray-400 uppercase flex-shrink-0 w-10">Product</span>
+        <div id="designer-products-mobile" class="flex gap-1 overflow-x-auto flex-1"></div>
       </div>
-      <div id="product-params-mobile" class="hidden">
-        <div class="flex flex-wrap items-center gap-2 text-xs">
-          <div class="flex items-center gap-1"><span class="text-gray-500 font-medium">Color</span><div id="color-options-mobile" class="flex gap-1"></div></div>
-          <div class="flex items-center gap-1"><span class="text-gray-500 font-medium">Size</span><div id="size-options-mobile" class="flex gap-1"></div></div>
-          <div class="flex items-center gap-1 ml-auto">
-            <button class="w-6 h-6 bg-white border border-gray-200 rounded text-xs font-bold" onclick="chgQty(-1)">−</button>
-            <span class="text-sm font-bold" id="design-qty-mobile">1</span>
-            <button class="w-6 h-6 bg-white border border-gray-200 rounded text-xs font-bold" onclick="chgQty(1)">+</button>
-          </div>
-        </div>
+
+      <!-- Color + Size row -->
+      <div id="product-params-mobile" class="hidden flex items-center gap-1.5 overflow-x-auto mb-2">
+        <span class="text-[10px] font-bold text-gray-400 uppercase flex-shrink-0">Color</span>
+        <div id="color-options-mobile" class="flex gap-1 flex-shrink-0"></div>
+        <span class="text-gray-300 flex-shrink-0">|</span>
+        <span class="text-[10px] font-bold text-gray-400 uppercase flex-shrink-0">Size</span>
+        <div id="size-options-mobile" class="flex gap-1 overflow-x-auto"></div>
+        <span class="text-gray-300 flex-shrink-0">|</span>
+        <span class="text-[10px] font-bold text-gray-400 uppercase flex-shrink-0">Qty</span>
+        <button class="w-5 h-5 bg-white border border-gray-200 rounded text-xs font-bold flex-shrink-0" onclick="chgQty(-1)">−</button>
+        <span class="text-sm font-bold flex-shrink-0" id="design-qty-mobile">1</span>
+        <button class="w-5 h-5 bg-white border border-gray-200 rounded text-xs font-bold flex-shrink-0" onclick="chgQty(1)">+</button>
       </div>
-      <div class="flex gap-2">
-        <input type="text" id="text-input-mobile" placeholder="Text..." class="flex-1 px-3 py-2 bg-white border border-gray-200 rounded-lg text-xs text-gray-700 placeholder-gray-300 focus:outline-none focus:border-gray-400" />
-        <button class="px-3 py-2 bg-gray-100 border border-gray-200 rounded-lg text-xs font-medium text-gray-600 hover:bg-gray-200 transition-colors" onclick="addTextFromSelect(true)">Add Text</button>
-        <button class="px-3 py-2 bg-gray-100 border border-gray-200 rounded-lg text-xs" onclick="document.getElementById('design-upload-mobile').click()">📁</button>
+
+      <!-- Text + Upload tools -->
+      <div class="flex gap-1.5 items-center mb-2">
+        <input type="text" id="text-input-mobile" placeholder="Add text..." class="flex-1 px-2.5 py-2 bg-gray-50 border border-gray-200 rounded-lg text-xs text-gray-700 placeholder-gray-400 focus:outline-none focus:border-gray-400" />
+        <button class="px-2.5 py-2 bg-gray-100 border border-gray-200 rounded-lg text-xs font-medium text-gray-600 hover:bg-gray-200 flex-shrink-0" onclick="addTextFromSelect(true)">+Text</button>
+        <button class="w-9 h-9 bg-gray-100 border border-gray-200 rounded-lg text-sm flex items-center justify-center flex-shrink-0" onclick="document.getElementById('design-upload-mobile').click()">📁</button>
         <input type="file" id="design-upload-mobile" accept="image/*" class="hidden" />
       </div>
-      <div class="flex gap-2">
-        <button id="btn-reset-mobile" class="flex-1 py-2.5 bg-white border border-gray-200 rounded-lg text-xs font-medium text-gray-500 hover:bg-gray-50 active:bg-gray-100 transition-all">Reset</button>
-        <button id="btn-center-mobile" class="flex-1 py-2.5 bg-white border border-gray-200 rounded-lg text-xs font-medium text-gray-500 hover:bg-gray-50 active:bg-gray-100 transition-all">Center</button>
-        <button id="btn-cart-mobile" class="flex-[2] py-2.5 bg-gray-800 hover:bg-gray-700 active:bg-gray-900 text-white rounded-lg text-xs font-semibold transition-all">Add to Cart</button>
-      </div>
-      <div class="bg-gray-50 rounded-lg p-2 flex items-center justify-between">
-        <div>
-          <p class="text-xs font-bold text-gray-800" id="info-name-mobile">Select a product</p>
-          <p class="text-[10px] text-gray-500" id="info-detail-mobile"></p>
+
+      <!-- Action bar: Selected info + buttons -->
+      <div class="flex items-center gap-2">
+        <div class="flex-1 min-w-0">
+          <p class="text-xs font-bold text-gray-800 truncate" id="info-name-mobile">Select a product</p>
+          <p class="text-[10px] text-gray-400" id="info-detail-mobile"></p>
+          <p class="text-sm font-bold text-gray-800" id="info-price-mobile"></p>
         </div>
-        <p class="text-sm font-bold text-gray-800" id="info-price-mobile"></p>
+        <button id="btn-reset-mobile" class="px-3 py-2 bg-white border border-gray-200 rounded-lg text-[11px] font-medium text-gray-500 hover:bg-gray-50 flex-shrink-0">Reset</button>
+        <button id="btn-center-mobile" class="px-3 py-2 bg-white border border-gray-200 rounded-lg text-[11px] font-medium text-gray-500 hover:bg-gray-50 flex-shrink-0">Center</button>
+        <button id="btn-cart-mobile" class="px-4 py-2.5 bg-gray-800 hover:bg-gray-700 active:bg-gray-900 text-white rounded-lg text-xs font-semibold flex-shrink-0">Cart</button>
       </div>
     </div>
   </div>

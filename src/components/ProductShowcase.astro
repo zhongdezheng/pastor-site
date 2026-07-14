@@ -78,8 +78,8 @@ const sizeGuide = lang === 'en'
                 <span class="font-bold text-sm text-charcoal-700">${p.price}</span>
                 <span class="text-[10px] text-charcoal-400">{t.weight}: {p.weight}</span>
               </div>
-              <div class="flex flex-wrap gap-0.5 mt-1.5">
-                {p.sizes.map(s => <span class="text-[9px] border border-charcoal-200 rounded px-1 py-0 text-charcoal-500">{s}</span>)}
+              <div class="flex gap-0.5 mt-1.5 flex-nowrap overflow-x-auto scrollbar-hide" style="max-height:20px">
+                {p.sizes.map(s => <span class="text-[9px] border border-charcoal-200 rounded px-1 py-0 text-charcoal-500 whitespace-nowrap flex-shrink-0">{s}</span>)}
               </div>
               <div class="flex gap-1 mt-1.5">
                 {p.colors.map(c => {
