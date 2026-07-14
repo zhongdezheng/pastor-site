@@ -6,144 +6,150 @@ import products from '../../../content/products.json';
 <BaseLayout lang="en" title="Custom Design — Livingstone">
 
 <script type="application/json" id="__designerProducts" set:html={JSON.stringify(products)}></script>
+
 <section class="h-screen bg-gray-100 flex flex-col">
-  
   <!-- ===== DESKTOP: 3-panel layout ===== -->
   <div class="hidden md:flex flex-1 overflow-hidden">
-    
-    <!-- LEFT PANEL -->
-    <div class="w-[24%] min-w-[240px] max-w-[320px] bg-white border-r border-gray-200 overflow-y-auto p-1 flex flex-col gap-0.5">
+    <!-- LEFT PANEL: 24% -->
+    <div class="w-[24%] min-w-[260px] max-w-[340px] bg-white border-r border-gray-200 overflow-y-auto flex flex-col gap-2 p-3">
       
       <!-- Product Selector -->
-      <div class="bg-gray-50 rounded-xl p-2">
-        <h3 class="text-[10px] font-semibold text-gray-400 uppercase tracking-wider mb-1.5">Select Product</h3>
-        <div id="designer-products" class="space-y-1"></div>
+      <div class="bg-gray-50 rounded-xl p-3">
+        <h3 class="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Select Product</h3>
+        <div id="designer-products" class="space-y-1.5"></div>
       </div>
 
-      <!-- Params -->
-      <div class="bg-gray-50 rounded-xl p-2 hidden" id="product-params">
-        <div class="space-y-2">
-          <div><label class="text-[10px] font-semibold text-gray-400 uppercase tracking-wider">Color</label>
-            <div class="flex flex-wrap gap-1.5 mt-1" id="color-options"></div>
+      <!-- Params: Color / Size / Qty -->
+      <div class="bg-gray-50 rounded-xl p-3 hidden" id="product-params">
+        <div class="space-y-3">
+          <div>
+            <label class="text-xs font-bold text-gray-500 uppercase tracking-wider">Color</label>
+            <div class="flex flex-wrap gap-2 mt-1.5" id="color-options"></div>
           </div>
-          <div><label class="text-[10px] font-semibold text-gray-400 uppercase tracking-wider">Size</label>
-            <div class="flex flex-wrap gap-1.5 mt-1" id="size-options"></div>
+          <div>
+            <label class="text-xs font-bold text-gray-500 uppercase tracking-wider">Size</label>
+            <div class="flex flex-wrap gap-1.5 mt-1.5" id="size-options"></div>
           </div>
           <div class="flex items-center justify-between">
-            <label class="text-[10px] font-semibold text-gray-400 uppercase tracking-wider">Qty</label>
+            <label class="text-xs font-bold text-gray-500 uppercase tracking-wider">Qty</label>
             <div class="flex items-center gap-0">
-              <button class="w-7 h-7 rounded-l-lg bg-white border border-gray-200 text-gray-500 hover:bg-gray-50 text-sm leading-none" onclick="chgQty(-1)">−</button>
-              <span class="w-8 h-7 flex items-center justify-center bg-white border-y border-gray-200 text-sm font-bold text-gray-700" id="design-qty">1</span>
-              <button class="w-7 h-7 rounded-r-lg bg-white border border-gray-200 text-gray-500 hover:bg-gray-50 text-sm leading-none" onclick="chgQty(1)">+</button>
+              <button class="w-8 h-8 rounded-l-lg bg-white border border-gray-200 text-gray-600 hover:bg-gray-50 text-sm font-bold leading-none" onclick="chgQty(-1)">−</button>
+              <span class="w-10 h-8 flex items-center justify-center bg-white border-y border-gray-200 text-sm font-bold text-gray-700" id="design-qty">1</span>
+              <button class="w-8 h-8 rounded-r-lg bg-white border border-gray-200 text-gray-600 hover:bg-gray-50 text-sm font-bold leading-none" onclick="chgQty(1)">+</button>
             </div>
           </div>
         </div>
       </div>
 
       <!-- Upload Image -->
-      <div class="bg-gray-50 rounded-xl p-2">
-        <h3 class="text-[10px] font-semibold text-gray-400 uppercase tracking-wider mb-1.5">Upload Image</h3>
-        <div id="upload-zone" class="border-2 border-dashed border-gray-200 rounded-xl p-4 text-center cursor-pointer hover:border-gray-400 hover:bg-gray-100/50 transition-all">
-          <div class="w-8 h-8 mx-auto mb-1 rounded-full bg-gray-100 flex items-center justify-center text-sm">📁</div>
-          <p class="text-[10px] text-gray-400 font-medium">Click to upload</p>
-          <input type="file" id="design-upload" accept="image/*" class="hidden">
+      <div class="bg-gray-50 rounded-xl p-3">
+        <h3 class="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Upload Image</h3>
+        <div id="upload-zone" class="border-2 border-dashed border-gray-300 rounded-xl p-5 text-center cursor-pointer hover:border-gray-400 hover:bg-gray-100/50 transition-all">
+          <div class="w-10 h-10 mx-auto mb-1.5 rounded-full bg-gray-100 flex items-center justify-center text-xl">📁</div>
+          <p class="text-xs text-gray-400 font-medium">Click to upload</p>
+          <input type="file" id="design-upload" accept="image/*" class="hidden" />
         </div>
         <div id="image-gallery" class="grid grid-cols-4 gap-1.5 mt-2"></div>
       </div>
 
       <!-- Text -->
-      <div class="bg-gray-50 rounded-xl p-2">
-        <h3 class="text-[10px] font-semibold text-gray-400 uppercase tracking-wider mb-1.5">Text</h3>
+      <div class="bg-gray-50 rounded-xl p-3">
+        <h3 class="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Text</h3>
+        <input type="text" id="text-input" placeholder="Your text..." class="w-full px-3 py-2 bg-white border border-gray-200 rounded-lg text-sm text-gray-700 placeholder-gray-300 focus:outline-none focus:border-gray-400 focus:ring-1 focus:ring-gray-200 transition-all mb-2" />
         <div class="relative mb-2">
-          <input type="text" id="text-input" placeholder="Type something..." class="w-full pl-3 pr-8 py-2 bg-white border border-gray-200 rounded-xl text-xs text-gray-700 placeholder-gray-300 focus:outline-none focus:border-gray-400 focus:ring-1 focus:ring-gray-200 transition-all">
+          <div class="relative">
+            <label class="text-xs font-bold text-gray-500 uppercase tracking-wider block mb-1.5">Font</label>
+            <select id="font-select" class="w-full px-3 py-2 bg-white border border-gray-200 rounded-lg text-sm text-gray-700 appearance-none cursor-pointer focus:outline-none focus:border-gray-400 focus:ring-1 focus:ring-gray-200 transition-all">
+              <option value="Arial">Arial</option>
+              <option value="Georgia">Georgia</option>
+              <option value="Impact">Impact</option>
+              <option value="Courier New">Courier New</option>
+              <option value="Times New Roman">Times New Roman</option>
+              <option value="Verdana">Verdana</option>
+              <option value="Trebuchet MS">Trebuchet MS</option>
+              <option value="Comic Sans MS">Comic Sans MS</option>
+            </select>
+          </div>
         </div>
-        <div class="relative mb-2">
-          <select id="font-select" class="w-full pl-3 pr-8 py-2 bg-white border border-gray-200 rounded-xl text-xs text-gray-700 appearance-none cursor-pointer focus:outline-none focus:border-gray-400 focus:ring-1 focus:ring-gray-200 transition-all" style="background-image:url('data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%2212%22 height=%2212%22 viewBox=%220 0 24 24%22 fill=%22none%22 stroke=%22%23999%22 stroke-width=%222%22><path d=%22M6 9l6 6 6-6%22/></svg>');background-repeat:no-repeat;background-position:right 8px center;padding-right:28px;">
-            <option value="Arial">Arial</option>
-            <option value="Georgia">Georgia</option>
-            <option value="Impact">Impact</option>
-            <option value="Courier New">Courier New</option>
-            <option value="Times New Roman">Times New Roman</option>
-            <option value="Verdana">Verdana</option>
-            <option value="Trebuchet MS">Trebuchet MS</option>
-            <option value="Comic Sans MS">Comic Sans MS</option>
-          </select>
-        </div>
-        <button class="w-full py-2 bg-gray-800 hover:bg-gray-700 text-white rounded-xl text-xs font-medium transition-colors" onclick="addTextFromSelect()">Text</button>
+        <button class="w-full py-2.5 bg-gray-800 hover:bg-gray-700 active:bg-gray-900 text-white rounded-lg text-sm font-medium transition-all" onclick="addTextFromSelect()">Add Text</button>
       </div>
 
+      <!-- Reset / Center -->
       <div class="flex gap-2">
-        <button id="btn-reset" class="flex-1 py-2 bg-white border border-gray-200 rounded-xl text-xs font-medium text-gray-500 hover:bg-gray-50 hover:border-gray-300 transition-all">Reset</button>
-        <button id="btn-center" class="flex-1 py-2 bg-white border border-gray-200 rounded-xl text-xs font-medium text-gray-500 hover:bg-gray-50 hover:border-gray-300 transition-all">Center</button>
+        <button id="btn-reset" class="flex-1 py-2.5 bg-white border border-gray-200 rounded-lg text-sm font-medium text-gray-500 hover:bg-gray-50 hover:border-gray-300 active:bg-gray-100 transition-all">Reset</button>
+        <button id="btn-center" class="flex-1 py-2.5 bg-white border border-gray-200 rounded-lg text-sm font-medium text-gray-500 hover:bg-gray-50 hover:border-gray-300 active:bg-gray-100 transition-all">Center</button>
       </div>
     </div>
 
-    <!-- CENTER CANVAS -->
-    <div class="flex-1 bg-gray-200 flex items-center justify-center relative p-4">
-      <div class="relative bg-white rounded-xl shadow-lg overflow-hidden" style="width: min(100%, 520px); aspect-ratio: 1/1;">
+    <!-- CENTER CANVAS: flex-1 -->
+    <div class="flex-1 bg-gray-200 flex items-center justify-center p-6">
+      <div class="relative bg-white rounded-2xl shadow-xl overflow-hidden" style="width: min(100%, 540px); aspect-ratio: 1/1;">
         <canvas id="design-canvas"></canvas>
       </div>
     </div>
 
-    <!-- RIGHT PANEL -->
-    <div class="w-[24%] min-w-[240px] max-w-[320px] bg-white border-l border-gray-200 overflow-y-auto p-1 flex flex-col gap-0.5">
+    <!-- RIGHT PANEL: 24% -->
+    <div class="w-[24%] min-w-[260px] max-w-[340px] bg-white border-l border-gray-200 overflow-y-auto flex flex-col gap-2 p-3">
       
-      <div class="bg-gray-50 rounded-xl p-2">
-        <h3 class="text-[10px] font-semibold text-gray-400 uppercase tracking-wider mb-1.5">Selected</h3>
+      <!-- Selected Info -->
+      <div class="bg-gray-50 rounded-xl p-3">
+        <h3 class="text-xs font-bold text-gray-500 uppercase tracking-wider mb-1.5">Selected</h3>
         <p class="text-sm font-bold text-gray-800" id="info-name">Select a product</p>
-        <p class="text-[11px] text-gray-400 mt-0.5" id="info-detail"></p>
-        <p class="text-lg font-bold text-gray-800 mt-1" id="info-price"></p>
+        <p class="text-xs text-gray-400 mt-0.5" id="info-detail"></p>
+        <p class="text-xl font-bold text-gray-800 mt-1" id="info-price"></p>
       </div>
 
-      <div class="bg-gray-50 rounded-xl p-2 flex flex-col">
-        <h3 class="text-[10px] font-semibold text-gray-400 uppercase tracking-wider mb-1.5">Preview</h3>
-        <div id="preview-thumb" class="bg-white rounded-xl flex items-center justify-center overflow-hidden cursor-pointer border border-gray-100" style="height:308px;"
-             onclick="openPreview()">
-          <span class="text-3xl opacity-10">👕</span>
+      <!-- Preview -->
+      <div class="bg-gray-50 rounded-xl p-3 flex flex-col">
+        <h3 class="text-xs font-bold text-gray-500 uppercase tracking-wider mb-1.5">Preview</h3>
+        <div id="preview-thumb" class="bg-white rounded-xl flex items-center justify-center overflow-hidden cursor-pointer border border-gray-100 hover:border-gray-300 transition-colors" style="height:308px;" onclick="openPreview()">
+          <span class="text-4xl opacity-10">👕</span>
         </div>
-        <p class="text-[9px] text-gray-400 mt-1 text-center">Click to enlarge</p>
+        <p class="text-[10px] text-gray-400 mt-1.5 text-center">Click to enlarge</p>
       </div>
 
-      <button id="btn-cart" class="w-full py-2.5 bg-gray-800 hover:bg-gray-700 text-white rounded-xl font-medium text-sm transition-colors">Add to Cart</button>
+      <!-- Add to Cart -->
+      <button id="btn-cart" class="w-full py-3 bg-gray-800 hover:bg-gray-700 active:bg-gray-900 text-white rounded-lg font-semibold text-sm transition-all">Add to Cart</button>
     </div>
   </div>
 
-  <!-- ===== MOBILE ===== -->
+  <!-- ===== MOBILE: single column ===== -->
   <div class="md:hidden flex flex-col flex-1">
-    <div class="flex-1 bg-gray-200 flex items-center justify-center p-2">
-      <div class="relative bg-white rounded-xl shadow-md overflow-hidden w-full" style="max-width: 320px; aspect-ratio: 1/1;">
+    <div class="flex-1 bg-gray-200 flex items-center justify-center p-3">
+      <div class="relative bg-white rounded-2xl shadow-lg overflow-hidden w-full" style="max-width: 360px; aspect-ratio: 1/1;">
         <canvas id="design-canvas-mobile"></canvas>
       </div>
     </div>
-    <div class="bg-white border-t border-gray-200 px-3 py-2 space-y-2">
+    <div class="bg-white border-t border-gray-200 px-3 py-2.5 space-y-2.5">
       <div>
-        <div id="designer-products-mobile" class="flex gap-1.5 overflow-x-auto pb-1"></div>
+        <span class="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Select Product</span>
+        <div id="designer-products-mobile" class="flex gap-1.5 overflow-x-auto pb-1 mt-1"></div>
       </div>
       <div id="product-params-mobile" class="hidden">
-        <div class="flex items-center gap-2 text-[11px]">
-          <div class="flex items-center gap-1"><span class="text-gray-500">Color</span><div id="color-options-mobile" class="flex gap-1"></div></div>
-          <div class="flex items-center gap-1"><span class="text-gray-500">Size</span><div id="size-options-mobile" class="flex gap-1"></div></div>
+        <div class="flex flex-wrap items-center gap-2 text-xs">
+          <div class="flex items-center gap-1"><span class="text-gray-500 font-medium">Color</span><div id="color-options-mobile" class="flex gap-1"></div></div>
+          <div class="flex items-center gap-1"><span class="text-gray-500 font-medium">Size</span><div id="size-options-mobile" class="flex gap-1"></div></div>
           <div class="flex items-center gap-1 ml-auto">
-            <button class="w-5 h-5 border rounded text-[11px]" onclick="chgQty(-1)">−</button>
-            <span class="font-bold" id="design-qty-mobile">1</span>
-            <button class="w-5 h-5 border rounded text-[11px]" onclick="chgQty(1)">+</button>
+            <button class="w-6 h-6 bg-white border border-gray-200 rounded text-xs font-bold" onclick="chgQty(-1)">−</button>
+            <span class="text-sm font-bold" id="design-qty-mobile">1</span>
+            <button class="w-6 h-6 bg-white border border-gray-200 rounded text-xs font-bold" onclick="chgQty(1)">+</button>
           </div>
         </div>
       </div>
       <div class="flex gap-2">
-        <input type="text" id="text-input-mobile" placeholder="Text..." class="flex-1 px-2 py-1.5 border rounded text-xs">
-        <button class="px-2 py-1.5 border rounded text-xs" onclick="addTextFromSelect(true)">Add</button>
-        <button class="px-2 py-1.5 border rounded text-xs" onclick="document.getElementById('design-upload-mobile').click()">📁</button>
-        <input type="file" id="design-upload-mobile" accept="image/*" class="hidden">
+        <input type="text" id="text-input-mobile" placeholder="Text..." class="flex-1 px-3 py-2 bg-white border border-gray-200 rounded-lg text-xs text-gray-700 placeholder-gray-300 focus:outline-none focus:border-gray-400" />
+        <button class="px-3 py-2 bg-gray-100 border border-gray-200 rounded-lg text-xs font-medium text-gray-600 hover:bg-gray-200 transition-colors" onclick="addTextFromSelect(true)">Add Text</button>
+        <button class="px-3 py-2 bg-gray-100 border border-gray-200 rounded-lg text-xs" onclick="document.getElementById('design-upload-mobile').click()">📁</button>
+        <input type="file" id="design-upload-mobile" accept="image/*" class="hidden" />
       </div>
       <div class="flex gap-2">
-        <button id="btn-reset-mobile" class="flex-1 py-2 bg-white border border-gray-200 rounded-xl text-xs font-medium text-gray-500 hover:bg-gray-50">Reset</button>
-        <button id="btn-center-mobile" class="flex-1 py-2 bg-white border border-gray-200 rounded-xl text-xs font-medium text-gray-500 hover:bg-gray-50">Center</button>
-        <button id="btn-cart-mobile" class="flex-[2] py-2 bg-gray-800 hover:bg-gray-700 text-white rounded-xl text-xs font-medium">Add to Cart</button>
+        <button id="btn-reset-mobile" class="flex-1 py-2.5 bg-white border border-gray-200 rounded-lg text-xs font-medium text-gray-500 hover:bg-gray-50 active:bg-gray-100 transition-all">Reset</button>
+        <button id="btn-center-mobile" class="flex-1 py-2.5 bg-white border border-gray-200 rounded-lg text-xs font-medium text-gray-500 hover:bg-gray-50 active:bg-gray-100 transition-all">Center</button>
+        <button id="btn-cart-mobile" class="flex-[2] py-2.5 bg-gray-800 hover:bg-gray-700 active:bg-gray-900 text-white rounded-lg text-xs font-semibold transition-all">Add to Cart</button>
       </div>
-      <div class="bg-gray-50 rounded-lg p-1.5 flex items-center justify-between">
+      <div class="bg-gray-50 rounded-lg p-2 flex items-center justify-between">
         <div>
-          <p class="text-xs font-bold text-gray-800" id="info-name-mobile">Select Product</p>
+          <p class="text-xs font-bold text-gray-800" id="info-name-mobile">Select a product</p>
           <p class="text-[10px] text-gray-500" id="info-detail-mobile"></p>
         </div>
         <p class="text-sm font-bold text-gray-800" id="info-price-mobile"></p>
@@ -153,26 +159,19 @@ import products from '../../../content/products.json';
 </section>
 
 <!-- Preview Modal -->
-<div id="preview-modal" class="fixed inset-0 z-50 bg-black/80 hidden flex items-center justify-center p-4" onclick="closePreview()">
+<div id="preview-modal" class="fixed inset-0 z-50 bg-black/80 hidden flex items-center justify-center p-6" onclick="closePreview()">
   <div class="relative max-w-[90vw] max-h-[90vh]" onclick="event.stopPropagation()">
-    <img id="preview-modal-img" class="max-w-full max-h-[85vh] object-contain rounded-lg shadow-2xl" src="" alt="Preview">
-    <button class="absolute -top-3 -right-3 w-8 h-8 bg-white rounded-full shadow flex items-center justify-center text-lg font-bold hover:bg-gray-100" onclick="closePreview()">✕</button>
+    <img id="preview-modal-img" class="max-w-full max-h-[85vh] object-contain rounded-xl shadow-2xl" src="" alt="Preview" />
+    <button class="absolute -top-3 -right-3 w-9 h-9 bg-white rounded-full shadow-lg flex items-center justify-center text-base font-bold text-gray-600 hover:bg-gray-100 transition-colors" onclick="closePreview()">✕</button>
   </div>
 </div>
 
+<!-- Fabric.js via CDN -->
+<script is:inline src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/5.3.1/fabric.min.js"></script>
+
+<!-- All designer logic in one inline script -->
 <script is:inline>
-  // Load fabric.js dynamically (Astro strips external script tags in SSR)
-  var fabricScript = document.createElement('script');
-  fabricScript.src = 'https://cdnjs.cloudflare.com/ajax/libs/fabric.js/5.3.1/fabric.min.js';
-  fabricScript.onload = function() {
-    console.log('fabric.js loaded');
-    setTimeout(function() {
-      try { initCanvas(); loadProducts(); } catch(e) { console.error('Init error:', e); }
-    }, 300);
-  };
-  document.head.appendChild(fabricScript);
-</script>
-<script is:inline>
+(function() {
   var state = { currentProduct: null, currentColor: '', currentSize: '', qty: 1, galleryImages: [] };
   var canvas = null, baseImg = null, isMobile = false;
   var guidelines = null;
@@ -184,14 +183,25 @@ import products from '../../../content/products.json';
     var el = document.getElementById(getCanvasId());
     if (!el) return;
     var wrap = el.parentElement;
-    var w = wrap.clientWidth;
+    var size = wrap.clientWidth;
+    el.width = size;
+    el.height = size;
     canvas = new fabric.Canvas(getCanvasId(), {
-      width: w, height: w,
+      width: size,
+      height: size,
       backgroundColor: '#e8e4db',
       selection: true,
       preserveObjectStacking: true,
+      selectionColor: 'rgba(91,109,97,0.15)',
+      selectionBorderColor: '#5B6D61',
+      selectionLineWidth: 1,
+      cornerColor: '#5B6D61',
+      cornerSize: 8,
+      cornerStyle: 'circle',
+      transparentCorners: false,
+      cornerStrokeColor: '#5B6D61',
     });
-    
+
     // Cross-hair guidelines when moving objects
     canvas.on('object:moving', function(e) {
       drawGuidelines(e.target);
@@ -203,83 +213,112 @@ import products from '../../../content/products.json';
     });
     canvas.on('before:selection:cleared', clearGuidelines);
     canvas.on('selection:cleared', clearGuidelines);
-    // Now that canvas is ready, load products
-    if (typeof loadProducts === 'function') loadProducts();
+
+    // Load products once canvas is ready
+    loadProducts();
   }
 
   function drawGuidelines(obj) {
     clearGuidelines();
-    if (!obj) return;
+    if (!obj || obj === baseImg) return;
     var cw = canvas.width, ch = canvas.height;
     var cx = obj.left + obj.width * obj.scaleX / 2;
     var cy = obj.top + obj.height * obj.scaleY / 2;
     
     guidelines = [];
     // Vertical center line
-    var vl = new fabric.Line([cw/2, 0, cw/2, ch], { stroke: '#ccc', strokeWidth: 1, strokeDashArray: [6,4], selectable: false, evented: false, excludeFromExport: true });
-    // Horizontal center line  
-    var hl = new fabric.Line([0, ch/2, cw, ch/2], { stroke: '#ccc', strokeWidth: 1, strokeDashArray: [6,4], selectable: false, evented: false, excludeFromExport: true });
+    var vl = new fabric.Line([cw/2, 0, cw/2, ch], { stroke: '#d4d4d4', strokeWidth: 1, strokeDashArray: [6,4], selectable: false, evented: false, excludeFromExport: true });
+    // Horizontal center line
+    var hl = new fabric.Line([0, ch/2, cw, ch/2], { stroke: '#d4d4d4', strokeWidth: 1, strokeDashArray: [6,4], selectable: false, evented: false, excludeFromExport: true });
     // Highlight cross at object center
     var vh = new fabric.Line([cx, 0, cx, ch], { stroke: '#999', strokeWidth: 1, strokeDashArray: [3,3], selectable: false, evented: false, excludeFromExport: true });
     var hh = new fabric.Line([0, cy, cw, cy], { stroke: '#999', strokeWidth: 1, strokeDashArray: [3,3], selectable: false, evented: false, excludeFromExport: true });
-    
+
     guidelines = [vl, hl, vh, hh];
     guidelines.forEach(function(g) { canvas.add(g); canvas.sendToBack(g); });
-    canvas.renderAll();
+    canvas.requestRenderAll();
   }
 
   function clearGuidelines() {
     if (guidelines) {
       guidelines.forEach(function(g) { canvas.remove(g); });
       guidelines = null;
-      canvas.renderAll();
+      canvas.requestRenderAll();
     }
   }
 
   function addBaseImage(src) {
-    if (baseImg) { canvas.remove(baseImg); }
+    if (!canvas) return;
+    if (baseImg) { canvas.remove(baseImg); baseImg = null; }
     fabric.Image.fromURL(src, function(img) {
       var cw = canvas.width, ch = canvas.height;
-      var s = Math.min(cw/img.width, ch/img.height) * 0.85;
-      img.set({ left: (cw - img.width*s)/2, top: (ch - img.height*s)/2, scaleX: s, scaleY: s, selectable: false, evented: false });
-      canvas.add(img); canvas.sendToBack(img); baseImg = img;
-      canvas.renderAll(); updatePreview();
+      var s = Math.min(cw / img.width, ch / img.height) * 0.88;
+      img.set({
+        left: (cw - img.width * s) / 2,
+        top: (ch - img.height * s) / 2,
+        scaleX: s,
+        scaleY: s,
+        selectable: false,
+        evented: false,
+        excludeFromExport: false,
+      });
+      canvas.add(img);
+      canvas.sendToBack(img);
+      baseImg = img;
+      canvas.requestRenderAll();
+      updatePreview();
     }, { crossOrigin: 'anonymous' });
   }
 
   function addDesignImage(src) {
     if (!canvas) return;
     fabric.Image.fromURL(src, function(img) {
-      var s = Math.min(canvas.width, canvas.height) * 0.35 / Math.max(img.width, img.height);
-      img.set({ left: canvas.width/2, top: canvas.height*0.35, scaleX: s, scaleY: s, originX: 'center', originY: 'center', cornerColor: '#5B6D61', cornerSize: 10, transparentCorners: false });
-      canvas.add(img); canvas.setActiveObject(img);
-      canvas.renderAll(); updatePreview();
+      var s = Math.min(canvas.width, canvas.height) * 0.3 / Math.max(img.width, img.height);
+      img.set({
+        left: canvas.width / 2,
+        top: canvas.height * 0.35,
+        scaleX: s,
+        scaleY: s,
+        originX: 'center',
+        originY: 'center',
+        cornerColor: '#5B6D61',
+        cornerSize: 8,
+        cornerStyle: 'circle',
+        transparentCorners: false,
+      });
+      canvas.add(img);
+      canvas.setActiveObject(img);
+      canvas.requestRenderAll();
+      updatePreview();
     }, { crossOrigin: 'anonymous' });
   }
 
   function addTextFromSelect(fromMobile) {
     var sel = document.getElementById('font-select');
     var font = sel ? sel.value : 'Arial';
-    var inputEl = (fromMobile || isMobile) ? document.getElementById('text-input-mobile') : document.getElementById('text-input');
-    var txt = (inputEl ? inputEl.value : '') || 'Your text';
-    addTextObj(font, txt);
-  }
-
-  function addText(font) {
     var inputEl = isMobile ? document.getElementById('text-input-mobile') : document.getElementById('text-input');
-    var txt = (inputEl ? inputEl.value : '') || 'Your text';
+    var txt = (inputEl ? inputEl.value.trim() : '') || 'Your text';
     addTextObj(font, txt);
   }
 
   function addTextObj(font, txt) {
     if (!canvas) return;
     var t = new fabric.IText(txt, {
-      left: canvas.width/2, top: canvas.height*0.3, originX: 'center',
-      fontFamily: font, fontSize: 28, fill: '#333',
-      cornerColor: '#5B6D61', cornerSize: 10, transparentCorners: false,
+      left: canvas.width / 2,
+      top: canvas.height * 0.3,
+      originX: 'center',
+      fontFamily: font,
+      fontSize: 28,
+      fill: '#333333',
+      cornerColor: '#5B6D61',
+      cornerSize: 8,
+      cornerStyle: 'circle',
+      transparentCorners: false,
     });
-    canvas.add(t); canvas.setActiveObject(t);
-    canvas.renderAll(); updatePreview();
+    canvas.add(t);
+    canvas.setActiveObject(t);
+    canvas.requestRenderAll();
+    updatePreview();
   }
 
   function updatePreview() {
@@ -287,191 +326,449 @@ import products from '../../../content/products.json';
     clearGuidelines();
     var dataUrl = canvas.toDataURL({ format: 'png', multiplier: 0.5 });
     var thumb = document.getElementById('preview-thumb');
-    if (thumb) thumb.innerHTML = '<img src="'+dataUrl+'" class="w-full h-full object-contain" alt="Preview">';
+    if (thumb) {
+      thumb.innerHTML = '<img src="' + dataUrl + '" class="w-full h-full object-contain" alt="Preview" />';
+    }
   }
 
-  function openPreview() { if (!canvas) return; var d = canvas.toDataURL({format:'png',multiplier:1.5}); document.getElementById('preview-modal-img').src = d; document.getElementById('preview-modal').classList.remove('hidden'); }
-  function closePreview() { document.getElementById('preview-modal').classList.add('hidden'); }
-  function chgQty(d) { state.qty = Math.max(1, state.qty + d); document.getElementById('design-qty').textContent = state.qty; var m = document.getElementById('design-qty-mobile'); if (m) m.textContent = state.qty; }
+  function openPreview() {
+    if (!canvas) return;
+    var d = canvas.toDataURL({ format: 'png', multiplier: 1.5 });
+    document.getElementById('preview-modal-img').src = d;
+    document.getElementById('preview-modal').classList.remove('hidden');
+  }
 
-  // === Product loading ===
+  function closePreview() {
+    document.getElementById('preview-modal').classList.add('hidden');
+  }
+
+  window.chgQty = function(d) {
+    state.qty = Math.max(1, state.qty + d);
+    document.getElementById('design-qty').textContent = state.qty;
+    var m = document.getElementById('design-qty-mobile');
+    if (m) m.textContent = state.qty;
+    updateDetail();
+  };
+
+  window.addTextFromSelect = addTextFromSelect;
+  window.addDesignImage = addDesignImage;
+  window.openPreview = openPreview;
+  window.closePreview = closePreview;
+
+  // ============================================
+  // Product loading
+  // ============================================
+
   function loadProducts() {
-    var prods = JSON.parse(document.getElementById('__designerProducts').textContent);
+    var el = document.getElementById('__designerProducts');
+    if (!el) return;
+    var raw = el.textContent || el.innerText || '';
+    var prods;
+    try { prods = JSON.parse(raw); } catch(e) { console.error('Failed to parse products JSON:', e); return; }
+    if (!prods || !prods.length) return;
+
     var map = {};
-    // Group by product (prod-2, prod-4) - each is a unique product with colors/sizes
     prods.forEach(function(p) {
-      var key = p.id; // use id as key so we have 2 distinct products
-      var displayName = (p.name && p.name.zh) || (p.name && p.name.en) || p.id;
-      var firstImg = (p.images && p.images[0]) ? p.images[0] : '';
-      if (!map[key]) {
-        map[key] = {
-          id: p.id,
-          name: displayName,
-          name_en: (p.name && p.name.en) || displayName,
-          image: firstImg,
+      var id = p.id;
+      if (!map[id]) {
+        map[id] = {
+          id: id,
+          name: p.name,
           price: p.price,
-          colors: typeof p.colors === 'string' ? JSON.parse(p.colors || '[]') : (p.colors || []),
-          sizes: typeof p.sizes === 'string' ? JSON.parse(p.sizes || '[]') : (p.sizes || []),
-          allImages: (typeof p.images === 'string' ? JSON.parse(p.images || '[]') : (p.images || [])),
-          stock: p.stock
+          colors: Array.isArray(p.colors) ? p.colors : [],
+          sizes: Array.isArray(p.sizes) ? p.sizes : [],
+          allImages: Array.isArray(p.images) ? p.images : [],
+          stock: p.stock || 0,
         };
       }
     });
 
-    var html = '';
-    var first = true;
-    Object.values(map).forEach(function(g) {
-      html += '<div class="product-item bg-white rounded-xl p-1.5 flex items-center gap-2 cursor-pointer border-2 transition-all '+(first?'border-gray-700 shadow-sm':'border-transparent hover:border-gray-300 hover:shadow-sm')+'" data-id="'+g.id+'">'
-        + (g.image ? '<img src="'+g.image+'" class="w-10 h-10 rounded object-cover bg-gray-100" onerror="this.style.display=\'none\'">' : '<div class="w-10 h-10 rounded bg-gray-100 flex items-center justify-center text-lg">👕</div>')
-        + '<div class="min-w-0"><p class="text-[11px] font-bold truncate">'+g.name+'</p><p class="text-[10px] text-green-600">'$'+g.price+'</p></div></div>';
-      if (first) first = false;
-    });
-    var dp = document.getElementById('designer-products');
-    if (dp) dp.innerHTML = html || '<p class="text-[11px] text-gray-400">No products</p>';
-    document.querySelectorAll('.product-item').forEach(function(el) {
-      el.onclick = function() {
-        document.querySelectorAll('.product-item').forEach(function(e) { e.classList.remove('border-gray-700'); e.classList.add('border-transparent'); });
-        el.classList.add('border-gray-700'); el.classList.remove('border-transparent');
-        selectProduct(el.dataset.id, map);
-      };
-    });
+    // Desktop product list
+    var items = document.getElementById('designer-products');
+    if (items) {
+      var first = true;
+      var html = '';
+      Object.values(map).forEach(function(g) {
+        var displayName = (g.name && g.name.en) || g.id;
+        var thumb = g.allImages[0] || '';
+        html += '<div class="product-item bg-white rounded-xl p-2 flex items-center gap-3 cursor-pointer border-2 transition-all ' +
+          (first ? 'border-gray-700 shadow-sm' : 'border-transparent hover:border-gray-300 hover:shadow-sm') +
+          '" data-id="' + g.id + '">' +
+          (thumb
+            ? '<img src="' + thumb + '" class="w-12 h-12 rounded-lg object-cover bg-gray-100 flex-shrink-0" onerror="this.style.display=\'none\'" alt="" />'
+            : '<div class="w-12 h-12 rounded-lg bg-gray-100 flex items-center justify-center text-xl flex-shrink-0">👕</div>') +
+          '<div class="min-w-0 flex-1">' +
+          '<p class="text-xs font-bold text-gray-800 truncate">' + displayName + '</p>' +
+          '<p class="text-xs text-green-600 font-semibold mt-0.5">$' + g.price + '</p>' +
+          '</div></div>';
+        if (first) first = false;
+      });
+      items.innerHTML = html || '<p class="text-xs text-gray-400 italic">No products</p>';
 
-    var mhtml = '';
-    first = true;
-    Object.values(map).forEach(function(g) {
-      mhtml += '<button class="prod-pill flex-shrink-0 px-3 py-1.5 rounded-full text-[11px] font-medium border-2 transition-colors '+(first?'bg-gray-700 text-white border-gray-700':'bg-white text-gray-600 border-gray-300')+'" data-id="'+g.id+'">'+g.name+'</button>';
-      if (first) first = false;
-    });
-    var mp = document.getElementById('designer-products-mobile');
-    if (mp) mp.innerHTML = mhtml || '<span class="text-[11px] text-gray-400">No products</span>';
-    document.querySelectorAll('.prod-pill').forEach(function(el) {
-      el.onclick = function() {
-        document.querySelectorAll('.prod-pill').forEach(function(e) { e.classList.remove('bg-gray-700','text-white','border-gray-700'); e.classList.add('bg-white','text-gray-600','border-gray-300'); });
-        el.classList.add('bg-gray-700','text-white','border-gray-700'); el.classList.remove('bg-white','text-gray-600','border-gray-300');
-        selectProduct(el.dataset.id, map);
-      };
-    });
+      items.querySelectorAll('.product-item').forEach(function(el) {
+        el.addEventListener('click', function() {
+          items.querySelectorAll('.product-item').forEach(function(e) {
+            e.classList.remove('border-gray-700', 'shadow-sm');
+            e.classList.add('border-transparent');
+          });
+          el.classList.add('border-gray-700', 'shadow-sm');
+          el.classList.remove('border-transparent');
+          selectProduct(el.dataset.id, map);
+        });
+      });
+    }
 
-    if (Object.keys(map).length > 0) { selectProduct(Object.values(map)[0].id, map); }
+    // Mobile product pills
+    var pills = document.getElementById('designer-products-mobile');
+    if (pills) {
+      var first = true;
+      var mhtml = '';
+      Object.values(map).forEach(function(g) {
+        var displayName = (g.name && g.name.en) || g.id;
+        mhtml += '<button class="prod-pill flex-shrink-0 px-3 py-1.5 rounded-full text-xs font-medium border-2 transition-all ' +
+          (first ? 'bg-gray-700 text-white border-gray-700' : 'bg-white text-gray-600 border-gray-300') +
+          '" data-id="' + g.id + '">' + displayName + '</button>';
+        if (first) first = false;
+      });
+      pills.innerHTML = mhtml || '<span class="text-xs text-gray-400 italic">No products</span>';
+
+      pills.querySelectorAll('.prod-pill').forEach(function(el) {
+        el.addEventListener('click', function() {
+          pills.querySelectorAll('.prod-pill').forEach(function(e) {
+            e.classList.remove('bg-gray-700', 'text-white', 'border-gray-700');
+            e.classList.add('bg-white', 'text-gray-600', 'border-gray-300');
+          });
+          el.classList.add('bg-gray-700', 'text-white', 'border-gray-700');
+          el.classList.remove('bg-white', 'text-gray-600', 'border-gray-300');
+          selectProduct(el.dataset.id, map);
+        });
+      });
+    }
+
+    // Auto-select first product
+    var keys = Object.keys(map);
+    if (keys.length > 0) {
+      selectProduct(keys[0], map);
+    }
   }
 
   function selectProduct(id, map) {
     var g = map[id];
     if (!g) return;
+
     state.currentProduct = g;
     state.currentColor = g.colors[0] || '';
     state.currentSize = g.sizes[0] || '';
 
-    var pp = document.getElementById('product-params'); if (pp) pp.classList.remove('hidden');
-    var ppm = document.getElementById('product-params-mobile'); if (ppm) ppm.classList.remove('hidden');
+    // Show params
+    var pp = document.getElementById('product-params');
+    if (pp) pp.classList.remove('hidden');
+    var ppm = document.getElementById('product-params-mobile');
+    if (ppm) ppm.classList.remove('hidden');
 
-    document.getElementById('info-name').textContent = g.name;
+    // Info panel
+    var displayName = (g.name && g.name.en) || g.id;
+    document.getElementById('info-name').textContent = displayName;
     document.getElementById('info-price').textContent = '$' + g.price;
-    var inm = document.getElementById('info-name-mobile'); if (inm) inm.textContent = g.name;
-    var ipm = document.getElementById('info-price-mobile'); if (ipm) ipm.textContent = '$' + g.price;
+    var inm = document.getElementById('info-name-mobile');
+    if (inm) inm.textContent = displayName;
+    var ipm = document.getElementById('info-price-mobile');
+    if (ipm) ipm.textContent = '$' + g.price;
     updateDetail();
 
+    // Color swatches
+    var colorMap = { '白色': '#f0f0f0', '黑色': '#222', '杏色': '#f5deb3', '粉色': '#ffb6c1' };
     var colors = g.colors || [];
     var chtml = colors.map(function(c) {
-      var bg = c==='白色'?'#f0f0f0':c==='黑色'?'#222':c==='杏色'?'#f5deb3':c==='粉色'?'#ffb6c1':c;
-      return '<div class="w-7 h-7 rounded-full cursor-pointer border-2 '+(c===state.currentColor?'border-gray-700 ring-2 ring-gray-400':'border-gray-300 hover:border-gray-500')+'" style="background:'+bg+'" title="'+c+'" data-c="'+c+'"></div>';
+      var bg = colorMap[c] || c;
+      var sel = c === state.currentColor;
+      return '<div class="w-7 h-7 rounded-full cursor-pointer border-2 ' +
+        (sel ? 'border-gray-700 ring-2 ring-gray-400 ring-offset-1' : 'border-gray-300 hover:border-gray-500') +
+        '" style="background:' + bg + '" title="' + c + '" data-c="' + c + '"></div>';
     }).join('');
     document.getElementById('color-options').innerHTML = chtml;
-    var co = document.getElementById('color-options-mobile'); if (co) co.innerHTML = chtml;
+    var co = document.getElementById('color-options-mobile');
+    if (co) co.innerHTML = chtml;
+
     document.querySelectorAll('#color-options > div, #color-options-mobile > div').forEach(function(el) {
-      el.onclick = function() { state.currentColor = el.dataset.c; updateDetail(); reloadColor(); resetHighlightAll(el); };
+      el.addEventListener('click', function() {
+        state.currentColor = el.dataset.c;
+        updateDetail();
+        reloadColor();
+        // Re-render swatches to update selection state
+        renderColorSwatches(colors, colorMap);
+      });
     });
 
+    // Size options
     var sizes = g.sizes || [];
     var shtml = sizes.map(function(s) {
-      return '<div class="px-2 py-0.5 border rounded-full text-[10px] cursor-pointer '+(s===state.currentSize?'bg-gray-700 text-white':'border-gray-300 hover:border-gray-500')+'" data-s="'+s+'">'+s+'</div>';
+      var sel = s === state.currentSize;
+      return '<div class="px-2.5 py-1 border rounded-full text-xs cursor-pointer transition-all ' +
+        (sel ? 'bg-gray-700 text-white border-gray-700' : 'bg-white text-gray-600 border-gray-300 hover:border-gray-500') +
+        '" data-s="' + s + '">' + s + '</div>';
     }).join('');
     document.getElementById('size-options').innerHTML = shtml;
-    var so = document.getElementById('size-options-mobile'); if (so) so.innerHTML = shtml;
+    var so = document.getElementById('size-options-mobile');
+    if (so) so.innerHTML = shtml;
+
     document.querySelectorAll('#size-options > div, #size-options-mobile > div').forEach(function(el) {
-      el.onclick = function() { state.currentSize = el.dataset.s; updateDetail(); resetHighlightAll(el); };
+      el.addEventListener('click', function() {
+        state.currentSize = el.dataset.s;
+        updateDetail();
+        renderSizeOptions(sizes);
+      });
     });
 
     loadProductImage();
   }
 
-  function resetHighlightAll(el) {
-    // Reset all color & size options
-    document.querySelectorAll('#color-options > div, #size-options > div, #color-options-mobile > div, #size-options-mobile > div').forEach(function(e) {
-      e.classList.remove('bg-gray-700','text-white','ring-2','ring-gray-400','border-gray-700');
-      e.classList.add('border-gray-300','border-2');
+  function renderColorSwatches(colors, colorMap) {
+    var sel = state.currentColor;
+    var chtml = colors.map(function(c) {
+      var bg = colorMap[c] || c;
+      return '<div class="w-7 h-7 rounded-full cursor-pointer border-2 ' +
+        (c === sel ? 'border-gray-700 ring-2 ring-gray-400 ring-offset-1' : 'border-gray-300 hover:border-gray-500') +
+        '" style="background:' + bg + '" title="' + c + '" data-c="' + c + '"></div>';
+    }).join('');
+    document.getElementById('color-options').innerHTML = chtml;
+    var co = document.getElementById('color-options-mobile');
+    if (co) co.innerHTML = chtml;
+    document.querySelectorAll('#color-options > div, #color-options-mobile > div').forEach(function(el) {
+      el.addEventListener('click', function() {
+        state.currentColor = el.dataset.c;
+        updateDetail();
+        reloadColor();
+        renderColorSwatches(colors, colorMap);
+      });
     });
-    el.classList.add('border-gray-700','ring-2','ring-gray-400');
-    el.classList.remove('border-gray-300');
+  }
+
+  function renderSizeOptions(sizes) {
+    var sel = state.currentSize;
+    var shtml = sizes.map(function(s) {
+      return '<div class="px-2.5 py-1 border rounded-full text-xs cursor-pointer transition-all ' +
+        (s === sel ? 'bg-gray-700 text-white border-gray-700' : 'bg-white text-gray-600 border-gray-300 hover:border-gray-500') +
+        '" data-s="' + s + '">' + s + '</div>';
+    }).join('');
+    document.getElementById('size-options').innerHTML = shtml;
+    var so = document.getElementById('size-options-mobile');
+    if (so) so.innerHTML = shtml;
+    document.querySelectorAll('#size-options > div, #size-options-mobile > div').forEach(function(el) {
+      el.addEventListener('click', function() {
+        state.currentSize = el.dataset.s;
+        updateDetail();
+        renderSizeOptions(sizes);
+      });
+    });
   }
 
   function updateDetail() {
-    var txt = (state.currentColor||'?') + ' / ' + (state.currentSize||'?') + ' × ' + state.qty;
+    var txt = (state.currentColor || '?') + ' / ' + (state.currentSize || '?') + ' × ' + state.qty;
     document.getElementById('info-detail').textContent = txt;
-    var dm = document.getElementById('info-detail-mobile'); if (dm) dm.textContent = txt;
+    var dm = document.getElementById('info-detail-mobile');
+    if (dm) dm.textContent = txt;
   }
 
   function loadProductImage() { reloadColor(); }
+
   function reloadColor() {
-    var isKids = state.currentProduct && (state.currentProduct.name.includes('儿童') || (state.currentProduct.name||'').includes('儿童') || (state.currentProduct.name_en||'').includes('Children'));
+    if (!state.currentProduct) return;
+    var name = (state.currentProduct.name && state.currentProduct.name.en) || '';
+    var zhName = (state.currentProduct.name && state.currentProduct.name.zh) || '';
+    var isKids = name.toLowerCase().includes('children') || zhName.includes('儿童');
     var c = state.currentColor || '白色';
+
     var baseSrc;
     if (isKids) {
-      if (c === '杏色' || c === '粉色') baseSrc = '/images/products/kids-tee/20260713232848_962803060990588160_粉色_4.jpeg';
-      else if (c === '黑色') baseSrc = '/images/products/kids-tee/20260713232924_962803060990588160_黑色_1.jpeg';
-      else baseSrc = '/images/products/kids-tee/962803060990588160_白色_1.jpeg';
+      if (c === '杏色' || c === '粉色') {
+        baseSrc = '/images/products/kids-tee/20260713232848_962803060990588160_粉色_4.jpeg';
+      } else if (c === '黑色') {
+        baseSrc = '/images/products/kids-tee/20260713232924_962803060990588160_黑色_1.jpeg';
+      } else {
+        baseSrc = '/images/products/kids-tee/962803060990588160_白色_1.jpeg';
+      }
     } else {
-      if (c === '黑色') baseSrc = '/images/products/180g-tee/962802505245275392_黑色_4.jpeg';
-      else baseSrc = '/images/products/180g-tee/962802505245275392_白色_3.jpeg';
+      if (c === '黑色') {
+        baseSrc = '/images/products/180g-tee/962802505245275392_黑色_4.jpeg';
+      } else {
+        baseSrc = '/images/products/180g-tee/962802505245275392_白色_3.jpeg';
+      }
     }
     addBaseImage(baseSrc);
   }
 
-  // Upload
-  document.getElementById('upload-zone').onclick = function() { document.getElementById('design-upload').click(); };
-  document.getElementById('design-upload').onchange = function(e) {
-    var file = e.target.files[0]; if (!file) return;
-    var reader = new FileReader();
-    reader.onload = function(ev) { var src = ev.target.result; state.galleryImages.push(src); renderGallery(); addDesignImage(src); };
-    reader.readAsDataURL(file);
-  };
-  var mu = document.getElementById('design-upload-mobile');
-  if (mu) mu.onchange = function(e) {
-    var file = e.target.files[0]; if (!file) return;
-    var reader = new FileReader();
-    reader.onload = function(ev) { var src = ev.target.result; state.galleryImages.push(src); addDesignImage(src); };
-    reader.readAsDataURL(file);
-  };
+  // ============================================
+  // Upload Image
+  // ============================================
+
+  var uploadZone = document.getElementById('upload-zone');
+  if (uploadZone) {
+    uploadZone.addEventListener('click', function() {
+      document.getElementById('design-upload').click();
+    });
+  }
+
+  var uploadInput = document.getElementById('design-upload');
+  if (uploadInput) {
+    uploadInput.addEventListener('change', function(e) {
+      var file = e.target.files[0];
+      if (!file) return;
+      var reader = new FileReader();
+      reader.onload = function(ev) {
+        var src = ev.target.result;
+        state.galleryImages.push(src);
+        renderGallery();
+        addDesignImage(src);
+      };
+      reader.readAsDataURL(file);
+      uploadInput.value = '';
+    });
+  }
+
+  var uploadMobile = document.getElementById('design-upload-mobile');
+  if (uploadMobile) {
+    uploadMobile.addEventListener('change', function(e) {
+      var file = e.target.files[0];
+      if (!file) return;
+      var reader = new FileReader();
+      reader.onload = function(ev) {
+        var src = ev.target.result;
+        state.galleryImages.push(src);
+        addDesignImage(src);
+      };
+      reader.readAsDataURL(file);
+      uploadMobile.value = '';
+    });
+  }
 
   function renderGallery() {
-    var el = document.getElementById('image-gallery'); if (!el) return;
-    el.innerHTML = state.galleryImages.map(function(src) {
-      return '<div class="aspect-square bg-gray-100 rounded overflow-hidden cursor-pointer border hover:border-gray-500" onclick="addDesignImage(\''+src+'\')"><img src="'+src+'" class="w-full h-full object-cover"></div>';
+    var gal = document.getElementById('image-gallery');
+    if (!gal) return;
+    gal.innerHTML = state.galleryImages.map(function(src, i) {
+      return '<div class="aspect-square bg-gray-100 rounded-lg overflow-hidden cursor-pointer border border-gray-200 hover:border-gray-500 transition-colors relative group"' +
+        ' onclick="addDesignImage(\'' + src.replace(/'/g, "\\'").replace(/"/g, '&quot;') + '\')">' +
+        '<img src="' + src + '" class="w-full h-full object-cover" alt="" />' +
+        '</div>';
     }).join('');
   }
 
+  // ============================================
   // Buttons
-  document.getElementById('btn-reset').onclick = doReset;
-  document.getElementById('btn-center').onclick = doCenter;
-  document.getElementById('btn-cart').onclick = doAddCart;
-  var br = document.getElementById('btn-reset-mobile'); if (br) br.onclick = doReset;
-  var bc = document.getElementById('btn-center-mobile'); if (bc) bc.onclick = doCenter;
-  var bcart = document.getElementById('btn-cart-mobile'); if (bcart) bcart.onclick = doAddCart;
+  // ============================================
 
-  function doReset() { if (!canvas) return; canvas.getObjects().forEach(function(o) { if (o !== baseImg) canvas.remove(o); }); clearGuidelines(); canvas.renderAll(); updatePreview(); }
-  function doCenter() { if (!canvas) return; var obj = canvas.getActiveObject(); if (obj && obj !== baseImg) { obj.set({ left: canvas.width/2, top: canvas.height/2, originX: 'center', originY: 'center' }); canvas.renderAll(); updatePreview(); } }
+  document.getElementById('btn-reset').addEventListener('click', doReset);
+  document.getElementById('btn-center').addEventListener('click', doCenter);
+  document.getElementById('btn-cart').addEventListener('click', doAddCart);
+
+  var brm = document.getElementById('btn-reset-mobile');
+  if (brm) brm.addEventListener('click', doReset);
+  var bcm = document.getElementById('btn-center-mobile');
+  if (bcm) bcm.addEventListener('click', doCenter);
+  var bcarm = document.getElementById('btn-cart-mobile');
+  if (bcarm) bcarm.addEventListener('click', doAddCart);
+
+  function doReset() {
+    if (!canvas) return;
+    var objs = canvas.getObjects();
+    for (var i = objs.length - 1; i >= 0; i--) {
+      if (objs[i] !== baseImg) {
+        canvas.remove(objs[i]);
+      }
+    }
+    clearGuidelines();
+    canvas.requestRenderAll();
+    updatePreview();
+  }
+
+  function doCenter() {
+    if (!canvas) return;
+    var obj = canvas.getActiveObject();
+    if (obj && obj !== baseImg) {
+      obj.set({
+        left: canvas.width / 2,
+        top: canvas.height / 2,
+        originX: 'center',
+        originY: 'center',
+      });
+      obj.setCoords();
+      canvas.requestRenderAll();
+      updatePreview();
+    }
+  }
+
   function doAddCart() {
-    if (!state.currentProduct) return alert('Please select a product');
-    var cart = JSON.parse(localStorage.getItem('ps-cart') || '[]');
-    cart.push({ id: 'custom-'+Date.now(), name: state.currentProduct.name, color: state.currentColor, size: state.currentSize, quantity: state.qty, price: state.currentProduct.price, preview: canvas.toDataURL({format:'png',multiplier:0.5}) });
+    if (!state.currentProduct) {
+      alert('Please select a product first.');
+      return;
+    }
+    var preview = '';
+    if (canvas) {
+      preview = canvas.toDataURL({ format: 'png', multiplier: 0.5 });
+    }
+    var item = {
+      id: 'custom-' + Date.now(),
+      name: (state.currentProduct.name && state.currentProduct.name.en) || state.currentProduct.id,
+      nameZh: (state.currentProduct.name && state.currentProduct.name.zh) || '',
+      color: state.currentColor,
+      size: state.currentSize,
+      quantity: state.qty,
+      price: state.currentProduct.price,
+      preview: preview,
+    };
+    var cart = [];
+    try {
+      cart = JSON.parse(localStorage.getItem('ps-cart') || '[]');
+    } catch(e) { cart = []; }
+    cart.push(item);
     localStorage.setItem('ps-cart', JSON.stringify(cart));
     alert('Added to cart!');
   }
 
-  // Initialization handled by fabric.js onload callback above
-  // (no DOMContentLoaded needed — fabric loads dynamically)
+  // ============================================
+  // Init
+  // ============================================
+
+  // Wait for fabric.js to be available (it's loaded via is:inline script src above)
+  var checkCount = 0;
+  function waitForFabric() {
+    checkCount++;
+    if (typeof fabric !== 'undefined' && fabric.Canvas) {
+      initCanvas();
+    } else if (checkCount < 50) {
+      setTimeout(waitForFabric, 100);
+    } else {
+      console.error('Fabric.js failed to load after 5 seconds.');
+    }
+  }
+  waitForFabric();
+
+  // Handle window resize
   window.addEventListener('resize', function() {
-    if (canvas) { var el = document.getElementById(getCanvasId()); if (!el) return; var w = el.parentElement.clientWidth; canvas.setDimensions({width: w, height: w}); clearGuidelines(); canvas.renderAll(); updatePreview(); }
+    var newIsMobile = window.innerWidth < 768;
+    if (newIsMobile !== isMobile) {
+      // Screen mode change — need to re-initialize
+      isMobile = newIsMobile;
+      if (canvas) {
+        canvas.dispose();
+        canvas = null;
+        baseImg = null;
+      }
+      initCanvas();
+      return;
+    }
+    if (canvas) {
+      var el = document.getElementById(getCanvasId());
+      if (!el) return;
+      var size = el.parentElement.clientWidth;
+      canvas.setDimensions({ width: size, height: size });
+      clearGuidelines();
+      canvas.requestRenderAll();
+      updatePreview();
+    }
   });
+
+})();
 </script>
+
 </BaseLayout>
