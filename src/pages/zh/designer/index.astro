@@ -452,15 +452,24 @@ import products from '../../../content/products.json';
   function doAddCart() {
     if (!state.currentProduct) return alert('请先选择产品');
     var cart = JSON.parse(localStorage.getItem('ps-cart') || '[]');
-    cart.push({ id: 'custom-'+Date.now(), name: state.currentProduct.name, color: state.currentColor, size: state.currentSize, quantity: state.qty, price: state.currentProduct.products[0].price, preview: canvas.toDataURL({format:'png',multiplier:0.5}) });
+    cart.push({ id: 'custom-'+Date.now(), name: state.currentProduct.name, color: state.currentColor, size: state.currentSize, quantity: state.qty, price: state.currentProduct.price, preview: canvas.toDataURL({format:'png',multiplier:0.5}) });
     localStorage.setItem('ps-cart', JSON.stringify(cart));
     alert('已加入购物车！');
   }
 
   window.addEventListener('DOMContentLoaded', function() {
-    // Init canvas with longer delay for fabric.js CDN to load
+    // Step 1: Init canvas when fabric.js is ready
     setTimeout(function() {
-      try { initCanvas(); } catch(e) { console.error('Canvas init failed:', e); loadProducts(); }
+      if (typeof fabric === 'undefined') { console.error('fabric.js not loaded'); return; }
+      try {
+        initCanvas();
+        console.log('Canvas ready, loading products...');
+        loadProducts();
+      } catch(e) {
+        console.error('Init failed:', e);
+        // Retry once
+        setTimeout(function() { try { initCanvas(); loadProducts(); } catch(e2) { console.error('Retry failed:', e2); } }, 1000);
+      }
     }, 800);
   });
   window.addEventListener('resize', function() {
