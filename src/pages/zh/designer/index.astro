@@ -312,7 +312,7 @@ import products from '../../../content/products.json';
     Object.values(map).forEach(function(g) {
       html += '<div class="product-item bg-white rounded-xl p-1.5 flex items-center gap-2 cursor-pointer border-2 transition-all '+(first?'border-gray-700 shadow-sm':'border-transparent hover:border-gray-300 hover:shadow-sm')+'" data-id="'+g.id+'">'
         + (g.image ? '<img src="'+g.image+'" class="w-10 h-10 rounded object-cover bg-gray-100" onerror="this.style.display=\'none\'">' : '<div class="w-10 h-10 rounded bg-gray-100 flex items-center justify-center text-lg">👕</div>')
-        + '<div class="min-w-0"><p class="text-[11px] font-bold truncate">'+g.name+'</p><p class="text-[10px] text-green-600">¥'+g.price+'</p></div></div>';
+        + '<div class="min-w-0"><p class="text-[11px] font-bold truncate">'+g.name+'</p><p class="text-[10px] text-green-600">'$'+g.price+'</p></div></div>';
       if (first) first = false;
     });
     var dp = document.getElementById('designer-products');
@@ -355,9 +355,9 @@ import products from '../../../content/products.json';
     var ppm = document.getElementById('product-params-mobile'); if (ppm) ppm.classList.remove('hidden');
 
     document.getElementById('info-name').textContent = g.name;
-    document.getElementById('info-price').textContent = '¥' + g.price;
+    document.getElementById('info-price').textContent = '$' + g.price;
     var inm = document.getElementById('info-name-mobile'); if (inm) inm.textContent = g.name;
-    var ipm = document.getElementById('info-price-mobile'); if (ipm) ipm.textContent = '¥' + g.price;
+    var ipm = document.getElementById('info-price-mobile'); if (ipm) ipm.textContent = '$' + g.price;
     updateDetail();
 
     var colors = g.colors || [];
