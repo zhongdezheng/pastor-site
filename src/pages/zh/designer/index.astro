@@ -244,8 +244,6 @@ import products from '../../../content/products.json';
     var products = JSON.parse(document.getElementById('__designerProducts').textContent);
     var map = {};
     products.forEach(function(p) {
-    var map = {};
-    products.forEach(function(p) {
       var key = (p.name_zh || p.name_en || '').replace(/\s*—.*/, '');
       if (!map[key]) map[key] = { name: key, name_en: (p.name_en||'').replace(/\s*—.*/, ''), products: [] };
       try { map[key].products.push({ ...p, colors: typeof p.colors==='string' ? JSON.parse(p.colors) : (p.colors||[]), sizes: typeof p.sizes==='string' ? JSON.parse(p.sizes) : (p.sizes||[]) }); } catch(e) {}
@@ -340,10 +338,19 @@ import products from '../../../content/products.json';
 
   function loadProductImage() { reloadColor(); }
   function reloadColor() {
-    var tag = state.currentColor === '黑色' ? '黑色' : (state.currentColor === '粉色' ? '粉色' : '白色');
-    var baseSrc = '/images/products/180g-tee/962802505245275392_白色_3.jpeg';
-    if (state.currentProduct && (state.currentProduct.name.includes('儿童') || (state.currentProduct.name_en||'').includes('Children'))) {
-      baseSrc = '/images/products/kids-tee/20260713232848_962803060990588160_粉色_4.jpeg';
+    // Map product x color → correct base image
+    var isKids = state.currentProduct && (state.currentProduct.name.includes('儿童') || (state.currentProduct.name||'').includes('儿童') || (state.currentProduct.name_en||'').includes('Children'));
+    var c = state.currentColor || '白色';
+    var baseSrc;
+    if (isKids) {
+      // Kids tee: 杏色/黑色/白色
+      if (c === '杏色' || c === '粉色') baseSrc = '/images/products/kids-tee/20260713232848_962803060990588160_粉色_4.jpeg';
+      else if (c === '黑色') baseSrc = '/images/products/kids-tee/20260713232924_962803060990588160_黑色_1.jpeg';
+      else baseSrc = '/images/products/kids-tee/962803060990588160_白色_1.jpeg';
+    } else {
+      // Men's tee: 白色/黑色
+      if (c === '黑色') baseSrc = '/images/products/180g-tee/962802505245275392_黑色_4.jpeg';
+      else baseSrc = '/images/products/180g-tee/962802505245275392_白色_3.jpeg';
     }
     addBaseImage(baseSrc);
   }
