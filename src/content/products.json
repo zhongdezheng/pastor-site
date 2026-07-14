@@ -31,6 +31,7 @@
     },
     "images": [
       "/images/products/180g-tee/962802505245275392_白色_3.jpeg",
+      "/images/products/180g-tee/962802505245275392_白色_7.jpeg",
       "/images/products/180g-tee/962802505245275392_白色_5.jpeg",
       "/images/products/180g-tee/962802505245275392_白色_8.png",
       "/images/products/180g-tee/962802505245275392_白色_9.png",
@@ -54,9 +55,9 @@
     "price": 13.0,
     "currency": "USD",
     "colors": [
-      "粉色",
-      "白色",
-      "黑色"
+      "杏色",
+      "黑色",
+      "白色"
     ],
     "sizes": [
       "3-4Y（100cm）",
@@ -78,19 +79,25 @@
     },
     "images": [
       "/images/products/kids-tee/20260713232848_962803060990588160_粉色_4.jpeg",
-      "/images/products/kids-tee/20260713232924_962803060990588160_黑色_1.jpeg",
-      "/images/products/kids-tee/20260713232856_962803060990588160_黑色_9.png",
-      "/images/products/kids-tee/20260713233744_962803060990588160_粉色_8.png",
-      "/images/products/kids-tee/20260713233741_962803060990588160_粉色_5.jpeg",
-      "/images/products/kids-tee/20260713233737_962803060990588160_粉色_7.png",
-      "/images/products/kids-tee/20260713233722_962803060990588160_粉色_6.jpeg",
+      "/images/products/kids-tee/20260713232853_962803060990588160_粉色_5.jpeg",
       "/images/products/kids-tee/20260713232918_962803060990588160_粉色_1.jpeg",
-      "/images/products/kids-tee/20260713232853_962803060990588160_粉色_5.jpeg"
+      "/images/products/kids-tee/20260713233722_962803060990588160_粉色_6.jpeg",
+      "/images/products/kids-tee/20260713233737_962803060990588160_粉色_7.png",
+      "/images/products/kids-tee/20260713233741_962803060990588160_粉色_5.jpeg",
+      "/images/products/kids-tee/20260713233744_962803060990588160_粉色_8.png",
+      "/images/products/kids-tee/962803060990588160_粉色_2.jpeg",
+      "/images/products/kids-tee/20260713232856_962803060990588160_黑色_9.png",
+      "/images/products/kids-tee/20260713232924_962803060990588160_黑色_1.jpeg",
+      "/images/products/kids-tee/962803060990588160_黑色_1.jpeg",
+      "/images/products/kids-tee/20260713232855_962803060990588160_白色_8.png",
+      "/images/products/kids-tee/962803060990588160_白色_1.jpeg",
+      "/images/products/kids-tee/962803060990588160_白色_4.jpeg",
+      "/images/products/kids-tee/962803060990588160_白色_5.jpeg"
     ],
     "stock": 200,
     "details": {
-      "en": "Material: 100% Cotton\nSizes: 3-4Y (100cm), 4-5Y (110cm), 5-6Y (120cm), 7-8Y (130cm), 9-10Y (140cm), 11-12Y (150cm), 13Y (160cm)\nColors: Pink, White, Black",
-      "zh": "材质：100%棉\n尺码：3-4Y（100cm）, 4-5Y（110cm）, 5-6Y（120cm）, 7-8Y（130cm）, 9-10Y（140cm）, 11-12Y（150cm）, 13Y（160cm）\n颜色：粉色, 白色, 黑色"
+      "en": "Material: 100% Cotton\nSizes: 3-4Y (100cm), 4-5Y (110cm), 5-6Y (120cm), 7-8Y (130cm), 9-10Y (140cm), 11-12Y (150cm), 13Y (160cm)\nColors: Apricot, Black, White",
+      "zh": "材质：100%棉\n尺码：3-4Y（100cm）, 4-5Y（110cm）, 5-6Y（120cm）, 7-8Y（130cm）, 9-10Y（140cm）, 11-12Y（150cm）, 13Y（160cm）\n颜色：杏色, 黑色, 白色"
     }
   }
 ]
