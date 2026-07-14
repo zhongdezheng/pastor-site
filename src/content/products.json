@@ -1,7 +1,7 @@
 [
   {
     "id": "prod-2",
-    "category": "服装区",
+    "category": "apparel",
     "name": {
       "en": "180g Men's Crew Neck T-Shirt — White",
       "zh": "180g男士圆领短袖T恤 — 白色"
@@ -28,7 +28,12 @@
       "en": "[Design] Area print on front\n[Material] 100% Cotton (200gsm)\n[Performance] Soft, comfortable, slight stretch\n[Scenes] Daily, home, travel, fitness\n[Target] Men\n[Wash] Hand/machine wash, ≤45°C, no bleach",
       "zh": "【设计说明】前面区域印花\n【材质说明】100%棉（200gsm）\n【产品性能】手感柔软舒适，微弹，版型好穿又好搭，舒适又时尚，简约实用，不易缩水，耐穿，时尚潮流\n【适用场景】日常，居家，旅行，健身运动等\n【适用人群】男士\n【洗涤说明】可手洗可机洗，不要长时间浸泡，不可漂白，洗涤液温度不能超过45ºC。"
     },
-    "images": [],
+    "images": [
+      "/images/products/180g-tee/962802505245275392_白色_3.jpeg",
+      "/images/products/180g-tee/962802505245275392_白色_5.jpeg",
+      "/images/products/180g-tee/962802505245275392_白色_8.png",
+      "/images/products/180g-tee/962802505245275392_白色_9.png"
+    ],
     "stock": 200,
     "details": {
       "en": "Material: 100%棉（200gsm）\nSizes: S, M, L, XL, 2XL, 3XL\nColors: 白色",
@@ -37,7 +42,7 @@
   },
   {
     "id": "prod-3",
-    "category": "服装区",
+    "category": "apparel",
     "name": {
       "en": "180g Men's Crew Neck T-Shirt — Black",
       "zh": "180g男士圆领短袖T恤 — 黑色"
@@ -64,7 +69,11 @@
       "en": "[Design] Area print on front\n[Material] 100% Cotton (200gsm)\n[Performance] Soft, comfortable, slight stretch\n[Scenes] Daily, home, travel, fitness\n[Target] Men\n[Wash] Hand/machine wash, ≤45°C, no bleach",
       "zh": "【设计说明】前面区域印花\n【材质说明】100%棉（200gsm）\n【产品性能】手感柔软舒适，微弹，版型好穿又好搭，舒适又时尚，简约实用，不易缩水，耐穿，时尚潮流\n【适用场景】日常，居家，旅行，健身运动等\n【适用人群】男士\n【洗涤说明】可手洗可机洗，不要长时间浸泡，不可漂白，洗涤液温度不能超过45ºC。"
     },
-    "images": [],
+    "images": [
+      "/images/products/180g-tee/962802505245275392_黑色_4.jpeg",
+      "/images/products/180g-tee/962802505245275392_黑色_6.jpeg",
+      "/images/products/180g-tee/962802505245275392_黑色_8.png"
+    ],
     "stock": 200,
     "details": {
       "en": "Material: 100%棉（200gsm）\nSizes: S, M, L, XL, 2XL, 3XL\nColors: 黑色",
@@ -73,7 +82,7 @@
   },
   {
     "id": "prod-4",
-    "category": "服装区",
+    "category": "apparel",
     "name": {
       "en": "180g Children's Pure Cotton Short-Sleeve T-Shirt",
       "zh": "180g儿童纯棉短袖T恤"
