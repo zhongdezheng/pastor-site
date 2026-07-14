@@ -341,11 +341,12 @@ import products from '../../../content/products.json';
     var centerX = cw / 2;
     var centerY = ch / 2;
 
-    // Use getCenterPoint() for CENTER-based alignment
+    // getCenterPoint returns visual center regardless of originX/originY
     var cp = obj.getCenterPoint();
     var cx = cp.x;
     var cy = cp.y;
 
+    var dx = 0, dy = 0;
     snapGuidelines = [];
 
     if (Math.abs(cx - centerX) <= SNAP_THRESHOLD) {
@@ -355,8 +356,7 @@ import products from '../../../content/products.json';
           selectable: false, evented: false, excludeFromExport: true
         })
       );
-      // Snap object CENTER to canvas center using fabric's setPositionByOrigin
-      obj.setPositionByOrigin(new fabric.Point(centerX, obj.getCenterPoint().y), 'center', 'center');
+      dx = centerX - cx;
     }
 
     if (Math.abs(cy - centerY) <= SNAP_THRESHOLD) {
@@ -366,11 +366,12 @@ import products from '../../../content/products.json';
           selectable: false, evented: false, excludeFromExport: true
         })
       );
-      // Snap object CENTER to canvas center using fabric's setPositionByOrigin
-      obj.setPositionByOrigin(new fabric.Point(obj.getCenterPoint().x, centerY), 'center', 'center');
+      dy = centerY - cy;
     }
 
-    if (snapGuidelines.length) {
+    if (dx !== 0 || dy !== 0) {
+      // Shift by delta — works regardless of originX/originY
+      obj.set({ left: obj.left + dx, top: obj.top + dy });
       obj.setCoords();
     }
 
@@ -816,9 +817,15 @@ import products from '../../../content/products.json';
     for (var i = 0; i < objs.length; i++) {
       var o = objs[i];
       if (o === baseImg) continue;
-      o.set({ left: cw - o.width * o.scaleX / 2, top: ch - o.height * o.scaleY / 2 });
-      o.setCoords();
-      moved = true;
+      // Get visual center, shift to canvas center (origin-agnostic)
+      var cp = o.getCenterPoint();
+      var dx = cw - cp.x;
+      var dy = ch - cp.y;
+      if (Math.abs(dx) > 1 || Math.abs(dy) > 1) {
+        o.set({ left: o.left + dx, top: o.top + dy });
+        o.setCoords();
+        moved = true;
+      }
     }
     if (moved) {
       canvas.requestRenderAll();
