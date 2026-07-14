@@ -146,7 +146,7 @@ import products from '../../../content/products.json';
         <div id="color-options-mobile" class="flex gap-1 flex-shrink-0"></div>
         <span class="text-gray-300 flex-shrink-0">|</span>
         <span class="text-[10px] font-bold text-gray-400 uppercase flex-shrink-0">Size</span>
-        <div id="size-options-mobile" class="flex gap-1 overflow-x-auto"></div>
+        <select id="size-select-mobile" class="px-2 py-1 bg-white border border-gray-200 rounded text-xs text-gray-700 flex-shrink-0 focus:outline-none focus:border-gray-400"></select>
         <span class="text-gray-300 flex-shrink-0">|</span>
         <span class="text-[10px] font-bold text-gray-400 uppercase flex-shrink-0">Qty</span>
         <button class="w-5 h-5 bg-white border border-gray-200 rounded text-xs font-bold flex-shrink-0" onclick="chgQty(-1)">−</button>
@@ -154,11 +154,22 @@ import products from '../../../content/products.json';
         <button class="w-5 h-5 bg-white border border-gray-200 rounded text-xs font-bold flex-shrink-0" onclick="chgQty(1)">+</button>
       </div>
 
-      <!-- Text + Upload tools -->
-      <div class="flex gap-1.5 items-center mb-2">
-        <input type="text" id="text-input-mobile" placeholder="Add text..." class="flex-1 px-2.5 py-2 bg-gray-50 border border-gray-200 rounded-lg text-xs text-gray-700 placeholder-gray-400 focus:outline-none focus:border-gray-400" />
-        <button class="px-2.5 py-2 bg-gray-100 border border-gray-200 rounded-lg text-xs font-medium text-gray-600 hover:bg-gray-200 flex-shrink-0" onclick="addTextFromSelect(true)">+Text</button>
-        <button class="w-9 h-9 bg-gray-100 border border-gray-200 rounded-lg text-sm flex items-center justify-center flex-shrink-0" onclick="document.getElementById('design-upload-mobile').click()">📁</button>
+      <!-- Text + Font/Color + Upload row -->
+      <div class="flex gap-1 items-center mb-2">
+        <input type="text" id="text-input-mobile" placeholder="Text..." class="flex-1 min-w-0 px-2 py-2 bg-gray-50 border border-gray-200 rounded-lg text-[11px] text-gray-700 placeholder-gray-400 focus:outline-none focus:border-gray-400" />
+        <select id="font-select-mobile" class="px-1.5 py-2 bg-white border border-gray-200 rounded-lg text-[10px] text-gray-600 flex-shrink-0 max-w-[60px] focus:outline-none">
+          <option value="Arial">Arial</option>
+          <option value="Georgia">Georgia</option>
+          <option value="Impact">Impact</option>
+          <option value="Courier New">Courier</option>
+          <option value="Times New Roman">Times</option>
+          <option value="Verdana">Verdana</option>
+          <option value="Trebuchet MS">Trebuc</option>
+          <option value="Comic Sans MS">Comic</option>
+        </select>
+        <input type="color" id="text-color-mobile" value="#333333" class="w-8 h-8 rounded cursor-pointer border border-gray-200 bg-white p-0.5 flex-shrink-0" />
+        <button class="px-2 py-2 bg-gray-800 text-white rounded-lg text-[10px] font-semibold flex-shrink-0" onclick="addTextFromSelect(true)">+</button>
+        <button class="w-8 h-8 bg-gray-100 border border-gray-200 rounded-lg text-xs flex items-center justify-center flex-shrink-0" onclick="document.getElementById('design-upload-mobile').click()">📁</button>
         <input type="file" id="design-upload-mobile" accept="image/*" class="hidden" />
       </div>
 
@@ -410,9 +421,9 @@ import products from '../../../content/products.json';
   }
 
   function addTextFromSelect(fromMobile) {
-    var sel = document.getElementById('font-select');
+    var sel = document.getElementById(fromMobile ? 'font-select-mobile' : 'font-select');
     var font = sel ? sel.value : 'Arial';
-    var colorEl = document.getElementById('text-color');
+    var colorEl = document.getElementById(fromMobile ? 'text-color-mobile' : 'text-color');
     var fill = colorEl ? colorEl.value : '#333333';
     var inputEl = isMobile ? document.getElementById('text-input-mobile') : document.getElementById('text-input');
     var txt = (inputEl ? inputEl.value.trim() : '') || 'Your text';
@@ -631,10 +642,8 @@ import products from '../../../content/products.json';
         '" data-s="' + s + '">' + s + '</div>';
     }).join('');
     document.getElementById('size-options').innerHTML = shtml;
-    var so = document.getElementById('size-options-mobile');
-    if (so) so.innerHTML = shtml;
 
-    document.querySelectorAll('#size-options > div, #size-options-mobile > div').forEach(function(el) {
+    document.querySelectorAll('#size-options > div').forEach(function(el) {
       el.addEventListener('click', function() {
         state.currentSize = el.dataset.s;
         updateDetail();
@@ -668,15 +677,25 @@ import products from '../../../content/products.json';
 
   function renderSizeOptions(sizes) {
     var sel = state.currentSize;
+    // Desktop: pills
     var shtml = sizes.map(function(s) {
       return '<div class="px-2.5 py-1 border rounded-full text-xs cursor-pointer transition-all ' +
         (s === sel ? 'bg-gray-700 text-white border-gray-700' : 'bg-white text-gray-600 border-gray-300 hover:border-gray-500') +
         '" data-s="' + s + '">' + s + '</div>';
     }).join('');
     document.getElementById('size-options').innerHTML = shtml;
-    var so = document.getElementById('size-options-mobile');
-    if (so) so.innerHTML = shtml;
-    document.querySelectorAll('#size-options > div, #size-options-mobile > div').forEach(function(el) {
+    // Mobile: dropdown <select>
+    var sm = document.getElementById('size-select-mobile');
+    if (sm) {
+      sm.innerHTML = sizes.map(function(s) {
+        return '<option value="' + s + '"' + (s === sel ? ' selected' : '') + '>' + s + '</option>';
+      }).join('');
+      sm.onchange = function() {
+        state.currentSize = sm.value;
+        updateDetail();
+      };
+    }
+    document.querySelectorAll('#size-options > div').forEach(function(el) {
       el.addEventListener('click', function() {
         state.currentSize = el.dataset.s;
         updateDetail();
