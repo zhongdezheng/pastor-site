@@ -35,9 +35,9 @@ import products from '../../../content/products.json';
         <div id="image-gallery" class="grid grid-cols-4 gap-1.5 mt-2"></div>
       </div>
 
-      <!-- Text -->
+      <!-- 文本 -->
       <div class="bg-gray-50 rounded-xl p-3">
-        <h3 class="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Text</h3>
+        <h3 class="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">文本</h3>
         <input type="text" id="text-input" placeholder="输入文字..." class="w-full px-3 py-2 bg-white border border-gray-200 rounded-lg text-sm text-gray-700 placeholder-gray-300 focus:outline-none focus:border-gray-400 focus:ring-1 focus:ring-gray-200 transition-all mb-2" />
         <div class="flex gap-2 mb-2">
           <div class="relative flex-1">
@@ -71,7 +71,7 @@ import products from '../../../content/products.json';
     <!-- CENTER CANVAS: flex-1 -->
     <div class="flex-1 bg-gray-200 flex items-center justify-center p-6">
       <div class="relative bg-white rounded-2xl shadow-xl overflow-hidden" style="width: min(100%, 540px); aspect-ratio: 1/1;">
-        <canvas id="design-canvas"></canvas>
+        <canvas id="design-canvas" style="width:100%;height:100%;display:block"></canvas>
       </div>
     </div>
 
@@ -128,7 +128,7 @@ import products from '../../../content/products.json';
     <!-- Canvas area -->
     <div class="flex-1 bg-gray-200 flex items-center justify-center p-2">
       <div class="relative bg-white rounded-2xl shadow-lg overflow-hidden w-full" style="max-width: min(92vw, 360px); aspect-ratio: 1/1;">
-        <canvas id="design-canvas-mobile"></canvas>
+        <canvas id="design-canvas-mobile" style="width:100%;height:100%;display:block"></canvas>
       </div>
     </div>
 
@@ -538,7 +538,7 @@ import products from '../../../content/products.json';
       var first = true;
       var html = '';
       Object.values(map).forEach(function(g) {
-        var displayName = (g.name && g.name.en) || g.id;
+        var displayName = (g.name && g.name.zh) || (g.name && g.name.en) || g.id;
         var thumb = g.allImages[0] || '';
         html += '<div class="product-item bg-white rounded-xl p-2 flex items-center gap-3 cursor-pointer border-2 transition-all ' +
           (first ? 'border-gray-700 shadow-sm' : 'border-transparent hover:border-gray-300 hover:shadow-sm') +
@@ -573,7 +573,7 @@ import products from '../../../content/products.json';
       var first = true;
       var mhtml = '';
       Object.values(map).forEach(function(g) {
-        var displayName = (g.name && g.name.en) || g.id;
+        var displayName = (g.name && g.name.zh) || (g.name && g.name.en) || g.id;
         mhtml += '<button class="prod-pill flex-shrink-0 px-3 py-1.5 rounded-full text-xs font-medium border-2 transition-all ' +
           (first ? 'bg-gray-700 text-white border-gray-700' : 'bg-white text-gray-600 border-gray-300') +
           '" data-id="' + g.id + '">' + displayName + '</button>';
@@ -616,7 +616,7 @@ import products from '../../../content/products.json';
     if (ppm) ppm.classList.remove('hidden');
 
     // Info panel
-    var displayName = (g.name && g.name.en) || g.id;
+    var displayName = (g.name && g.name.zh) || (g.name && g.name.en) || g.id;
     document.getElementById('info-name').textContent = displayName;
     document.getElementById('info-price').textContent = '$' + g.price;
     var inm = document.getElementById('info-name-mobile');
