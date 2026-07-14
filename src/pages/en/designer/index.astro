@@ -3,37 +3,31 @@ import BaseLayout from '../../../layouts/BaseLayout.astro';
 ---
 
 <BaseLayout lang="zh" title="Custom Design — Livingstone">
-<section class="pt-16 min-h-screen bg-gray-100">
+<section class="min-h-screen bg-gray-100">
   
   <!-- ===== DESKTOP: 3-panel layout ===== -->
-  <div class="hidden md:flex h-[calc(100vh-4rem)]">
+  <div class="hidden md:flex h-screen">
     
     <!-- LEFT PANEL -->
-    <div class="w-[25%] min-w-[220px] max-w-[320px] bg-white border-r border-gray-200 overflow-y-auto p-3 flex flex-col gap-3">
+    <div class="w-[22%] min-w-[200px] max-w-[280px] bg-white border-r border-gray-200 overflow-y-auto p-3 flex flex-col gap-3">
       
+      <!-- 产品选择 -->
       <div class="bg-gray-50 rounded-lg p-3">
-        <h3 class="text-xs font-bold text-gray-700 mb-2 uppercase tracking-wide">Products</h3>
+        <h3 class="text-xs font-bold text-gray-700 mb-2 uppercase tracking-wide">选择产品</h3>
         <div id="designer-products" class="space-y-1.5"></div>
       </div>
 
-      <div class="bg-gray-50 rounded-lg p-3">
-        <h3 class="text-xs font-bold text-gray-700 mb-2 uppercase tracking-wide">Product Images</h3>
-        <p class="text-[9px] text-gray-400 mb-1">点击图片添加到设计区</p>
-        <div id="product-images-menu" class="grid grid-cols-3 gap-1.5 max-h-[300px] overflow-y-auto">
-          <p class="text-[10px] text-gray-400 col-span-3">选择产品后显示</p>
-        </div>
-      </div>
-
+      <!-- 参数：颜色/尺码/数量 -->
       <div class="bg-gray-50 rounded-lg p-3 hidden" id="product-params">
         <h3 class="text-xs font-bold text-gray-700 mb-2 uppercase tracking-wide">参数</h3>
         <div class="space-y-2">
-          <div><label class="text-[10px] font-medium text-gray-500">Color</label>
+          <div><label class="text-[10px] font-medium text-gray-500">颜色</label>
             <div class="flex flex-wrap gap-1 mt-0.5" id="color-options"></div>
           </div>
-          <div><label class="text-[10px] font-medium text-gray-500">Size</label>
+          <div><label class="text-[10px] font-medium text-gray-500">尺码</label>
             <div class="flex flex-wrap gap-1 mt-0.5" id="size-options"></div>
           </div>
-          <div><label class="text-[10px] font-medium text-gray-500">Qty</label>
+          <div><label class="text-[10px] font-medium text-gray-500">数量</label>
             <div class="flex items-center gap-1.5 mt-0.5">
               <button class="w-6 h-6 border rounded text-[11px] leading-tight" onclick="chgQty(-1)">−</button>
               <span class="text-sm font-bold min-w-[20px] text-center" id="design-qty">1</span>
@@ -43,8 +37,9 @@ import BaseLayout from '../../../layouts/BaseLayout.astro';
         </div>
       </div>
 
+      <!-- 图库上传 -->
       <div class="bg-gray-50 rounded-lg p-3">
-        <h3 class="text-xs font-bold text-gray-700 mb-2 uppercase tracking-wide">Gallery</h3>
+        <h3 class="text-xs font-bold text-gray-700 mb-2 uppercase tracking-wide">上传图片</h3>
         <div id="upload-zone" class="border-2 border-dashed border-gray-300 rounded-lg p-3 text-center cursor-pointer hover:border-gray-500 transition-colors mb-2">
           <p class="text-[10px] text-gray-500">📁 点击上传图片</p>
           <input type="file" id="design-upload" accept="image/*" class="hidden">
@@ -52,32 +47,41 @@ import BaseLayout from '../../../layouts/BaseLayout.astro';
         <div id="image-gallery" class="grid grid-cols-3 gap-1.5"></div>
       </div>
 
+      <!-- 文字工具 -->
       <div class="bg-gray-50 rounded-lg p-3">
-        <h3 class="text-xs font-bold text-gray-700 mb-2 uppercase tracking-wide">Text</h3>
+        <h3 class="text-xs font-bold text-gray-700 mb-2 uppercase tracking-wide">文字</h3>
         <input type="text" id="text-input" placeholder="输入文字..." class="w-full px-2 py-1.5 border rounded text-[11px] mb-2">
-        <div class="flex flex-wrap gap-1 mb-2">
-          {['Arial','Georgia','Impact','serif','monospace'].map(f => 
-            <button class="px-2 py-0.5 border rounded text-[10px] hover:bg-gray-200" data-font={f} 
-              onclick="addText('{f}')">{f}</button>)}
+        <div class="flex items-center gap-2 mb-2">
+          <span class="text-[10px] text-gray-500">字体</span>
+          <select id="font-select" class="flex-1 border rounded px-2 py-1 text-[11px] bg-white">
+            <option value="Arial">Arial</option>
+            <option value="Georgia">Georgia</option>
+            <option value="Impact">Impact</option>
+            <option value="Courier New">Courier New</option>
+            <option value="Times New Roman">Times New Roman</option>
+            <option value="Verdana">Verdana</option>
+            <option value="Trebuchet MS">Trebuchet MS</option>
+            <option value="Comic Sans MS">Comic Sans MS</option>
+          </select>
         </div>
-        <button class="w-full py-1.5 border rounded text-[11px]" onclick="addText('Impact')">➕ 添加文字</button>
+        <button class="w-full py-1.5 bg-gray-700 text-white rounded text-[11px] hover:bg-gray-600" onclick="addTextFromSelect()">添加文字</button>
       </div>
 
       <div class="flex gap-2">
-        <button id="btn-reset" class="flex-1 py-1.5 border rounded text-xs hover:bg-gray-100">Reset</button>
-        <button id="btn-center" class="flex-1 py-1.5 border rounded text-xs hover:bg-gray-100">Center</button>
+        <button id="btn-reset" class="flex-1 py-1.5 border rounded text-xs hover:bg-gray-100">重置</button>
+        <button id="btn-center" class="flex-1 py-1.5 border rounded text-xs hover:bg-gray-100">居中</button>
       </div>
     </div>
 
     <!-- CENTER CANVAS -->
-    <div class="flex-[0_0_50%] bg-gray-200 flex items-center justify-center relative">
-      <div class="relative bg-white rounded-xl shadow-lg overflow-hidden" style="width: min(100% - 2rem, 480px); aspect-ratio: 3/4;">
+    <div class="flex-[0_0_56%] bg-gray-200 flex items-center justify-center relative">
+      <div class="relative bg-white rounded-xl shadow-lg overflow-hidden" style="width: min(100% - 2rem, 500px); aspect-ratio: 3/4;">
         <canvas id="design-canvas"></canvas>
       </div>
     </div>
 
     <!-- RIGHT PANEL -->
-    <div class="w-[25%] min-w-[200px] max-w-[320px] bg-white border-l border-gray-200 overflow-y-auto p-3 flex flex-col gap-3">
+    <div class="w-[22%] min-w-[200px] max-w-[280px] bg-white border-l border-gray-200 overflow-y-auto p-3 flex flex-col gap-3">
       
       <div class="bg-gray-50 rounded-lg p-3">
         <h3 class="text-xs font-bold text-gray-700 mb-2 uppercase tracking-wide">已选产品</h3>
@@ -100,43 +104,21 @@ import BaseLayout from '../../../layouts/BaseLayout.astro';
   </div>
 
   <!-- ===== MOBILE: single-column layout ===== -->
-  <div class="md:hidden flex flex-col min-h-[calc(100vh-4rem)]">
-    
-    <!-- Canvas area (top half on mobile) -->
+  <div class="md:hidden flex flex-col min-h-screen">
     <div class="flex-1 bg-gray-200 flex items-center justify-center p-4">
       <div class="relative bg-white rounded-xl shadow-md overflow-hidden w-full" style="max-width: 360px; aspect-ratio: 3/4;">
         <canvas id="design-canvas-mobile"></canvas>
       </div>
     </div>
-
-    <!-- Controls (bottom sheet) -->
     <div class="bg-white border-t border-gray-200 px-4 py-3 space-y-3">
-      
-      <!-- Product selector -->
       <div>
         <h3 class="text-[11px] font-bold text-gray-700 mb-1.5 uppercase tracking-wide">产品</h3>
         <div id="designer-products-mobile" class="flex gap-2 overflow-x-auto pb-1"></div>
       </div>
-
-      <!-- Product Images -->
-      <div>
-        <h3 class="text-[11px] font-bold text-gray-700 mb-1.5 uppercase tracking-wide">产品图片 <span class="text-gray-400 font-normal normal-case">· 点击添加到设计</span></h3>
-        <div id="product-images-menu-mobile" class="flex gap-2 overflow-x-auto pb-1">
-          <p class="text-[10px] text-gray-400 flex-shrink-0">选择产品后显示</p>
-        </div>
-      </div>
-
-      <!-- Params: Color, Size, Qty in one row -->
       <div id="product-params-mobile" class="hidden">
         <div class="flex items-center gap-3 text-[11px]">
-          <div class="flex items-center gap-1">
-            <span class="text-gray-500">颜色</span>
-            <div id="color-options-mobile" class="flex gap-1"></div>
-          </div>
-          <div class="flex items-center gap-1">
-            <span class="text-gray-500">尺码</span>
-            <div id="size-options-mobile" class="flex gap-1"></div>
-          </div>
+          <div class="flex items-center gap-1"><span class="text-gray-500">颜色</span><div id="color-options-mobile" class="flex gap-1"></div></div>
+          <div class="flex items-center gap-1"><span class="text-gray-500">尺码</span><div id="size-options-mobile" class="flex gap-1"></div></div>
           <div class="flex items-center gap-1 ml-auto">
             <button class="w-5 h-5 border rounded text-[11px]" onclick="chgQty(-1)">−</button>
             <span class="font-bold" id="design-qty-mobile">1</span>
@@ -144,29 +126,17 @@ import BaseLayout from '../../../layouts/BaseLayout.astro';
           </div>
         </div>
       </div>
-
-      <!-- Text + Upload row -->
       <div class="flex gap-2">
         <input type="text" id="text-input-mobile" placeholder="输入文字..." class="flex-1 px-3 py-1.5 border rounded text-xs">
-        <button class="px-3 py-1.5 border rounded text-xs" onclick="addText('Impact', true)">添加文字</button>
+        <button class="px-3 py-1.5 border rounded text-xs" onclick="addTextFromSelect(true)">添加</button>
         <button class="px-3 py-1.5 border rounded text-xs" onclick="document.getElementById('design-upload-mobile').click()">📁</button>
         <input type="file" id="design-upload-mobile" accept="image/*" class="hidden">
       </div>
-
-      <!-- Font quick pick -->
-      <div class="flex gap-1">
-        {['Arial','Georgia','Impact','serif','monospace'].map(f => 
-          <button class="px-2 py-0.5 border rounded text-[10px] hover:bg-gray-100" onclick="addText('{f}', true)">{f}</button>)}
-      </div>
-
-      <!-- Action buttons -->
       <div class="flex gap-2">
-        <button id="btn-reset-mobile" class="flex-1 py-2 border rounded text-xs hover:bg-gray-100">Reset</button>
-        <button id="btn-center-mobile" class="flex-1 py-2 border rounded text-xs hover:bg-gray-100">Center</button>
+        <button id="btn-reset-mobile" class="flex-1 py-2 border rounded text-xs hover:bg-gray-100">重置</button>
+        <button id="btn-center-mobile" class="flex-1 py-2 border rounded text-xs hover:bg-gray-100">居中</button>
         <button id="btn-cart-mobile" class="flex-[2] py-2 bg-gray-800 text-white rounded text-xs font-medium">加入购物车</button>
       </div>
-
-      <!-- Product info bar -->
       <div class="bg-gray-50 rounded-lg p-3 flex items-center justify-between">
         <div>
           <p class="text-xs font-bold text-gray-800" id="info-name-mobile">选择产品</p>
@@ -230,10 +200,22 @@ import BaseLayout from '../../../layouts/BaseLayout.astro';
     }, { crossOrigin: 'anonymous' });
   }
 
-  function addText(font, fromMobile) {
-    if (!canvas) return;
+  function addTextFromSelect(fromMobile) {
+    var sel = document.getElementById('font-select');
+    var font = sel ? sel.value : 'Arial';
     var inputEl = (fromMobile || isMobile) ? document.getElementById('text-input-mobile') : document.getElementById('text-input');
     var txt = (inputEl ? inputEl.value : '') || '你的文字';
+    addTextObj(font, txt);
+  }
+
+  function addText(font) {
+    var inputEl = isMobile ? document.getElementById('text-input-mobile') : document.getElementById('text-input');
+    var txt = (inputEl ? inputEl.value : '') || '你的文字';
+    addTextObj(font, txt);
+  }
+
+  function addTextObj(font, txt) {
+    if (!canvas) return;
     var t = new fabric.IText(txt, {
       left: canvas.width/2, top: canvas.height*0.35, originX: 'center',
       fontFamily: font, fontSize: 28, fill: '#333',
@@ -250,21 +232,12 @@ import BaseLayout from '../../../layouts/BaseLayout.astro';
     if (thumb) thumb.innerHTML = '<img src="'+dataUrl+'" class="w-full h-full object-contain" alt="Preview">';
   }
 
-  function openPreview() {
-    if (!canvas) return;
-    var dataUrl = canvas.toDataURL({ format: 'png', multiplier: 1.5 });
-    document.getElementById('preview-modal-img').src = dataUrl;
-    document.getElementById('preview-modal').classList.remove('hidden');
-  }
+  function openPreview() { if (!canvas) return; var d = canvas.toDataURL({format:'png',multiplier:1.5}); document.getElementById('preview-modal-img').src = d; document.getElementById('preview-modal').classList.remove('hidden'); }
   function closePreview() { document.getElementById('preview-modal').classList.add('hidden'); }
 
-  function chgQty(d) {
-    state.qty = Math.max(1, state.qty + d);
-    document.getElementById('design-qty').textContent = state.qty;
-    var m = document.getElementById('design-qty-mobile'); if (m) m.textContent = state.qty;
-  }
+  function chgQty(d) { state.qty = Math.max(1, state.qty + d); document.getElementById('design-qty').textContent = state.qty; var m = document.getElementById('design-qty-mobile'); if (m) m.textContent = state.qty; }
 
-  // === Product loading (shared) ===
+  // === Product loading ===
   async function loadProducts() {
     var resp = await fetch('/api/products');
     var products = await resp.json();
@@ -275,7 +248,6 @@ import BaseLayout from '../../../layouts/BaseLayout.astro';
       try { map[key].products.push({ ...p, colors: typeof p.colors==='string' ? JSON.parse(p.colors) : (p.colors||[]), sizes: typeof p.sizes==='string' ? JSON.parse(p.sizes) : (p.sizes||[]) }); } catch(e) {}
     });
 
-    // Desktop
     var html = '';
     var first = true;
     Object.values(map).forEach(function(g) {
@@ -293,7 +265,6 @@ import BaseLayout from '../../../layouts/BaseLayout.astro';
       };
     });
 
-    // Mobile: pill-style product selector
     var mhtml = '';
     first = true;
     Object.values(map).forEach(function(g) {
@@ -305,8 +276,7 @@ import BaseLayout from '../../../layouts/BaseLayout.astro';
     document.querySelectorAll('.prod-pill').forEach(function(el) {
       el.onclick = function() {
         document.querySelectorAll('.prod-pill').forEach(function(e) { e.classList.remove('bg-gray-700','text-white','border-gray-700'); e.classList.add('bg-white','text-gray-600','border-gray-300'); });
-        el.classList.add('bg-gray-700','text-white','border-gray-700');
-        el.classList.remove('bg-white','text-gray-600','border-gray-300');
+        el.classList.add('bg-gray-700','text-white','border-gray-700'); el.classList.remove('bg-white','text-gray-600','border-gray-300');
         selectProduct(el.dataset.name, map);
       };
     });
@@ -321,21 +291,15 @@ import BaseLayout from '../../../layouts/BaseLayout.astro';
     state.currentColor = g.products[0].colors[0] || '';
     state.currentSize = g.products[0].sizes[0] || '';
 
-    // Desktop params panel
-    var pp = document.getElementById('product-params');
-    if (pp) pp.classList.remove('hidden');
-    // Mobile params
-    var ppm = document.getElementById('product-params-mobile');
-    if (ppm) ppm.classList.remove('hidden');
+    var pp = document.getElementById('product-params'); if (pp) pp.classList.remove('hidden');
+    var ppm = document.getElementById('product-params-mobile'); if (ppm) ppm.classList.remove('hidden');
 
-    // Info panels
     document.getElementById('info-name').textContent = name;
     document.getElementById('info-price').textContent = '¥' + g.products[0].price;
     var inm = document.getElementById('info-name-mobile'); if (inm) inm.textContent = name;
     var ipm = document.getElementById('info-price-mobile'); if (ipm) ipm.textContent = '¥' + g.products[0].price;
     updateDetail();
 
-    // Colors
     var colors = g.products[0].colors || [];
     var chtml = colors.map(function(c) {
       return '<div class="px-2 py-0.5 border rounded-full text-[10px] cursor-pointer '+(c===state.currentColor?'bg-gray-700 text-white':'border-gray-300 hover:border-gray-500')+'" data-c="'+c+'">'+c+'</div>';
@@ -346,7 +310,6 @@ import BaseLayout from '../../../layouts/BaseLayout.astro';
       el.onclick = function() { state.currentColor = el.dataset.c; updateDetail(); reloadColor(); resetHighlightAll(el); };
     });
 
-    // Sizes
     var sizes = g.products[0].sizes || [];
     var shtml = sizes.map(function(s) {
       return '<div class="px-2 py-0.5 border rounded-full text-[10px] cursor-pointer '+(s===state.currentSize?'bg-gray-700 text-white':'border-gray-300 hover:border-gray-500')+'" data-s="'+s+'">'+s+'</div>';
@@ -372,118 +335,49 @@ import BaseLayout from '../../../layouts/BaseLayout.astro';
     var dm = document.getElementById('info-detail-mobile'); if (dm) dm.textContent = txt;
   }
 
-  function loadProductImage() { reloadColor(); loadProductImagesMenu(); }
+  function loadProductImage() { reloadColor(); }
   function reloadColor() {
     var tag = state.currentColor === '黑色' ? '黑色' : (state.currentColor === '粉色' ? '粉色' : '白色');
-    // Select appropriate product image
     var baseSrc = '/images/products/180g-tee/962802505245275392_白色_3.jpeg';
-    if (state.currentProduct && state.currentProduct.name.includes('儿童') || (state.currentProduct&&state.currentProduct.name.includes('Children'))) {
+    if (state.currentProduct && (state.currentProduct.name.includes('儿童') || (state.currentProduct.name_en||'').includes('Children'))) {
       baseSrc = '/images/products/kids-tee/20260713232848_962803060990588160_粉色_4.jpeg';
     }
     addBaseImage(baseSrc);
   }
 
-  function loadProductImagesMenu() {
-    var allImages = [];
-    if (state.currentProduct) {
-      state.currentProduct.products.forEach(function(p) {
-        var imgs = typeof p.images === 'string' ? JSON.parse(p.images || '[]') : (p.images || []);
-        imgs.forEach(function(img) { if (allImages.indexOf(img) === -1) allImages.push(img); });
-      });
-    }
-    if (allImages.length === 0) {
-      fetch('/api/products').then(function(r){ return r.json(); }).then(function(prods){
-        prods.forEach(function(p) {
-          var imgs = typeof p.images === 'string' ? JSON.parse(p.images || '[]') : (p.images || []);
-          imgs.forEach(function(img) { if (allImages.indexOf(img) === -1) allImages.push(img); });
-        });
-        renderProductImages(allImages);
-      });
-    } else {
-      renderProductImages(allImages);
-    }
-  }
-
-  function renderProductImages(images) {
-    var html = images.map(function(src) {
-      return '<div class="aspect-square bg-gray-100 rounded overflow-hidden cursor-pointer border hover:border-gray-500" onclick="addDesignImage(\''+src+'\')"><img src="'+src+'" class="w-full h-full object-cover" loading="lazy" onerror="this.parentElement.style.display=\'none\'"></div>';
-    }).join('');
-
-    var desktop = document.getElementById('product-images-menu');
-    var mobile = document.getElementById('product-images-menu-mobile');
-    var empty = '<p class="text-[10px] text-gray-400">'+(images.length?'':'暂无产品图片')+'</p>';
-    if (desktop) { desktop.className = images.length ? 'grid grid-cols-3 gap-1.5 max-h-[300px] overflow-y-auto' : ''; desktop.innerHTML = images.length ? html : empty; }
-    if (mobile) { mobile.className = images.length ? 'flex gap-2 overflow-x-auto pb-1' : ''; mobile.innerHTML = images.length ? html : empty; }
-  }
-
   // Upload
-  function setupUpload(zoneId, inputId) {
-    var zone = document.getElementById(zoneId);
-    var input = document.getElementById(inputId);
-    if (!zone || !input) return;
-    zone.onclick = function() { input.click(); };
-    input.onchange = function(e) {
-      var file = e.target.files[0]; if (!file) return;
-      var reader = new FileReader();
-      reader.onload = function(ev) {
-        var src = ev.target.result;
-        state.galleryImages.push(src);
-        renderGallery();
-        addDesignImage(src);
-      };
-      reader.readAsDataURL(file);
-    };
-  }
-  setupUpload('upload-zone', 'design-upload');
-  // Mobile upload
-  var mobileUpload = document.getElementById('design-upload-mobile');
-  if (mobileUpload) {
-    mobileUpload.onchange = function(e) {
-      var file = e.target.files[0]; if (!file) return;
-      var reader = new FileReader();
-      reader.onload = function(ev) {
-        var src = ev.target.result;
-        state.galleryImages.push(src);
-        addDesignImage(src);
-      };
-      reader.readAsDataURL(file);
-    };
-  }
+  document.getElementById('upload-zone').onclick = function() { document.getElementById('design-upload').click(); };
+  document.getElementById('design-upload').onchange = function(e) {
+    var file = e.target.files[0]; if (!file) return;
+    var reader = new FileReader();
+    reader.onload = function(ev) { var src = ev.target.result; state.galleryImages.push(src); renderGallery(); addDesignImage(src); };
+    reader.readAsDataURL(file);
+  };
+  var mu = document.getElementById('design-upload-mobile');
+  if (mu) mu.onchange = function(e) {
+    var file = e.target.files[0]; if (!file) return;
+    var reader = new FileReader();
+    reader.onload = function(ev) { var src = ev.target.result; state.galleryImages.push(src); addDesignImage(src); };
+    reader.readAsDataURL(file);
+  };
 
   function renderGallery() {
-    var el = document.getElementById('image-gallery');
-    if (!el) return;
+    var el = document.getElementById('image-gallery'); if (!el) return;
     el.innerHTML = state.galleryImages.map(function(src) {
       return '<div class="aspect-square bg-gray-100 rounded overflow-hidden cursor-pointer border hover:border-gray-500" onclick="addDesignImage(\''+src+'\')"><img src="'+src+'" class="w-full h-full object-cover"></div>';
     }).join('');
   }
 
-  // Buttons - desktop
-  var btnReset = document.getElementById('btn-reset');
-  var btnCenter = document.getElementById('btn-center');
-  var btnCart = document.getElementById('btn-cart');
-  if (btnReset) btnReset.onclick = doReset;
-  if (btnCenter) btnCenter.onclick = doCenter;
-  if (btnCart) btnCart.onclick = doAddCart;
+  // Buttons
+  document.getElementById('btn-reset').onclick = doReset;
+  document.getElementById('btn-center').onclick = doCenter;
+  document.getElementById('btn-cart').onclick = doAddCart;
+  var br = document.getElementById('btn-reset-mobile'); if (br) br.onclick = doReset;
+  var bc = document.getElementById('btn-center-mobile'); if (bc) bc.onclick = doCenter;
+  var bcart = document.getElementById('btn-cart-mobile'); if (bcart) bcart.onclick = doAddCart;
 
-  // Buttons - mobile
-  var br = document.getElementById('btn-reset-mobile');
-  var bc = document.getElementById('btn-center-mobile');
-  var bcart = document.getElementById('btn-cart-mobile');
-  if (br) br.onclick = doReset;
-  if (bc) bc.onclick = doCenter;
-  if (bcart) bcart.onclick = doAddCart;
-
-  function doReset() {
-    if (!canvas) return;
-    canvas.getObjects().forEach(function(o) { if (o !== baseImg) canvas.remove(o); });
-    canvas.renderAll(); updatePreview();
-  }
-  function doCenter() {
-    if (!canvas) return;
-    var obj = canvas.getActiveObject();
-    if (obj && obj !== baseImg) { obj.set({ left: canvas.width/2, top: canvas.height*0.4, originX: 'center', originY: 'center' }); canvas.renderAll(); updatePreview(); }
-  }
+  function doReset() { if (!canvas) return; canvas.getObjects().forEach(function(o) { if (o !== baseImg) canvas.remove(o); }); canvas.renderAll(); updatePreview(); }
+  function doCenter() { if (!canvas) return; var obj = canvas.getActiveObject(); if (obj && obj !== baseImg) { obj.set({ left: canvas.width/2, top: canvas.height*0.4, originX: 'center', originY: 'center' }); canvas.renderAll(); updatePreview(); } }
   function doAddCart() {
     if (!state.currentProduct) return alert('请先选择产品');
     var cart = JSON.parse(localStorage.getItem('ps-cart') || '[]');
@@ -492,18 +386,9 @@ import BaseLayout from '../../../layouts/BaseLayout.astro';
     alert('已加入购物车！');
   }
 
-  window.addEventListener('DOMContentLoaded', function() {
-    setTimeout(function() { initCanvas(); loadProducts(); }, 300);
-  });
-
+  window.addEventListener('DOMContentLoaded', function() { setTimeout(function() { initCanvas(); loadProducts(); }, 300); });
   window.addEventListener('resize', function() {
-    if (canvas) {
-      var el = document.getElementById(getCanvasId());
-      if (!el) return;
-      var w = el.parentElement.clientWidth;
-      canvas.setDimensions({width: w, height: w*1.33});
-      canvas.renderAll(); updatePreview();
-    }
+    if (canvas) { var el = document.getElementById(getCanvasId()); if (!el) return; var w = el.parentElement.clientWidth; canvas.setDimensions({width: w, height: w*1.33}); canvas.renderAll(); updatePreview(); }
   });
 </script>
 </BaseLayout>
