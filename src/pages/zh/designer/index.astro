@@ -22,7 +22,7 @@ import products from '../../../content/products.json';
 
       <!-- 参数 -->
       <div class="bg-gray-50 rounded-lg p-1.5 hidden" id="product-params">
-        <h3 class="text-[11px] font-bold text-gray-700 mb-0.5 uppercase tracking-wide">参数</h3>
+        
         <div class="space-y-1.5">
           <div><label class="text-[10px] font-medium text-gray-500">颜色</label>
             <div class="flex flex-wrap gap-1 mt-0.5" id="color-options"></div>
@@ -50,10 +50,10 @@ import products from '../../../content/products.json';
         <div id="image-gallery" class="grid grid-cols-4 gap-1.5"></div>
       </div>
 
-      <!-- 文字工具 -->
+      <!-- Text工具 -->
       <div class="bg-gray-50 rounded-lg p-1.5">
         <h3 class="text-[11px] font-bold text-gray-700 mb-0.5 uppercase tracking-wide">文字</h3>
-        <input type="text" id="text-input" placeholder="输入文字..." class="w-full px-2 py-1.5 border rounded text-[11px] mb-2">
+        <input type="text" id="text-input" placeholder="输入Text..." class="w-full px-2 py-1.5 border rounded text-[11px] mb-2">
         <div class="flex items-center gap-2 mb-2">
           <span class="text-[10px] text-gray-500">字体</span>
           <select id="font-select" class="flex-1 border rounded px-2 py-1 text-[11px] bg-white">
@@ -67,7 +67,7 @@ import products from '../../../content/products.json';
             <option value="Comic Sans MS">Comic Sans MS</option>
           </select>
         </div>
-        <button class="w-full py-1.5 bg-gray-700 text-white rounded text-[11px] hover:bg-gray-600" onclick="addTextFromSelect()">添加文字</button>
+        <button class="w-full py-1.5 bg-gray-700 text-white rounded text-[11px] hover:bg-gray-600" onclick="addTextFromSelect()">添加Text</button>
       </div>
 
       <div class="flex gap-2">
@@ -95,7 +95,7 @@ import products from '../../../content/products.json';
 
       <div class="bg-gray-50 rounded-lg p-1.5 flex flex-col">
         <h3 class="text-[11px] font-bold text-gray-700 mb-0.5 uppercase tracking-wide">预览</h3>
-        <div id="preview-thumb" class="bg-white rounded-lg flex items-center justify-center overflow-hidden cursor-pointer border" style="height:280px;"
+        <div id="preview-thumb" class="bg-white rounded-lg flex items-center justify-center overflow-hidden cursor-pointer border" style="height:308px;"
              onclick="openPreview()">
           <span class="text-3xl opacity-15">👕</span>
         </div>
@@ -129,7 +129,7 @@ import products from '../../../content/products.json';
         </div>
       </div>
       <div class="flex gap-1.5">
-        <input type="text" id="text-input-mobile" placeholder="输入文字..." class="flex-1 px-2 py-1.5 border rounded text-xs">
+        <input type="text" id="text-input-mobile" placeholder="输入Text..." class="flex-1 px-2 py-1.5 border rounded text-xs">
         <button class="px-2 py-1.5 border rounded text-xs" onclick="addTextFromSelect(true)">添加</button>
         <button class="px-2 py-1.5 border rounded text-xs" onclick="document.getElementById('design-upload-mobile').click()">📁</button>
         <input type="file" id="design-upload-mobile" accept="image/*" class="hidden">
@@ -248,13 +248,13 @@ import products from '../../../content/products.json';
     var sel = document.getElementById('font-select');
     var font = sel ? sel.value : 'Arial';
     var inputEl = (fromMobile || isMobile) ? document.getElementById('text-input-mobile') : document.getElementById('text-input');
-    var txt = (inputEl ? inputEl.value : '') || '你的文字';
+    var txt = (inputEl ? inputEl.value : '') || '你的Text';
     addTextObj(font, txt);
   }
 
   function addText(font) {
     var inputEl = isMobile ? document.getElementById('text-input-mobile') : document.getElementById('text-input');
-    var txt = (inputEl ? inputEl.value : '') || '你的文字';
+    var txt = (inputEl ? inputEl.value : '') || '你的Text';
     addTextObj(font, txt);
   }
 
@@ -452,7 +452,7 @@ import products from '../../../content/products.json';
     var cart = JSON.parse(localStorage.getItem('ps-cart') || '[]');
     cart.push({ id: 'custom-'+Date.now(), name: state.currentProduct.name, color: state.currentColor, size: state.currentSize, quantity: state.qty, price: state.currentProduct.products[0].price, preview: canvas.toDataURL({format:'png',multiplier:0.5}) });
     localStorage.setItem('ps-cart', JSON.stringify(cart));
-    alert('已加入购物车！');
+    alert('已Add to Cart！');
   }
 
   window.addEventListener('DOMContentLoaded', function() {
