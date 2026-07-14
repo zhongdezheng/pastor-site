@@ -19,28 +19,6 @@ import products from '../../../content/products.json';
         <div id="designer-products" class="space-y-1.5"></div>
       </div>
 
-      <!-- Params: Color / Size / Qty -->
-      <div class="bg-gray-50 rounded-xl p-3 hidden" id="product-params">
-        <div class="space-y-3">
-          <div>
-            <label class="text-xs font-bold text-gray-500 uppercase tracking-wider">Color</label>
-            <div class="flex flex-wrap gap-2 mt-1.5" id="color-options"></div>
-          </div>
-          <div>
-            <label class="text-xs font-bold text-gray-500 uppercase tracking-wider">Size</label>
-            <div class="flex flex-wrap gap-1.5 mt-1.5" id="size-options"></div>
-          </div>
-          <div class="flex items-center justify-between">
-            <label class="text-xs font-bold text-gray-500 uppercase tracking-wider">Qty</label>
-            <div class="flex items-center gap-0">
-              <button class="w-8 h-8 rounded-l-lg bg-white border border-gray-200 text-gray-600 hover:bg-gray-50 text-sm font-bold leading-none" onclick="chgQty(-1)">−</button>
-              <span class="w-10 h-8 flex items-center justify-center bg-white border-y border-gray-200 text-sm font-bold text-gray-700" id="design-qty">1</span>
-              <button class="w-8 h-8 rounded-r-lg bg-white border border-gray-200 text-gray-600 hover:bg-gray-50 text-sm font-bold leading-none" onclick="chgQty(1)">+</button>
-            </div>
-          </div>
-        </div>
-      </div>
-
       <!-- Upload Image -->
       <div class="bg-gray-50 rounded-xl p-3">
         <h3 class="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Upload Image</h3>
@@ -56,8 +34,8 @@ import products from '../../../content/products.json';
       <div class="bg-gray-50 rounded-xl p-3">
         <h3 class="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Text</h3>
         <input type="text" id="text-input" placeholder="Your text..." class="w-full px-3 py-2 bg-white border border-gray-200 rounded-lg text-sm text-gray-700 placeholder-gray-300 focus:outline-none focus:border-gray-400 focus:ring-1 focus:ring-gray-200 transition-all mb-2" />
-        <div class="relative mb-2">
-          <div class="relative">
+        <div class="flex gap-2 mb-2">
+          <div class="relative flex-1">
             <label class="text-xs font-bold text-gray-500 uppercase tracking-wider block mb-1.5">Font</label>
             <select id="font-select" class="w-full px-3 py-2 bg-white border border-gray-200 rounded-lg text-sm text-gray-700 appearance-none cursor-pointer focus:outline-none focus:border-gray-400 focus:ring-1 focus:ring-gray-200 transition-all">
               <option value="Arial">Arial</option>
@@ -69,6 +47,10 @@ import products from '../../../content/products.json';
               <option value="Trebuchet MS">Trebuchet MS</option>
               <option value="Comic Sans MS">Comic Sans MS</option>
             </select>
+          </div>
+          <div class="flex flex-col items-center">
+            <label class="text-xs font-bold text-gray-500 uppercase tracking-wider block mb-1.5">Color</label>
+            <input type="color" id="text-color" value="#333333" class="w-8 h-8 rounded cursor-pointer border-0 bg-transparent p-0" />
           </div>
         </div>
         <button class="w-full py-2.5 bg-gray-800 hover:bg-gray-700 active:bg-gray-900 text-white rounded-lg text-sm font-medium transition-all" onclick="addTextFromSelect()">Add Text</button>
@@ -97,6 +79,28 @@ import products from '../../../content/products.json';
         <p class="text-sm font-bold text-gray-800" id="info-name">Select a product</p>
         <p class="text-xs text-gray-400 mt-0.5" id="info-detail"></p>
         <p class="text-xl font-bold text-gray-800 mt-1" id="info-price"></p>
+      </div>
+
+      <!-- Params: Color / Size / Qty -->
+      <div class="bg-gray-50 rounded-xl p-3 hidden" id="product-params">
+        <div class="space-y-3">
+          <div>
+            <label class="text-xs font-bold text-gray-500 uppercase tracking-wider">Color</label>
+            <div class="flex flex-wrap gap-2 mt-1.5" id="color-options"></div>
+          </div>
+          <div>
+            <label class="text-xs font-bold text-gray-500 uppercase tracking-wider">Size</label>
+            <div class="flex flex-wrap gap-1.5 mt-1.5" id="size-options"></div>
+          </div>
+          <div class="flex items-center justify-between">
+            <label class="text-xs font-bold text-gray-500 uppercase tracking-wider">Qty</label>
+            <div class="flex items-center gap-0">
+              <button class="w-8 h-8 rounded-l-lg bg-white border border-gray-200 text-gray-600 hover:bg-gray-50 text-sm font-bold leading-none" onclick="chgQty(-1)">−</button>
+              <span class="w-10 h-8 flex items-center justify-center bg-white border-y border-gray-200 text-sm font-bold text-gray-700" id="design-qty">1</span>
+              <button class="w-8 h-8 rounded-r-lg bg-white border border-gray-200 text-gray-600 hover:bg-gray-50 text-sm font-bold leading-none" onclick="chgQty(1)">+</button>
+            </div>
+          </div>
+        </div>
       </div>
 
       <!-- Preview -->
@@ -174,7 +178,8 @@ import products from '../../../content/products.json';
 (function() {
   var state = { currentProduct: null, currentColor: '', currentSize: '', qty: 1, galleryImages: [] };
   var canvas = null, baseImg = null, isMobile = false;
-  var guidelines = null;
+  var snapGuidelines = null, centerRef = null;
+  var SNAP_THRESHOLD = 15;
 
   function getCanvasId() { return isMobile ? 'design-canvas-mobile' : 'design-canvas'; }
 
@@ -202,7 +207,15 @@ import products from '../../../content/products.json';
       cornerStrokeColor: '#5B6D61',
     });
 
-    // Cross-hair guidelines when moving objects
+    // Subtle permanent center cross-hair reference lines
+    var cw = canvas.width, ch = canvas.height;
+    centerRef = [
+      new fabric.Line([cw/2, 0, cw/2, ch], { stroke: '#e0dcd3', strokeWidth: 1, strokeDashArray: [4,8], selectable: false, evented: false, excludeFromExport: true }),
+      new fabric.Line([0, ch/2, cw, ch/2], { stroke: '#e0dcd3', strokeWidth: 1, strokeDashArray: [4,8], selectable: false, evented: false, excludeFromExport: true }),
+    ];
+    centerRef.forEach(function(g) { canvas.add(g); canvas.sendToBack(g); });
+
+    // Cross-hair guidelines when moving objects (only show near center + snap)
     canvas.on('object:moving', function(e) {
       drawGuidelines(e.target);
       updatePreview();
@@ -260,6 +273,32 @@ import products from '../../../content/products.json';
       }
     });
 
+    // Live update: font or text color change → update active IText
+    var fontSel = document.getElementById('font-select');
+    var colorPick = document.getElementById('text-color');
+    if (fontSel) {
+      fontSel.addEventListener('change', function() {
+        if (!canvas) return;
+        var obj = canvas.getActiveObject();
+        if (obj && obj.type === 'i-text') {
+          obj.set('fontFamily', fontSel.value);
+          canvas.requestRenderAll();
+          updatePreview();
+        }
+      });
+    }
+    if (colorPick) {
+      colorPick.addEventListener('input', function() {
+        if (!canvas) return;
+        var obj = canvas.getActiveObject();
+        if (obj && obj.type === 'i-text') {
+          obj.set('fill', colorPick.value);
+          canvas.requestRenderAll();
+          updatePreview();
+        }
+      });
+    }
+
     // Load products once canvas is ready
     loadProducts();
   }
@@ -271,24 +310,46 @@ import products from '../../../content/products.json';
     var cx = obj.left + obj.width * obj.scaleX / 2;
     var cy = obj.top + obj.height * obj.scaleY / 2;
     
-    guidelines = [];
-    // Vertical center line
-    var vl = new fabric.Line([cw/2, 0, cw/2, ch], { stroke: '#d4d4d4', strokeWidth: 1, strokeDashArray: [6,4], selectable: false, evented: false, excludeFromExport: true });
-    // Horizontal center line
-    var hl = new fabric.Line([0, ch/2, cw, ch/2], { stroke: '#d4d4d4', strokeWidth: 1, strokeDashArray: [6,4], selectable: false, evented: false, excludeFromExport: true });
-    // Highlight cross at object center
-    var vh = new fabric.Line([cx, 0, cx, ch], { stroke: '#999', strokeWidth: 1, strokeDashArray: [3,3], selectable: false, evented: false, excludeFromExport: true });
-    var hh = new fabric.Line([0, cy, cw, cy], { stroke: '#999', strokeWidth: 1, strokeDashArray: [3,3], selectable: false, evented: false, excludeFromExport: true });
+    var centerX = cw / 2;
+    var centerY = ch / 2;
+    var nearX = Math.abs(cx - centerX) <= SNAP_THRESHOLD;
+    var nearY = Math.abs(cy - centerY) <= SNAP_THRESHOLD;
 
-    guidelines = [vl, hl, vh, hh];
-    guidelines.forEach(function(g) { canvas.add(g); canvas.sendToBack(g); });
+    snapGuidelines = [];
+    var didSnap = false;
+
+    // Vertical: only show and snap when near center X
+    if (nearX) {
+      snapGuidelines.push(
+        new fabric.Line([centerX, 0, centerX, ch], { stroke: '#a0a0a0', strokeWidth: 1.5, strokeDashArray: [6,4], selectable: false, evented: false, excludeFromExport: true })
+      );
+      // Snap to center X
+      obj.set('left', centerX - obj.width * obj.scaleX / 2);
+      didSnap = true;
+    }
+
+    // Horizontal: only show and snap when near center Y
+    if (nearY) {
+      snapGuidelines.push(
+        new fabric.Line([0, centerY, cw, centerY], { stroke: '#a0a0a0', strokeWidth: 1.5, strokeDashArray: [6,4], selectable: false, evented: false, excludeFromExport: true })
+      );
+      obj.set('top', centerY - obj.height * obj.scaleY / 2);
+      didSnap = true;
+    }
+
+    // If snapping, update coords
+    if (didSnap) {
+      obj.setCoords();
+    }
+
+    snapGuidelines.forEach(function(g) { canvas.add(g); canvas.sendToBack(g); });
     canvas.requestRenderAll();
   }
 
   function clearGuidelines() {
-    if (guidelines) {
-      guidelines.forEach(function(g) { canvas.remove(g); });
-      guidelines = null;
+    if (snapGuidelines) {
+      snapGuidelines.forEach(function(g) { canvas.remove(g); });
+      snapGuidelines = null;
       canvas.requestRenderAll();
     }
   }
@@ -342,20 +403,26 @@ import products from '../../../content/products.json';
   function addTextFromSelect(fromMobile) {
     var sel = document.getElementById('font-select');
     var font = sel ? sel.value : 'Arial';
+    var colorEl = document.getElementById('text-color');
+    var fill = colorEl ? colorEl.value : '#333333';
     var inputEl = isMobile ? document.getElementById('text-input-mobile') : document.getElementById('text-input');
     var txt = (inputEl ? inputEl.value.trim() : '') || 'Your text';
-    addTextObj(font, txt);
+    addTextObj(font, txt, fill);
   }
 
-  function addTextObj(font, txt) {
+  function addTextObj(font, txt, fill) {
     if (!canvas) return;
+    if (!fill) {
+      var colorEl = document.getElementById('text-color');
+      fill = colorEl ? colorEl.value : '#333333';
+    }
     var t = new fabric.IText(txt, {
       left: canvas.width / 2,
       top: canvas.height * 0.3,
       originX: 'center',
       fontFamily: font,
       fontSize: 28,
-      fill: '#333333',
+      fill: fill,
       cornerColor: '#5B6D61',
       cornerSize: 8,
       cornerStyle: 'circle',
