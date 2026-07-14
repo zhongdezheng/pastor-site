@@ -244,8 +244,8 @@ import products from '../../../content/products.json';
     var products = JSON.parse(document.getElementById('__designerProducts').textContent);
     var map = {};
     products.forEach(function(p) {
-      var key = (p.name_zh || p.name_en || '').replace(/\s*—.*/, '');
-      if (!map[key]) map[key] = { name: key, name_en: (p.name_en||'').replace(/\s*—.*/, ''), products: [] };
+      var key = (p.name && p.name.zh || p.name && p.name.en || '').replace(/\s*—.*/, '');
+      if (!map[key]) map[key] = { name: key, name_en: (p.name&&p.name.en||'').replace(/\s*—.*/, ''), products: [] };
       try { map[key].products.push({ ...p, colors: typeof p.colors==='string' ? JSON.parse(p.colors) : (p.colors||[]), sizes: typeof p.sizes==='string' ? JSON.parse(p.sizes) : (p.sizes||[]) }); } catch(e) {}
     });
 
