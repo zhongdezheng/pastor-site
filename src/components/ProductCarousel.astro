@@ -118,8 +118,8 @@ const carouselCards = appProducts.map((p, pi) => ({
       if (!track || !inner) return;
 
       // Pause on hover
-      track.addEventListener('mouseenter', function(){ track.classList.add('paused'); });
-      track.addEventListener('mouseleave', function(){ track.classList.remove('paused'); });
+      track.addEventListener('mouseenter', function(){ inner.style.animationPlayState = 'paused'; });
+      track.addEventListener('mouseleave', function(){ inner.style.animationPlayState = 'running'; });
 
       // Click card to highlight center
       inner.addEventListener('click', function(e) {
@@ -129,6 +129,9 @@ const carouselCards = appProducts.map((p, pi) => ({
         inner.querySelectorAll('.carousel-card-item').forEach(function(c){ c.classList.remove('active-card'); });
         card.classList.add('active-card');
       });
+
+      // Initial rebuild for seamless looping
+      rebuildCards();
     }
 
     function rebuildCards() {
