@@ -337,40 +337,50 @@ import products from '../../../content/products.json';
     clearGuidelines();
     if (!obj || obj === baseImg) return;
     var cw = canvas.width, ch = canvas.height;
-    // Use fabric's getCenterPoint for accurate center regardless of origin
-    var cp = obj.getCenterPoint();
-    var cx = cp.x;
-    var cy = cp.y;
-    
     var centerX = cw / 2;
     var centerY = ch / 2;
-    var nearX = Math.abs(cx - centerX) <= SNAP_THRESHOLD;
-    var nearY = Math.abs(cy - centerY) <= SNAP_THRESHOLD;
+
+    // Object bounding box edges
+    var leftX = obj.left;
+    var rightX = obj.left + obj.width * obj.scaleX;
+    var topY = obj.top;
+    var bottomY = obj.top + obj.height * obj.scaleY;
 
     snapGuidelines = [];
-    var didSnap = false;
 
-    // Vertical: only show and snap when near center X
-    if (nearX) {
+    // Check if any edge is near center — snap to EDGE at center
+    var snappedX = false;
+    var snappedY = false;
+
+    if (Math.abs(leftX - centerX) <= SNAP_THRESHOLD) {
+      obj.set('left', centerX);
+      snappedX = true;
+    } else if (Math.abs(rightX - centerX) <= SNAP_THRESHOLD) {
+      obj.set('left', centerX - obj.width * obj.scaleX);
+      snappedX = true;
+    }
+
+    if (Math.abs(topY - centerY) <= SNAP_THRESHOLD) {
+      obj.set('top', centerY);
+      snappedY = true;
+    } else if (Math.abs(bottomY - centerY) <= SNAP_THRESHOLD) {
+      obj.set('top', centerY - obj.height * obj.scaleY);
+      snappedY = true;
+    }
+
+    if (snappedX) {
       snapGuidelines.push(
         new fabric.Line([centerX, 0, centerX, ch], { stroke: '#a0a0a0', strokeWidth: 1.5, strokeDashArray: [6,4], selectable: false, evented: false, excludeFromExport: true })
       );
-      // Snap to center X
-      obj.set('left', centerX - obj.width * obj.scaleX / 2);
-      didSnap = true;
     }
 
-    // Horizontal: only show and snap when near center Y
-    if (nearY) {
+    if (snappedY) {
       snapGuidelines.push(
         new fabric.Line([0, centerY, cw, centerY], { stroke: '#a0a0a0', strokeWidth: 1.5, strokeDashArray: [6,4], selectable: false, evented: false, excludeFromExport: true })
       );
-      obj.set('top', centerY - obj.height * obj.scaleY / 2);
-      didSnap = true;
     }
 
-    // If snapping, update coords
-    if (didSnap) {
+    if (snappedX || snappedY) {
       obj.setCoords();
     }
 
