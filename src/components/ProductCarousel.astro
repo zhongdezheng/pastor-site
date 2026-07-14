@@ -12,18 +12,24 @@ const labels = {
 };
 const t = labels[lang];
 
-const appProducts = products.filter(p => p.category === 'apparel');
 const allProducts = products;
 
-const carouselCards = appProducts.map((p, pi) => ({
-  id: p.id, name: p.name[lang], price: p.price, weight: p.weight,
-  colors: p.colors, sizes: p.sizes, stock: p.stock, category: p.category,
-  image: p.images && p.images[0] ? p.images[0] : null, gid: pi,
-}));
-// Duplicate for seamless looping (need at least 2x)
+// Kids-tee 主图确保用产品照（非尺寸图）：白色_8.png 是产品正面照
+const carouselCards = allProducts
+  .filter(p => p.category === 'apparel')
+  .map((p, pi) => {
+    let firstImg = p.images && p.images[0] ? p.images[0] : null;
+    // prod-4（童装）：第一张白色_8.png是产品正面照，保留
+    // 如果要改，在这里调整
+    return {
+      id: p.id, name: p.name[lang], price: p.price, weight: p.weight,
+      colors: p.colors, sizes: p.sizes, stock: p.stock, category: p.category,
+      image: firstImg, gid: pi,
+    };
+  });
 ---
 
-<section id="products" class="py-24 lg:py-32 px-4 sm:px-6 bg-white overflow-hidden">
+<section id="products" class="py-24 lg:py-32 px-4 sm:px-6 bg-white">
   <div class="max-w-5xl mx-auto">
 
     <div class="flex gap-3 mb-8">
@@ -32,16 +38,17 @@ const carouselCards = appProducts.map((p, pi) => ({
       <button class="carousel-cat-btn px-5 py-2 rounded-full text-sm font-medium transition-colors border border-charcoal-300 text-charcoal-500 hover:border-charcoal-500" data-cat="accessories">{t.jewelry}</button>
     </div>
 
-    <div id="product-carousel" class="product-carousel relative select-none" style="height: 370px;">
-      <div id="product-track" class="product-track overflow-hidden" style="position:relative; height:100%;">
-        <div class="carousel-scroll-track flex items-start" id="scroll-inner" style="gap:14px;">
+    <div id="product-carousel" class="product-carousel">
+      <div id="product-track">
+        <div class="flex items-start" id="scroll-inner" style="gap:14px;">
           {carouselCards.map(card => (
-            <div
-              class="carousel-card-item shrink-0 bg-white rounded-2xl border border-beige-200 shadow-sm transition-all duration-300 cursor-pointer"
+            <a
+              href={`/${lang}/products/${card.id}/`}
+              class="carousel-card-item shrink-0 bg-white rounded-2xl border border-beige-200 shadow-sm transition-all duration-300 hover:shadow-lg hover:-translate-y-1"
               data-index={card.gid}
               data-category={card.category}
               data-id={card.id}
-              style="width:160px; min-height:300px;" class="sm:w-[180px] sm:min-h-[310px]"
+              style="width:160px; min-height:300px;"
             >
               <div class="aspect-square bg-beige-100 rounded-t-2xl flex items-center justify-center text-3xl relative overflow-hidden">
                 {card.image ? <img src={card.image} alt="" class="w-full h-full object-cover" loading="lazy" /> : <span>👕</span>}
@@ -62,38 +69,16 @@ const carouselCards = appProducts.map((p, pi) => ({
                 </div>
                 <div class="mt-auto flex items-center justify-between">
                   <span class={`text-[10px] font-medium ${card.stock > 0 ? 'text-green-600' : 'text-red-400'}`}>{card.stock > 0 ? `${t.stock}: ${card.stock}` : t.outOfStock}</span>
-                  <button class="carousel-add-cart px-2 py-1.5 bg-charcoal-800 text-white text-[10px] rounded-lg hover:bg-charcoal-700 transition-colors" data-product={card.id} data-name={card.name} data-price={card.price} disabled={card.stock===0} onclick="event.stopPropagation();return false;">{t.addToCart}</button>
+                  <button class="carousel-add-cart px-2 py-1.5 bg-charcoal-800 text-white text-[10px] rounded-lg hover:bg-charcoal-700 transition-colors" data-product={card.id} data-name={card.name} data-price={card.price} disabled={card.stock===0} onclick="event.stopPropagation();event.preventDefault();return false;">{t.addToCart}</button>
                 </div>
               </div>
-            </div>
+            </a>
           ))}
         </div>
       </div>
-
-      <div class="absolute inset-y-0 left-0 w-12 md:w-24 pointer-events-none bg-gradient-to-r from-white/95 to-transparent z-10 rounded-l-2xl"></div>
-      <div class="absolute inset-y-0 right-0 w-12 md:w-24 pointer-events-none bg-gradient-to-l from-white/95 to-transparent z-10 rounded-r-2xl"></div>
     </div>
   </div>
 </section>
-
-<style>
-  .carousel-card-item.active-card {
-    transform: scale(1.12) perspective(800px) rotateY(0deg) !important;
-    box-shadow: 0 20px 60px rgba(120,100,80,0.15), 0 8px 20px rgba(120,100,80,0.08) !important;
-    z-index: 5 !important;
-  }
-  #scroll-inner {
-    width: fit-content;
-    animation: scrollLeft 30s linear infinite;
-  }
-  #scroll-inner.paused {
-    animation-play-state: paused;
-  }
-  @keyframes scrollLeft {
-    0% { transform: translateX(0); }
-    100% { transform: translateX(-50%); }
-  }
-</style>
 
 <script type="application/json" id="__carouselData" set:html={JSON.stringify(allProducts.map(p=>({id:p.id,name:p.name[lang],price:p.price,colors:p.colors,sizes:p.sizes,category:p.category,stock:p.stock,image:p.images?p.images[0]:'',images:p.images||[]})))}></script>
 <script type="application/json" id="__carouselLabels" set:html={JSON.stringify(labels[lang])}></script>
@@ -103,7 +88,7 @@ const carouselCards = appProducts.map((p, pi) => ({
     var LABELS = JSON.parse(document.getElementById("__carouselLabels").textContent);
     var CURRCAT = 'all';
     var FILTERED = ALLPRODS.filter(function(p){ return CURRCAT==='all'||p.category===CURRCAT; });
-    var track, inner;
+    var inner;
 
     // Update category buttons
     document.querySelectorAll('.carousel-cat-btn').forEach(function(b){
@@ -113,45 +98,29 @@ const carouselCards = appProducts.map((p, pi) => ({
     });
 
     function init() {
-      track = document.getElementById('product-track');
       inner = document.getElementById('scroll-inner');
-      if (!track || !inner) return;
-
-      // Pause on hover
-      track.addEventListener('mouseenter', function(){ inner.style.animationPlayState = 'paused'; });
-      track.addEventListener('mouseleave', function(){ inner.style.animationPlayState = 'running'; });
-
-      // Click card to highlight center
-      inner.addEventListener('click', function(e) {
-        if (e.target.closest('button')) return;
-        var card = e.target.closest('.carousel-card-item');
-        if (!card) return;
-        inner.querySelectorAll('.carousel-card-item').forEach(function(c){ c.classList.remove('active-card'); });
-        card.classList.add('active-card');
-      });
-
-      // Initial rebuild for seamless looping
+      if (!inner) return;
       rebuildCards();
     }
 
     function rebuildCards() {
       var cards = FILTERED;
-      // Duplicate for seamless looping
+      var lang = (document.documentElement.lang || 'en') === 'zh' ? 'zh' : 'en';
       var html = cards.map(function(p, i) {
         var colorsHtml = (p.colors||[]).map(function(c) {
           var bg = c==='白色'?'#f0f0f0':c==='黑色'?'#222':c==='灰色'?'#999':c==='深蓝'?'#1e3a5f':c;
           return '<span class="inline-block w-3 h-3 rounded-full border border-charcoal-300" style="background:'+bg+'" title="'+c+'"></span>';
         }).join('');
         var sizesHtml = (p.sizes||[]).map(function(s){ return '<span class="text-[9px] border border-charcoal-200 rounded px-1 py-0 text-charcoal-500">'+s+'</span>'; }).join('');
-        return '<div class="carousel-card-item shrink-0 bg-white rounded-2xl border border-beige-200 shadow-sm transition-all duration-300 cursor-pointer" data-index="'+i+'" data-id="'+p.id+'" data-category="'+p.category+'" style="width:160px; min-height:300px;" class="sm:w-[180px] sm:min-h-[310px]">'+
+        return '<a href="/'+lang+'/products/'+p.id+'/" class="carousel-card-item shrink-0 bg-white rounded-2xl border border-beige-200 shadow-sm transition-all duration-300 hover:shadow-lg hover:-translate-y-1" data-index="'+i+'" data-id="'+p.id+'" data-category="'+p.category+'" style="width:160px; min-height:300px;">'+
           '<div class="aspect-square bg-beige-100 rounded-t-2xl flex items-center justify-center text-3xl relative overflow-hidden">'+(p.image?'<img src="'+p.image+'" alt="" class="w-full h-full object-cover" loading="lazy" />':'<span>👕</span>')+(p.stock===0?'<div class="absolute inset-0 bg-black/20 flex items-center justify-center"><span class="bg-red-500 text-white text-xs px-2 py-0.5 rounded">售罄</span></div>':'')+'</div>'+
           '<div class="p-3 flex flex-col flex-1"><h3 class="font-serif font-bold text-xs text-charcoal-800 mb-0.5 leading-tight">'+p.name+'</h3><p class="text-charcoal-700 font-semibold text-sm mb-0.5">$'+p.price+'</p>'+
           '<div class="card-colors flex gap-0.5 mb-1">'+colorsHtml+'</div>'+
           '<div class="card-sizes flex flex-wrap gap-0.5 mb-2">'+sizesHtml+'</div>'+
           '<div class="mt-auto flex items-center justify-between"><span class="text-[10px] font-medium '+(p.stock>0?'text-green-600':'text-red-400')+'">'+(p.stock>0?'库存:'+p.stock:'售罄')+'</span>'+
-          '<button class="carousel-add-cart px-2 py-1.5 bg-charcoal-800 text-white text-[10px] rounded-lg hover:bg-charcoal-700 transition-colors" data-product="'+p.id+'" data-name="'+p.name+'" data-price="'+p.price+'">'+LABELS.addToCart+'</button></div></div></div>';
+          '<button class="carousel-add-cart px-2 py-1.5 bg-charcoal-800 text-white text-[10px] rounded-lg hover:bg-charcoal-700 transition-colors" data-product="'+p.id+'" data-name="'+p.name+'" data-price="'+p.price+'">'+LABELS.addToCart+'</button></div></div></a>';
       }).join('');
-      inner.innerHTML = html + html; // duplicate for seamless loop
+      inner.innerHTML = html;
     }
 
     document.querySelectorAll('.carousel-cat-btn').forEach(function(btn) {
@@ -176,7 +145,6 @@ const carouselCards = appProducts.map((p, pi) => ({
       if (exist) exist.quantity++; else cart.push({id:pid, name:name, price:price, color:'', size:'', quantity:1});
       localStorage.setItem('ps-cart', JSON.stringify(cart));
       add.textContent = '✓'; setTimeout(function(){ add.textContent = LABELS.addToCart; }, 1000);
-      // update floating cart badge
       var badge = document.getElementById('cart-badge-main');
       if (badge) {
         var total = cart.reduce(function(s,i){ return s+i.quantity; },0);
