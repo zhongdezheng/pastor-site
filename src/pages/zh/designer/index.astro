@@ -1,8 +1,11 @@
 ---
 import BaseLayout from '../../../layouts/BaseLayout.astro';
+import products from '../../../content/products.json';
 ---
 
 <BaseLayout lang="zh" title="Custom Design — Livingstone">
+
+<script type="application/json" id="__designerProducts" set:html={JSON.stringify(products)}></script>
 <section class="min-h-screen bg-gray-100">
   
   <!-- ===== DESKTOP: 3-panel layout ===== -->
@@ -74,14 +77,14 @@ import BaseLayout from '../../../layouts/BaseLayout.astro';
     </div>
 
     <!-- CENTER CANVAS -->
-    <div class="flex-[0_0_56%] bg-gray-200 flex items-center justify-center relative">
-      <div class="relative bg-white rounded-xl shadow-lg overflow-hidden" style="width: min(100% - 2rem, 500px); aspect-ratio: 3/4;">
+    <div class="flex-[0_0_64%] bg-gray-200 flex items-center justify-center relative">
+      <div class="relative bg-white rounded-xl shadow-lg overflow-hidden" style="width: min(100% - 2rem, 460px); aspect-ratio: 3/4;">
         <canvas id="design-canvas"></canvas>
       </div>
     </div>
 
     <!-- RIGHT PANEL -->
-    <div class="w-[22%] min-w-[200px] max-w-[280px] bg-white border-l border-gray-200 overflow-y-auto p-3 flex flex-col gap-3">
+    <div class="w-[18%] min-w-[180px] max-w-[240px] bg-white border-l border-gray-200 overflow-y-auto p-2 flex flex-col gap-2">
       
       <div class="bg-gray-50 rounded-lg p-3">
         <h3 class="text-xs font-bold text-gray-700 mb-2 uppercase tracking-wide">已选产品</h3>
@@ -237,10 +240,10 @@ import BaseLayout from '../../../layouts/BaseLayout.astro';
 
   function chgQty(d) { state.qty = Math.max(1, state.qty + d); document.getElementById('design-qty').textContent = state.qty; var m = document.getElementById('design-qty-mobile'); if (m) m.textContent = state.qty; }
 
-  // === Product loading ===
   async function loadProducts() {
-    var resp = await fetch('/api/products');
-    var products = await resp.json();
+    var products = JSON.parse(document.getElementById('__designerProducts').textContent);
+    var map = {};
+    products.forEach(function(p) {
     var map = {};
     products.forEach(function(p) {
       var key = (p.name_zh || p.name_en || '').replace(/\s*—.*/, '');
