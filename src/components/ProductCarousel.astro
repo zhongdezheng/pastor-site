@@ -1,94 +1,66 @@
 ---
 import products from '../content/products.json';
-import siteData from '../content/site.json';
-const { site } = siteData;
 
 interface Props { lang: 'en' | 'zh' }
 const { lang } = Astro.props;
 
 const labels = {
-  en: { sizes:'Sizes', weight:'Weight', stock:'In Stock', outOfStock:'Out of Stock', addToCart:'Cart', color:'Color', qty:'Qty', all:'All', clothing:'Clothing', jewelry:'Jewelry' },
-  zh: { sizes:'尺码', weight:'克重', stock:'库存', outOfStock:'已售罄', addToCart:'加入购物车', color:'颜色', qty:'数量', all:'全部', clothing:'服装', jewelry:'首饰' },
+  en: { sizes:'Sizes', weight:'Weight', stock:'In Stock', outOfStock:'Out of Stock', addToCart:'Cart', all:'All', clothing:'Clothing', jewelry:'Jewelry' },
+  zh: { sizes:'尺码', weight:'克重', stock:'库存', outOfStock:'已售罄', addToCart:'加入购物车', all:'全部', clothing:'服装', jewelry:'首饰' },
 };
 const t = labels[lang];
-
-const allProducts = products;
-
-// Kids-tee 主图确保用产品照（非尺寸图）：白色_8.png 是产品正面照
-const carouselCards = allProducts
-  .filter(p => p.category === 'apparel')
-  .map((p, pi) => {
-    let firstImg = p.images && p.images[0] ? p.images[0] : null;
-    // prod-4（童装）：第一张白色_8.png是产品正面照，保留
-    // 如果要改，在这里调整
-    return {
-      id: p.id, name: p.name[lang], price: p.price, weight: p.weight,
-      colors: p.colors, sizes: p.sizes, stock: p.stock, category: p.category,
-      image: firstImg, gid: pi,
-    };
-  });
 ---
 
 <section id="products" class="py-24 lg:py-32 px-4 sm:px-6 bg-white">
   <div class="max-w-5xl mx-auto">
 
+    <!-- Category filter pills -->
     <div class="flex gap-3 mb-8">
       <button class="carousel-cat-btn px-5 py-2 rounded-full text-sm font-medium transition-colors bg-charcoal-800 text-white" data-cat="all">{t.all}</button>
       <button class="carousel-cat-btn px-5 py-2 rounded-full text-sm font-medium transition-colors border border-charcoal-300 text-charcoal-500 hover:border-charcoal-500" data-cat="apparel">{t.clothing}</button>
       <button class="carousel-cat-btn px-5 py-2 rounded-full text-sm font-medium transition-colors border border-charcoal-300 text-charcoal-500 hover:border-charcoal-500" data-cat="accessories">{t.jewelry}</button>
     </div>
 
-    <div id="product-carousel" class="product-carousel">
-      <div id="product-track">
-        <div class="flex items-start" id="scroll-inner" style="gap:14px;">
-          {carouselCards.map(card => (
-            <a
-              href={`/${lang}/products/${card.id}/`}
-              class="carousel-card-item shrink-0 bg-white rounded-2xl border border-beige-200 shadow-sm transition-all duration-300 hover:shadow-lg hover:-translate-y-1"
-              data-index={card.gid}
-              data-category={card.category}
-              data-id={card.id}
-              style="width:160px; min-height:300px;"
-            >
-              <div class="aspect-square bg-beige-100 rounded-t-2xl flex items-center justify-center text-3xl relative overflow-hidden">
-                {card.image ? <img src={card.image} alt="" class="w-full h-full object-cover" loading="lazy" /> : <span>👕</span>}
-                {card.stock === 0 && <div class="absolute inset-0 bg-black/20 flex items-center justify-center"><span class="bg-red-500 text-white text-xs px-2 py-0.5 rounded">{t.outOfStock}</span></div>}
-              </div>
-              <div class="p-3 flex flex-col flex-1">
-                <h3 class="font-serif font-bold text-xs text-charcoal-800 mb-0.5 leading-tight">{card.name}</h3>
-                <p class="text-charcoal-700 font-semibold text-sm mb-0.5">${card.price}</p>
-                <p class="text-[10px] text-charcoal-400 mb-2">{t.weight}: {card.weight}</p>
-                <div class="card-colors flex gap-0.5 mb-1">
-                  {card.colors.map(c => {
-                    const bg = c==='白色'?'#f0f0f0':c==='黑色'?'#222':c==='灰色'?'#999':c==='深蓝'?'#1e3a5f':c;
-                    return <span class="inline-block w-3 h-3 rounded-full border border-charcoal-300" style={`background:${bg}`} title={c}></span>;
-                  })}
-                </div>
-                <div class="card-sizes flex flex-wrap gap-0.5 mb-2">
-                  {card.sizes.map(s => <span class="text-[9px] border border-charcoal-200 rounded px-1 py-0 text-charcoal-500">{s}</span>)}
-                </div>
-                <div class="mt-auto flex items-center justify-between">
-                  <span class={`text-[10px] font-medium ${card.stock > 0 ? 'text-green-600' : 'text-red-400'}`}>{card.stock > 0 ? `${t.stock}: ${card.stock}` : t.outOfStock}</span>
-                  <button class="carousel-add-cart px-2 py-1.5 bg-charcoal-800 text-white text-[10px] rounded-lg hover:bg-charcoal-700 transition-colors" data-product={card.id} data-name={card.name} data-price={card.price} disabled={card.stock===0} onclick="event.stopPropagation();event.preventDefault();return false;">{t.addToCart}</button>
-                </div>
-              </div>
-            </a>
-          ))}
-        </div>
-      </div>
+    <!-- Product grid — same style as ProductShowcase -->
+    <div id="product-grid" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+      {products.map(p => (
+        <a href={`/${lang}/products/${p.id}/`} class="product-card-item block bg-white rounded-xl border border-beige-200 overflow-hidden cursor-pointer hover:shadow-lg transition-all duration-300 hover:-translate-y-0.5" data-category={p.category} data-id={p.id}>
+          <div class="aspect-square bg-beige-100 flex items-center justify-center relative">
+            {p.images && p.images[0] ? (
+              <img src={p.images[0]} alt="" class="w-full h-full object-cover" loading="lazy" />
+            ) : (
+              <span class="text-3xl">👕</span>
+            )}
+            {p.stock === 0 && <div class="absolute inset-0 bg-black/20 flex items-center justify-center"><span class="bg-red-500 text-white text-xs px-2 py-0.5 rounded">{t.outOfStock}</span></div>}
+          </div>
+          <div class="p-3">
+            <h3 class="font-serif font-bold text-xs text-charcoal-800 leading-tight line-clamp-1">{p.name[lang]}</h3>
+            <div class="flex items-center gap-2 mt-0.5">
+              <span class="font-bold text-sm text-charcoal-700">${p.price}</span>
+              <span class="text-[10px] text-charcoal-400">{t.weight}: {p.weight}</span>
+            </div>
+            <div class="flex flex-wrap gap-0.5 mt-1.5">
+              {p.sizes.map(s => <span class="text-[9px] border border-charcoal-200 rounded px-1 py-0 text-charcoal-500">{s}</span>)}
+            </div>
+            <div class="flex gap-1 mt-1.5">
+              {p.colors.map(c => {
+                const colorMap = { '白色': '#f0f0f0', '黑色': '#222', '灰色': '#999', '深蓝': '#1e3a5f', '米白': '#f5f0e8', '粉色': '#ffb6c1', '杏色': '#f5deb3' };
+                const bg = colorMap[c] || c;
+                return <span class="inline-block w-3.5 h-3.5 rounded-full border border-charcoal-300" style={`background:${bg}`} title={c}></span>;
+              })}
+            </div>
+          </div>
+        </a>
+      ))}
     </div>
   </div>
 </section>
 
-<script type="application/json" id="__carouselData" set:html={JSON.stringify(allProducts.map(p=>({id:p.id,name:p.name[lang],price:p.price,colors:p.colors,sizes:p.sizes,category:p.category,stock:p.stock,image:p.images?p.images[0]:'',images:p.images||[]})))}></script>
 <script type="application/json" id="__carouselLabels" set:html={JSON.stringify(labels[lang])}></script>
 <script is:inline>
   (function() {
-    var ALLPRODS = JSON.parse(document.getElementById("__carouselData").textContent);
-    var LABELS = JSON.parse(document.getElementById("__carouselLabels").textContent);
-    var CURRCAT = 'all';
-    var FILTERED = ALLPRODS.filter(function(p){ return CURRCAT==='all'||p.category===CURRCAT; });
-    var inner;
+    var LABELS = JSON.parse(document.getElementById('__carouselLabels').textContent);
+    var activeCat = 'all';
 
     // Update category buttons
     document.querySelectorAll('.carousel-cat-btn').forEach(function(b){
@@ -97,63 +69,17 @@ const carouselCards = allProducts
       if (b.dataset.cat === 'accessories') b.textContent = LABELS.jewelry;
     });
 
-    function init() {
-      inner = document.getElementById('scroll-inner');
-      if (!inner) return;
-      rebuildCards();
-    }
-
-    function rebuildCards() {
-      var cards = FILTERED;
-      var lang = (document.documentElement.lang || 'en') === 'zh' ? 'zh' : 'en';
-      var html = cards.map(function(p, i) {
-        var colorsHtml = (p.colors||[]).map(function(c) {
-          var bg = c==='白色'?'#f0f0f0':c==='黑色'?'#222':c==='灰色'?'#999':c==='深蓝'?'#1e3a5f':c;
-          return '<span class="inline-block w-3 h-3 rounded-full border border-charcoal-300" style="background:'+bg+'" title="'+c+'"></span>';
-        }).join('');
-        var sizesHtml = (p.sizes||[]).map(function(s){ return '<span class="text-[9px] border border-charcoal-200 rounded px-1 py-0 text-charcoal-500">'+s+'</span>'; }).join('');
-        return '<a href="/'+lang+'/products/'+p.id+'/" class="carousel-card-item shrink-0 bg-white rounded-2xl border border-beige-200 shadow-sm transition-all duration-300 hover:shadow-lg hover:-translate-y-1" data-index="'+i+'" data-id="'+p.id+'" data-category="'+p.category+'" style="width:160px; min-height:300px;">'+
-          '<div class="aspect-square bg-beige-100 rounded-t-2xl flex items-center justify-center text-3xl relative overflow-hidden">'+(p.image?'<img src="'+p.image+'" alt="" class="w-full h-full object-cover" loading="lazy" />':'<span>👕</span>')+(p.stock===0?'<div class="absolute inset-0 bg-black/20 flex items-center justify-center"><span class="bg-red-500 text-white text-xs px-2 py-0.5 rounded">售罄</span></div>':'')+'</div>'+
-          '<div class="p-3 flex flex-col flex-1"><h3 class="font-serif font-bold text-xs text-charcoal-800 mb-0.5 leading-tight">'+p.name+'</h3><p class="text-charcoal-700 font-semibold text-sm mb-0.5">$'+p.price+'</p>'+
-          '<div class="card-colors flex gap-0.5 mb-1">'+colorsHtml+'</div>'+
-          '<div class="card-sizes flex flex-wrap gap-0.5 mb-2">'+sizesHtml+'</div>'+
-          '<div class="mt-auto flex items-center justify-between"><span class="text-[10px] font-medium '+(p.stock>0?'text-green-600':'text-red-400')+'">'+(p.stock>0?'库存:'+p.stock:'售罄')+'</span>'+
-          '<button class="carousel-add-cart px-2 py-1.5 bg-charcoal-800 text-white text-[10px] rounded-lg hover:bg-charcoal-700 transition-colors" data-product="'+p.id+'" data-name="'+p.name+'" data-price="'+p.price+'">'+LABELS.addToCart+'</button></div></div></a>';
-      }).join('');
-      inner.innerHTML = html;
-    }
-
     document.querySelectorAll('.carousel-cat-btn').forEach(function(btn) {
       btn.onclick = function() {
-        CURRCAT = btn.dataset.cat;
+        activeCat = btn.dataset.cat;
         document.querySelectorAll('.carousel-cat-btn').forEach(function(b) {
-          b.classList.toggle('bg-charcoal-800', b.dataset.cat===CURRCAT);
-          b.classList.toggle('text-white', b.dataset.cat===CURRCAT);
+          b.classList.toggle('bg-charcoal-800', b.dataset.cat === activeCat);
+          b.classList.toggle('text-white', b.dataset.cat === activeCat);
         });
-        FILTERED = ALLPRODS.filter(function(p){ return CURRCAT==='all'||p.category===CURRCAT; });
-        rebuildCards();
+        document.querySelectorAll('#product-grid > .product-card-item').forEach(function(card) {
+          card.style.display = (activeCat === 'all' || card.dataset.category === activeCat) ? '' : 'none';
+        });
       };
     });
-
-    document.addEventListener('click', function(e) {
-      var add = e.target.closest('.carousel-add-cart');
-      if (!add) return;
-      e.stopPropagation(); e.preventDefault();
-      var pid = add.dataset.product, name = add.dataset.name, price = parseFloat(add.dataset.price)||10;
-      var cart = JSON.parse(localStorage.getItem('ps-cart')||'[]');
-      var exist = cart.find(function(i){ return i.id===pid; });
-      if (exist) exist.quantity++; else cart.push({id:pid, name:name, price:price, color:'', size:'', quantity:1});
-      localStorage.setItem('ps-cart', JSON.stringify(cart));
-      add.textContent = '✓'; setTimeout(function(){ add.textContent = LABELS.addToCart; }, 1000);
-      var badge = document.getElementById('cart-badge-main');
-      if (badge) {
-        var total = cart.reduce(function(s,i){ return s+i.quantity; },0);
-        if (total>0) { badge.textContent = total; badge.classList.remove('hidden'); }
-        else { badge.classList.add('hidden'); }
-      }
-    }, true);
-
-    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
-    else init();
   })();
 </script>
