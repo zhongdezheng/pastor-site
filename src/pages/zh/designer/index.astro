@@ -251,9 +251,18 @@ import products from '../../../content/products.json';
     fabric.Object.prototype.controls.deleteControl = new fabric.Control({
       x: 0.5,
       y: -0.5,
-      offsetY: -20,
-      offsetX: 20,
+      offsetY: -12,
+      offsetX: 12,
+      sizeX: 24,
+      sizeY: 24,
       cursorStyle: 'pointer',
+      actionHandler: function(evt, transform) {
+        canvas.remove(transform.target);
+        canvas.requestRenderAll();
+        clearGuidelines();
+        updatePreview();
+        return true;
+      },
       mouseUpHandler: function(evt, transform) {
         canvas.remove(transform.target);
         canvas.requestRenderAll();
@@ -262,19 +271,22 @@ import products from '../../../content/products.json';
         return true;
       },
       render: function(ctx, left, top, styleOverride, fabricObject) {
-        var r = 12;
+        var size = 14;
         ctx.save();
         ctx.translate(left, top);
         ctx.beginPath();
-        ctx.arc(0, 0, r, 0, Math.PI * 2);
+        ctx.arc(0, 0, size, 0, Math.PI * 2);
         ctx.fillStyle = '#ef4444';
         ctx.fill();
         ctx.closePath();
+        ctx.strokeStyle = '#fff';
+        ctx.lineWidth = 1.5;
+        ctx.stroke();
         ctx.fillStyle = '#fff';
         ctx.font = 'bold 12px sans-serif';
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
-        ctx.fillText('✕', 0, 0);
+        ctx.fillText('✕', 0, 1);
         ctx.restore();
       }
     });
@@ -294,30 +306,28 @@ import products from '../../../content/products.json';
     });
 
     // Live update: font or text color change → update active IText
+    function onFontColorChange() {
+      if (!canvas) return;
+      var obj = canvas.getActiveObject();
+      if (obj && obj.type === 'i-text') {
+        var f = document.getElementById('font-select');
+        var c = document.getElementById('text-color');
+        var fm = document.getElementById('font-select-mobile');
+        var cm = document.getElementById('text-color-mobile');
+        if (f) obj.set('fontFamily', f.value);
+        if (c) obj.set('fill', c.value);
+        canvas.requestRenderAll();
+        updatePreview();
+      }
+    }
     var fontSel = document.getElementById('font-select');
     var colorPick = document.getElementById('text-color');
-    if (fontSel) {
-      fontSel.addEventListener('change', function() {
-        if (!canvas) return;
-        var obj = canvas.getActiveObject();
-        if (obj && obj.type === 'i-text') {
-          obj.set('fontFamily', fontSel.value);
-          canvas.requestRenderAll();
-          updatePreview();
-        }
-      });
-    }
-    if (colorPick) {
-      colorPick.addEventListener('input', function() {
-        if (!canvas) return;
-        var obj = canvas.getActiveObject();
-        if (obj && obj.type === 'i-text') {
-          obj.set('fill', colorPick.value);
-          canvas.requestRenderAll();
-          updatePreview();
-        }
-      });
-    }
+    var fontSelM = document.getElementById('font-select-mobile');
+    var colorPickM = document.getElementById('text-color-mobile');
+    if (fontSel) fontSel.addEventListener('change', onFontColorChange);
+    if (colorPick) colorPick.addEventListener('input', onFontColorChange);
+    if (fontSelM) fontSelM.addEventListener('change', onFontColorChange);
+    if (colorPickM) colorPickM.addEventListener('input', onFontColorChange);
 
     // Load products once canvas is ready
     loadProducts();
@@ -327,8 +337,10 @@ import products from '../../../content/products.json';
     clearGuidelines();
     if (!obj || obj === baseImg) return;
     var cw = canvas.width, ch = canvas.height;
-    var cx = obj.left + obj.width * obj.scaleX / 2;
-    var cy = obj.top + obj.height * obj.scaleY / 2;
+    // Use fabric's getCenterPoint for accurate center regardless of origin
+    var cp = obj.getCenterPoint();
+    var cx = cp.x;
+    var cy = cp.y;
     
     var centerX = cw / 2;
     var centerY = ch / 2;
@@ -379,7 +391,8 @@ import products from '../../../content/products.json';
     if (baseImg) { canvas.remove(baseImg); baseImg = null; }
     fabric.Image.fromURL(src, function(img) {
       var cw = canvas.width, ch = canvas.height;
-      var s = Math.min(cw / img.width, ch / img.height) * 0.88;
+      // Scale to fully cover canvas
+      var s = Math.max(cw / img.width, ch / img.height);
       img.set({
         left: (cw - img.width * s) / 2,
         top: (ch - img.height * s) / 2,
@@ -723,11 +736,11 @@ import products from '../../../content/products.json';
     var baseSrc;
     if (isKids) {
       if (c === '杏色' || c === '粉色') {
-        baseSrc = '/images/products/kids-tee/20260713232848_962803060990588160_粉色_4.jpeg';
+        baseSrc = '/images/products/kids-tee/pink.png';
       } else if (c === '黑色') {
-        baseSrc = '/images/products/kids-tee/20260713232924_962803060990588160_黑色_1.jpeg';
+        baseSrc = '/images/products/kids-tee/black.png';
       } else {
-        baseSrc = '/images/products/kids-tee/962803060990588160_白色_1.jpeg';
+        baseSrc = '/images/products/kids-tee/white.png';
       }
     } else {
       if (c === '黑色') {
