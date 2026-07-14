@@ -214,6 +214,52 @@ import products from '../../../content/products.json';
     canvas.on('before:selection:cleared', clearGuidelines);
     canvas.on('selection:cleared', clearGuidelines);
 
+    // Add delete control (top-right red ✕)
+    fabric.Object.prototype.controls.deleteControl = new fabric.Control({
+      x: 0.5,
+      y: -0.5,
+      offsetY: -20,
+      offsetX: 20,
+      cursorStyle: 'pointer',
+      mouseUpHandler: function(evt, transform) {
+        canvas.remove(transform.target);
+        canvas.requestRenderAll();
+        clearGuidelines();
+        updatePreview();
+        return true;
+      },
+      render: function(ctx, left, top, styleOverride, fabricObject) {
+        var r = 12;
+        ctx.save();
+        ctx.translate(left, top);
+        ctx.beginPath();
+        ctx.arc(0, 0, r, 0, Math.PI * 2);
+        ctx.fillStyle = '#ef4444';
+        ctx.fill();
+        ctx.closePath();
+        ctx.fillStyle = '#fff';
+        ctx.font = 'bold 12px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText('✕', 0, 0);
+        ctx.restore();
+      }
+    });
+
+    // Keyboard: Delete key to remove selected object
+    document.addEventListener('keydown', function(e) {
+      if ((e.key === 'Delete' || e.key === 'Backspace') && canvas) {
+        var active = canvas.getActiveObject();
+        if (active && active !== baseImg) {
+          canvas.remove(active);
+          canvas.requestRenderAll();
+          clearGuidelines();
+          updatePreview();
+          e.preventDefault();
+        }
+      }
+    });
+
     // Load products once canvas is ready
     loadProducts();
   }
