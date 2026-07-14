@@ -83,7 +83,7 @@ const sizeGuide = lang === 'en'
               </div>
               <div class="flex gap-1 mt-1.5">
                 {p.colors.map(c => {
-                  const colorMap = { '白色': '#f0f0f0', '黑色': '#222', '灰色': '#999', '深蓝': '#1e3a5f', '米白': '#f5f0e8' };
+                  const colorMap = { '白色': '#f0f0f0', '黑色': '#222', '灰色': '#999', '深蓝': '#1e3a5f', '米白': '#f5f0e8', '粉色': '#ffb6c1', '杏色': '#f5deb3' };
                   const bg = colorMap[c] || c;
                   return <span class="inline-block w-3.5 h-3.5 rounded-full border border-charcoal-300" style={`background:${bg}`} title={c}></span>;
                 })}
@@ -260,7 +260,7 @@ const sizeGuide = lang === 'en'
     }
 
     // Colors
-    const colorMap = { '白色': '#f0f0f0', '黑色': '#222', '灰色': '#999', '深蓝': '#1e3a5f', '米白': '#f5f0e8' };
+    const colorMap = { '白色': '#f0f0f0', '黑色': '#222', '灰色': '#999', '深蓝': '#1e3a5f', '米白': '#f5f0e8', '粉色': '#ffb6c1', '杏色': '#f5deb3' };
     document.getElementById('detail-colors').innerHTML = prod.colors.map(c => '<div class="co-opt w-8 h-8 rounded-full border-2 cursor-pointer ' + (c===selectedColor?'border-charcoal-800':'border-charcoal-300') + '" style="background:' + (colorMap[c]||c) + '" title="'+c+'" data-color="'+c+'"></div>').join('');
     document.querySelectorAll('.co-opt').forEach(el => {
       el.addEventListener('click', () => {

@@ -76,7 +76,7 @@ if (!product) return Astro.redirect('/zh/products/');
       var d = JSON.parse(document.getElementById('__prodData').textContent);
       var DATA = d, COLORS = d.colors, SIZES = d.sizes, PID = d.id, PNAME = d.name, PPRICE = d.price;
       var selColor = COLORS[0], selSize = SIZES[0], qty = 1;
-      var cm = {'白色':'#f0f0f0','黑色':'#222','灰色':'#999','深蓝':'#1e3a5f','米白':'#f5f0e8'};
+      var cm = {'白色':'#f0f0f0','黑色':'#222','灰色':'#999','深蓝':'#1e3a5f','米白':'#f5f0e8','粉色':'#ffb6c1','杏色':'#f5deb3'};
 
       document.getElementById('color-picker').innerHTML = COLORS.map(function(c,i){ return '<div class="w-8 h-8 rounded-full border-2 cursor-pointer transition-all hover:border-charcoal-500 '+(i===0?'border-charcoal-800':'border-charcoal-300')+'" style="background:'+(cm[c]||c)+'" data-color="'+c+'"></div>'; }).join('');
       document.getElementById('size-picker').innerHTML = SIZES.map(function(s,i){ return '<div class="sz-btn px-3 py-1.5 border rounded-lg text-sm cursor-pointer font-medium transition-all hover:border-charcoal-500 '+(i===0?'bg-charcoal-800 text-white border-charcoal-800':'border-charcoal-300 text-charcoal-600')+'" data-size="'+s+'">'+s+'</div>'; }).join('');
