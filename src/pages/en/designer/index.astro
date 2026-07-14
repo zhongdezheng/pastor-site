@@ -773,12 +773,22 @@ import products from '../../../content/products.json';
     var gal = document.getElementById('image-gallery');
     if (!gal) return;
     gal.innerHTML = state.galleryImages.map(function(src, i) {
-      return '<div class="aspect-square bg-gray-100 rounded-lg overflow-hidden cursor-pointer border border-gray-200 hover:border-gray-500 transition-colors relative group"' +
-        ' onclick="addDesignImage(\'' + src.replace(/'/g, "\\'").replace(/"/g, '&quot;') + '\')">' +
-        '<img src="' + src + '" class="w-full h-full object-cover" alt="" />' +
+      return '<div class="aspect-square bg-gray-100 rounded-lg overflow-hidden border border-gray-200 hover:border-gray-500 transition-colors relative group">' +
+        '<img src="' + src + '" class="w-full h-full object-cover cursor-pointer" alt="" onclick="addDesignImage(\'' + src.replace(/'/g, "\\'").replace(/"/g, '&quot;') + '\')" />' +
+        '<button class="absolute -top-1.5 -right-1.5 w-5 h-5 bg-red-500 text-white rounded-full text-[10px] leading-none flex items-center justify-center shadow-md opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-600"' +
+        ' onclick="event.stopPropagation();removeGalleryImage(' + i + ')">✕</button>' +
         '</div>';
     }).join('');
   }
+
+  window.removeGalleryImage = function(i) {
+    var removed = state.galleryImages.splice(i, 1);
+    // Revoke object URL to free memory
+    if (removed[0] && removed[0].startsWith('blob:')) {
+      URL.revokeObjectURL(removed[0]);
+    }
+    renderGallery();
+  };
 
   // ============================================
   // Buttons — Reset / Center / Cart
