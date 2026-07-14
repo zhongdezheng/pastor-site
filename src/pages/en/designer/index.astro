@@ -12,7 +12,7 @@ import products from '../../../content/products.json';
   footer, #cart-floating, #wa-btn { display: none !important; }
 </style>
 
-<section class="h-screen md:h-screen bg-gray-100 flex flex-col">
+<section class="h-screen bg-gray-100 flex flex-col">
   <!-- ===== DESKTOP: 3-panel layout ===== -->
   <div class="hidden md:flex flex-1 overflow-hidden">
     <!-- LEFT PANEL: 24% -->
@@ -38,7 +38,7 @@ import products from '../../../content/products.json';
       <!-- Text -->
       <div class="bg-gray-50 rounded-xl p-3">
         <h3 class="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Text</h3>
-        <input type="text" id="text-input" placeholder="Your text..." class="w-full px-3 py-2 bg-white border border-gray-200 rounded-lg text-sm text-gray-700 placeholder-gray-300 focus:outline-none focus:border-gray-400 focus:ring-1 focus:ring-gray-200 transition-all mb-2" />
+        <input type="text" id="text-input" placeholder="Add text..." class="w-full px-3 py-2 bg-white border border-gray-200 rounded-lg text-sm text-gray-700 placeholder-gray-300 focus:outline-none focus:border-gray-400 focus:ring-1 focus:ring-gray-200 transition-all mb-2" />
         <div class="flex gap-2 mb-2">
           <div class="relative flex-1">
             <label class="text-xs font-bold text-gray-500 uppercase tracking-wider block mb-1.5">Font</label>
@@ -132,15 +132,15 @@ import products from '../../../content/products.json';
       </div>
     </div>
 
-    <!-- Toolbar: compact single-row scroll -->
+    <!-- Toolbar: compact layout -->
     <div class="bg-white border-t border-gray-200 px-2 py-2">
-      <!-- Product pills -->
+      <!-- Row 1: Product pills -->
       <div class="flex items-center gap-1.5 mb-2">
         <span class="text-[10px] font-bold text-gray-400 uppercase flex-shrink-0 w-10">Product</span>
         <div id="designer-products-mobile" class="flex gap-1 overflow-x-auto flex-1"></div>
       </div>
 
-      <!-- Color + Size row -->
+      <!-- Row 2: Color swatches | Size select | Qty -->
       <div id="product-params-mobile" class="hidden flex items-center gap-1.5 mb-2 flex-wrap">
         <span class="text-[10px] font-bold text-gray-400 uppercase flex-shrink-0">Color</span>
         <div id="color-options-mobile" class="flex gap-1 flex-shrink-0"></div>
@@ -154,9 +154,9 @@ import products from '../../../content/products.json';
         <button class="w-5 h-5 bg-white border border-gray-200 rounded text-xs font-bold flex-shrink-0" onclick="chgQty(1)">+</button>
       </div>
 
-      <!-- Text + Font/Color + Upload row -->
+      <!-- Row 3: Text input | Font | Color | + button | Upload -->
       <div class="flex gap-1 items-center mb-2">
-        <input type="text" id="text-input-mobile" placeholder="Text..." class="flex-1 min-w-0 px-2 py-2 bg-gray-50 border border-gray-200 rounded-lg text-[11px] text-gray-700 placeholder-gray-400 focus:outline-none focus:border-gray-400" />
+        <input type="text" id="text-input-mobile" placeholder="Add text..." class="flex-1 min-w-0 px-2 py-2 bg-gray-50 border border-gray-200 rounded-lg text-[11px] text-gray-700 placeholder-gray-400 focus:outline-none focus:border-gray-400" />
         <select id="font-select-mobile" class="px-1.5 py-2 bg-white border border-gray-200 rounded-lg text-[10px] text-gray-600 flex-shrink-0 max-w-[60px] focus:outline-none">
           <option value="Arial">Arial</option>
           <option value="Georgia">Georgia</option>
@@ -233,12 +233,9 @@ import products from '../../../content/products.json';
       cornerStrokeColor: '#5B6D61',
     });
 
-    // (No permanent cross-hair lines — guidelines appear only when dragging near center)
-
-    // Cross-hair guidelines when moving objects (only show near center + snap)
+    // Cross-hair guidelines when moving objects (center-based, only show near center + snap)
     canvas.on('object:moving', function(e) {
       drawGuidelines(e.target);
-      // Don't update preview during drag — it clears/toggles guidelines
     });
     canvas.on('object:modified', function() {
       clearGuidelines();
@@ -247,7 +244,7 @@ import products from '../../../content/products.json';
     canvas.on('before:selection:cleared', clearGuidelines);
     canvas.on('selection:cleared', clearGuidelines);
 
-    // Add delete control (top-right red ✕)
+    // Add delete control (top-right red ✕) — placed AFTER canvas init
     fabric.Object.prototype.controls.deleteControl = new fabric.Control({
       x: 0.5,
       y: -0.5,
@@ -291,7 +288,7 @@ import products from '../../../content/products.json';
       }
     });
 
-    // Keyboard: Delete key to remove selected object
+    // Keyboard: Delete / Backspace to remove selected object
     document.addEventListener('keydown', function(e) {
       if ((e.key === 'Delete' || e.key === 'Backspace') && canvas) {
         var active = canvas.getActiveObject();
@@ -333,6 +330,10 @@ import products from '../../../content/products.json';
     loadProducts();
   }
 
+  // ============================================
+  // CENTER ALIGNMENT with guidelines
+  // Uses obj.getCenterPoint() — NOT edge alignment
+  // ============================================
   function drawGuidelines(obj) {
     clearGuidelines();
     if (!obj || obj === baseImg) return;
@@ -340,7 +341,7 @@ import products from '../../../content/products.json';
     var centerX = cw / 2;
     var centerY = ch / 2;
 
-    // Object center position
+    // Use getCenterPoint() for CENTER-based alignment
     var cp = obj.getCenterPoint();
     var cx = cp.x;
     var cy = cp.y;
@@ -349,16 +350,23 @@ import products from '../../../content/products.json';
 
     if (Math.abs(cx - centerX) <= SNAP_THRESHOLD) {
       snapGuidelines.push(
-        new fabric.Line([centerX, 0, centerX, ch], { stroke: '#a0a0a0', strokeWidth: 1.5, strokeDashArray: [6,4], selectable: false, evented: false, excludeFromExport: true })
+        new fabric.Line([centerX, 0, centerX, ch], {
+          stroke: '#a0a0a0', strokeWidth: 1.5, strokeDashArray: [6,4],
+          selectable: false, evented: false, excludeFromExport: true
+        })
       );
-      // Snap object center to canvas center
+      // Snap object CENTER to canvas center
       obj.set('left', centerX - obj.width * obj.scaleX / 2);
     }
 
     if (Math.abs(cy - centerY) <= SNAP_THRESHOLD) {
       snapGuidelines.push(
-        new fabric.Line([0, centerY, cw, centerY], { stroke: '#a0a0a0', strokeWidth: 1.5, strokeDashArray: [6,4], selectable: false, evented: false, excludeFromExport: true })
+        new fabric.Line([0, centerY, cw, centerY], {
+          stroke: '#a0a0a0', strokeWidth: 1.5, strokeDashArray: [6,4],
+          selectable: false, evented: false, excludeFromExport: true
+        })
       );
+      // Snap object CENTER to canvas center
       obj.set('top', centerY - obj.height * obj.scaleY / 2);
     }
 
@@ -378,12 +386,15 @@ import products from '../../../content/products.json';
     }
   }
 
+  // ============================================
+  // Base image (product photo)
+  // ============================================
   function addBaseImage(src) {
     if (!canvas) return;
     if (baseImg) { canvas.remove(baseImg); baseImg = null; }
     fabric.Image.fromURL(src, function(img) {
       var cw = canvas.width, ch = canvas.height;
-      // Scale to fully cover canvas
+      // Scale to fully cover canvas using Math.max
       var s = Math.max(cw / img.width, ch / img.height);
       img.set({
         left: (cw - img.width * s) / 2,
@@ -461,7 +472,6 @@ import products from '../../../content/products.json';
 
   function updatePreview() {
     if (!canvas) return;
-    // Don't clear guidelines — preview snapshot shows them (harmless, fast)
     var dataUrl = canvas.toDataURL({ format: 'png', multiplier: 0.5 });
     var thumb = document.getElementById('preview-thumb');
     if (thumb) {
@@ -617,45 +627,13 @@ import products from '../../../content/products.json';
     // Color swatches
     var colorMap = { '白色': '#f0f0f0', '黑色': '#222', '杏色': '#f5deb3', '粉色': '#ffb6c1' };
     var colors = g.colors || [];
-    var chtml = colors.map(function(c) {
-      var bg = colorMap[c] || c;
-      var sel = c === state.currentColor;
-      return '<div class="w-7 h-7 rounded-full cursor-pointer border-2 ' +
-        (sel ? 'border-gray-700 ring-2 ring-gray-400 ring-offset-1' : 'border-gray-300 hover:border-gray-500') +
-        '" style="background:' + bg + '" title="' + c + '" data-c="' + c + '"></div>';
-    }).join('');
-    document.getElementById('color-options').innerHTML = chtml;
-    var co = document.getElementById('color-options-mobile');
-    if (co) co.innerHTML = chtml;
-
-    document.querySelectorAll('#color-options > div, #color-options-mobile > div').forEach(function(el) {
-      el.addEventListener('click', function() {
-        state.currentColor = el.dataset.c;
-        updateDetail();
-        reloadColor();
-        // Re-render swatches to update selection state
-        renderColorSwatches(colors, colorMap);
-      });
-    });
+    renderColorSwatches(colors, colorMap);
 
     // Size options
     var sizes = g.sizes || [];
-    var shtml = sizes.map(function(s) {
-      var sel = s === state.currentSize;
-      return '<div class="px-2.5 py-1 border rounded-full text-xs cursor-pointer transition-all ' +
-        (sel ? 'bg-gray-700 text-white border-gray-700' : 'bg-white text-gray-600 border-gray-300 hover:border-gray-500') +
-        '" data-s="' + s + '">' + s + '</div>';
-    }).join('');
-    document.getElementById('size-options').innerHTML = shtml;
+    renderSizeOptions(sizes);
 
-    document.querySelectorAll('#size-options > div').forEach(function(el) {
-      el.addEventListener('click', function() {
-        state.currentSize = el.dataset.s;
-        updateDetail();
-        renderSizeOptions(sizes);
-      });
-    });
-
+    // CRITICAL: Load product image immediately on click
     loadProductImage();
   }
 
@@ -722,7 +700,7 @@ import products from '../../../content/products.json';
     if (!state.currentProduct) return;
     var name = (state.currentProduct.name && state.currentProduct.name.en) || '';
     var zhName = (state.currentProduct.name && state.currentProduct.name.zh) || '';
-    var isKids = name.toLowerCase().includes('children') || zhName.includes('儿童');
+    var isKids = name.toLowerCase().includes('children') || name.toLowerCase().includes('kid') || zhName.includes('儿童');
     var c = state.currentColor || '白色';
 
     var baseSrc;
@@ -800,7 +778,7 @@ import products from '../../../content/products.json';
   }
 
   // ============================================
-  // Buttons
+  // Buttons — Reset / Center / Cart
   // ============================================
 
   document.getElementById('btn-reset').addEventListener('click', doReset);
@@ -872,10 +850,9 @@ import products from '../../../content/products.json';
   }
 
   // ============================================
-  // Init
+  // Init — wait for Fabric.js
   // ============================================
 
-  // Wait for fabric.js to be available (it's loaded via is:inline script src above)
   var checkCount = 0;
   function waitForFabric() {
     checkCount++;

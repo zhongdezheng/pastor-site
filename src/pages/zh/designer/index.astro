@@ -3,7 +3,7 @@ import BaseLayout from '../../../layouts/BaseLayout.astro';
 import products from '../../../content/products.json';
 ---
 
-<BaseLayout lang="en" title="Custom Design — Livingstone">
+<BaseLayout lang="zh" title="定制设计 — Livingstone">
 
 <script type="application/json" id="__designerProducts" set:html={JSON.stringify(products)}></script>
 
@@ -12,7 +12,7 @@ import products from '../../../content/products.json';
   footer, #cart-floating, #wa-btn { display: none !important; }
 </style>
 
-<section class="h-screen md:h-screen bg-gray-100 flex flex-col">
+<section class="h-screen bg-gray-100 flex flex-col">
   <!-- ===== DESKTOP: 3-panel layout ===== -->
   <div class="hidden md:flex flex-1 overflow-hidden">
     <!-- LEFT PANEL: 24% -->
@@ -20,16 +20,16 @@ import products from '../../../content/products.json';
       
       <!-- Product Selector -->
       <div class="bg-gray-50 rounded-xl p-3">
-        <h3 class="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Select Product</h3>
+        <h3 class="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">选择产品</h3>
         <div id="designer-products" class="space-y-1.5"></div>
       </div>
 
       <!-- Upload Image -->
       <div class="bg-gray-50 rounded-xl p-3">
-        <h3 class="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Upload Image</h3>
+        <h3 class="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">上传图片</h3>
         <div id="upload-zone" class="border-2 border-dashed border-gray-300 rounded-xl p-5 text-center cursor-pointer hover:border-gray-400 hover:bg-gray-100/50 transition-all">
           <div class="w-10 h-10 mx-auto mb-1.5 rounded-full bg-gray-100 flex items-center justify-center text-xl">📁</div>
-          <p class="text-xs text-gray-400 font-medium">Click to upload</p>
+          <p class="text-xs text-gray-400 font-medium">点击上传</p>
           <input type="file" id="design-upload" accept="image/*" class="hidden" />
         </div>
         <div id="image-gallery" class="grid grid-cols-4 gap-1.5 mt-2"></div>
@@ -37,11 +37,11 @@ import products from '../../../content/products.json';
 
       <!-- Text -->
       <div class="bg-gray-50 rounded-xl p-3">
-        <h3 class="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Text</h3>
-        <input type="text" id="text-input" placeholder="Your text..." class="w-full px-3 py-2 bg-white border border-gray-200 rounded-lg text-sm text-gray-700 placeholder-gray-300 focus:outline-none focus:border-gray-400 focus:ring-1 focus:ring-gray-200 transition-all mb-2" />
+        <h3 class="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">文字</h3>
+        <input type="text" id="text-input" placeholder="输入文字..." class="w-full px-3 py-2 bg-white border border-gray-200 rounded-lg text-sm text-gray-700 placeholder-gray-300 focus:outline-none focus:border-gray-400 focus:ring-1 focus:ring-gray-200 transition-all mb-2" />
         <div class="flex gap-2 mb-2">
           <div class="relative flex-1">
-            <label class="text-xs font-bold text-gray-500 uppercase tracking-wider block mb-1.5">Font</label>
+            <label class="text-xs font-bold text-gray-500 uppercase tracking-wider block mb-1.5">字体</label>
             <select id="font-select" class="w-full px-3 py-2 bg-white border border-gray-200 rounded-lg text-sm text-gray-700 appearance-none cursor-pointer focus:outline-none focus:border-gray-400 focus:ring-1 focus:ring-gray-200 transition-all">
               <option value="Arial">Arial</option>
               <option value="Georgia">Georgia</option>
@@ -54,17 +54,17 @@ import products from '../../../content/products.json';
             </select>
           </div>
           <div class="flex flex-col items-center">
-            <label class="text-xs font-bold text-gray-500 uppercase tracking-wider block mb-1.5">Color</label>
+            <label class="text-xs font-bold text-gray-500 uppercase tracking-wider block mb-1.5">颜色</label>
             <input type="color" id="text-color" value="#333333" class="w-8 h-8 rounded cursor-pointer border-0 bg-transparent p-0" />
           </div>
         </div>
-        <button class="w-full py-2.5 bg-gray-800 hover:bg-gray-700 active:bg-gray-900 text-white rounded-lg text-sm font-medium transition-all" onclick="addTextFromSelect()">Add Text</button>
+        <button class="w-full py-2.5 bg-gray-800 hover:bg-gray-700 active:bg-gray-900 text-white rounded-lg text-sm font-medium transition-all" onclick="addTextFromSelect()">添加文字</button>
       </div>
 
       <!-- Reset / Center -->
       <div class="flex gap-2">
-        <button id="btn-reset" class="flex-1 py-2.5 bg-white border border-gray-200 rounded-lg text-sm font-medium text-gray-500 hover:bg-gray-50 hover:border-gray-300 active:bg-gray-100 transition-all">Reset</button>
-        <button id="btn-center" class="flex-1 py-2.5 bg-white border border-gray-200 rounded-lg text-sm font-medium text-gray-500 hover:bg-gray-50 hover:border-gray-300 active:bg-gray-100 transition-all">Center</button>
+        <button id="btn-reset" class="flex-1 py-2.5 bg-white border border-gray-200 rounded-lg text-sm font-medium text-gray-500 hover:bg-gray-50 hover:border-gray-300 active:bg-gray-100 transition-all">重置</button>
+        <button id="btn-center" class="flex-1 py-2.5 bg-white border border-gray-200 rounded-lg text-sm font-medium text-gray-500 hover:bg-gray-50 hover:border-gray-300 active:bg-gray-100 transition-all">居中</button>
       </div>
     </div>
 
@@ -80,12 +80,12 @@ import products from '../../../content/products.json';
       
       <!-- Selected Info + Cart -->
       <div class="bg-gray-50 rounded-xl p-3">
-        <h3 class="text-xs font-bold text-gray-500 uppercase tracking-wider mb-1.5">Selected</h3>
-        <p class="text-sm font-bold text-gray-800" id="info-name">Select a product</p>
+        <h3 class="text-xs font-bold text-gray-500 uppercase tracking-wider mb-1.5">已选</h3>
+        <p class="text-sm font-bold text-gray-800" id="info-name">请选择产品</p>
         <p class="text-xs text-gray-400 mt-0.5" id="info-detail"></p>
         <div class="flex items-center justify-between mt-1">
           <p class="text-xl font-bold text-gray-800" id="info-price"></p>
-          <button id="btn-cart" class="px-3 py-1.5 bg-gray-800 hover:bg-gray-700 active:bg-gray-900 text-white rounded-lg text-xs font-semibold transition-all">Cart</button>
+          <button id="btn-cart" class="px-3 py-1.5 bg-gray-800 hover:bg-gray-700 active:bg-gray-900 text-white rounded-lg text-xs font-semibold transition-all">购物车</button>
         </div>
       </div>
 
@@ -93,15 +93,15 @@ import products from '../../../content/products.json';
       <div class="bg-gray-50 rounded-xl p-3 hidden" id="product-params">
         <div class="space-y-3">
           <div>
-            <label class="text-xs font-bold text-gray-500 uppercase tracking-wider">Color</label>
+            <label class="text-xs font-bold text-gray-500 uppercase tracking-wider">颜色</label>
             <div class="flex flex-wrap gap-2 mt-1.5" id="color-options"></div>
           </div>
           <div>
-            <label class="text-xs font-bold text-gray-500 uppercase tracking-wider">Size</label>
+            <label class="text-xs font-bold text-gray-500 uppercase tracking-wider">尺码</label>
             <div class="flex flex-wrap gap-1.5 mt-1.5" id="size-options"></div>
           </div>
           <div class="flex items-center justify-between">
-            <label class="text-xs font-bold text-gray-500 uppercase tracking-wider">Qty</label>
+            <label class="text-xs font-bold text-gray-500 uppercase tracking-wider">数量</label>
             <div class="flex items-center gap-0">
               <button class="w-8 h-8 rounded-l-lg bg-white border border-gray-200 text-gray-600 hover:bg-gray-50 text-sm font-bold leading-none" onclick="chgQty(-1)">−</button>
               <span class="w-10 h-8 flex items-center justify-center bg-white border-y border-gray-200 text-sm font-bold text-gray-700" id="design-qty">1</span>
@@ -113,11 +113,11 @@ import products from '../../../content/products.json';
 
       <!-- Preview -->
       <div class="bg-gray-50 rounded-xl p-3 flex flex-col">
-        <h3 class="text-xs font-bold text-gray-500 uppercase tracking-wider mb-1.5">Preview</h3>
+        <h3 class="text-xs font-bold text-gray-500 uppercase tracking-wider mb-1.5">预览</h3>
         <div id="preview-thumb" class="bg-white rounded-xl flex items-center justify-center overflow-hidden cursor-pointer border border-gray-100 hover:border-gray-300 transition-colors" style="height:308px;" onclick="openPreview()">
           <span class="text-4xl opacity-10">👕</span>
         </div>
-        <p class="text-[10px] text-gray-400 mt-1.5 text-center">Click to enlarge</p>
+        <p class="text-[10px] text-gray-400 mt-1.5 text-center">点击放大</p>
       </div>
 
     </div>
@@ -132,31 +132,31 @@ import products from '../../../content/products.json';
       </div>
     </div>
 
-    <!-- Toolbar: compact single-row scroll -->
+    <!-- Toolbar: compact layout -->
     <div class="bg-white border-t border-gray-200 px-2 py-2">
-      <!-- Product pills -->
+      <!-- Row 1: Product pills -->
       <div class="flex items-center gap-1.5 mb-2">
-        <span class="text-[10px] font-bold text-gray-400 uppercase flex-shrink-0 w-10">Product</span>
+        <span class="text-[10px] font-bold text-gray-400 uppercase flex-shrink-0 w-10">产品</span>
         <div id="designer-products-mobile" class="flex gap-1 overflow-x-auto flex-1"></div>
       </div>
 
-      <!-- Color + Size row -->
+      <!-- Row 2: Color swatches | Size select | Qty -->
       <div id="product-params-mobile" class="hidden flex items-center gap-1.5 mb-2 flex-wrap">
-        <span class="text-[10px] font-bold text-gray-400 uppercase flex-shrink-0">Color</span>
+        <span class="text-[10px] font-bold text-gray-400 uppercase flex-shrink-0">颜色</span>
         <div id="color-options-mobile" class="flex gap-1 flex-shrink-0"></div>
         <span class="text-gray-300 flex-shrink-0">|</span>
-        <span class="text-[10px] font-bold text-gray-400 uppercase flex-shrink-0">Size</span>
+        <span class="text-[10px] font-bold text-gray-400 uppercase flex-shrink-0">尺码</span>
         <select id="size-select-mobile" class="px-2 py-1 bg-white border border-gray-200 rounded text-xs text-gray-700 flex-shrink-0 focus:outline-none focus:border-gray-400"></select>
         <span class="text-gray-300 flex-shrink-0">|</span>
-        <span class="text-[10px] font-bold text-gray-400 uppercase flex-shrink-0">Qty</span>
+        <span class="text-[10px] font-bold text-gray-400 uppercase flex-shrink-0">数量</span>
         <button class="w-5 h-5 bg-white border border-gray-200 rounded text-xs font-bold flex-shrink-0" onclick="chgQty(-1)">−</button>
         <span class="text-sm font-bold flex-shrink-0" id="design-qty-mobile">1</span>
         <button class="w-5 h-5 bg-white border border-gray-200 rounded text-xs font-bold flex-shrink-0" onclick="chgQty(1)">+</button>
       </div>
 
-      <!-- Text + Font/Color + Upload row -->
+      <!-- Row 3: Text input | Font | Color | + button | Upload -->
       <div class="flex gap-1 items-center mb-2">
-        <input type="text" id="text-input-mobile" placeholder="Text..." class="flex-1 min-w-0 px-2 py-2 bg-gray-50 border border-gray-200 rounded-lg text-[11px] text-gray-700 placeholder-gray-400 focus:outline-none focus:border-gray-400" />
+        <input type="text" id="text-input-mobile" placeholder="输入文字..." class="flex-1 min-w-0 px-2 py-2 bg-gray-50 border border-gray-200 rounded-lg text-[11px] text-gray-700 placeholder-gray-400 focus:outline-none focus:border-gray-400" />
         <select id="font-select-mobile" class="px-1.5 py-2 bg-white border border-gray-200 rounded-lg text-[10px] text-gray-600 flex-shrink-0 max-w-[60px] focus:outline-none">
           <option value="Arial">Arial</option>
           <option value="Georgia">Georgia</option>
@@ -176,13 +176,13 @@ import products from '../../../content/products.json';
       <!-- Action bar: Selected info + buttons -->
       <div class="flex items-center gap-2">
         <div class="flex-1 min-w-0">
-          <p class="text-xs font-bold text-gray-800 truncate" id="info-name-mobile">Select a product</p>
+          <p class="text-xs font-bold text-gray-800 truncate" id="info-name-mobile">请选择产品</p>
           <p class="text-[10px] text-gray-400" id="info-detail-mobile"></p>
           <p class="text-sm font-bold text-gray-800" id="info-price-mobile"></p>
         </div>
-        <button id="btn-reset-mobile" class="px-3 py-2 bg-white border border-gray-200 rounded-lg text-[11px] font-medium text-gray-500 hover:bg-gray-50 flex-shrink-0">Reset</button>
-        <button id="btn-center-mobile" class="px-3 py-2 bg-white border border-gray-200 rounded-lg text-[11px] font-medium text-gray-500 hover:bg-gray-50 flex-shrink-0">Center</button>
-        <button id="btn-cart-mobile" class="px-4 py-2.5 bg-gray-800 hover:bg-gray-700 active:bg-gray-900 text-white rounded-lg text-xs font-semibold flex-shrink-0">Cart</button>
+        <button id="btn-reset-mobile" class="px-3 py-2 bg-white border border-gray-200 rounded-lg text-[11px] font-medium text-gray-500 hover:bg-gray-50 flex-shrink-0">重置</button>
+        <button id="btn-center-mobile" class="px-3 py-2 bg-white border border-gray-200 rounded-lg text-[11px] font-medium text-gray-500 hover:bg-gray-50 flex-shrink-0">居中</button>
+        <button id="btn-cart-mobile" class="px-4 py-2.5 bg-gray-800 hover:bg-gray-700 active:bg-gray-900 text-white rounded-lg text-xs font-semibold flex-shrink-0">购物车</button>
       </div>
     </div>
   </div>
@@ -191,7 +191,7 @@ import products from '../../../content/products.json';
 <!-- Preview Modal -->
 <div id="preview-modal" class="fixed inset-0 z-50 bg-black/80 hidden flex items-center justify-center p-6" onclick="closePreview()">
   <div class="relative max-w-[90vw] max-h-[90vh]" onclick="event.stopPropagation()">
-    <img id="preview-modal-img" class="max-w-full max-h-[85vh] object-contain rounded-xl shadow-2xl" src="" alt="Preview" />
+    <img id="preview-modal-img" class="max-w-full max-h-[85vh] object-contain rounded-xl shadow-2xl" src="" alt="预览" />
     <button class="absolute -top-3 -right-3 w-9 h-9 bg-white rounded-full shadow-lg flex items-center justify-center text-base font-bold text-gray-600 hover:bg-gray-100 transition-colors" onclick="closePreview()">✕</button>
   </div>
 </div>
@@ -233,12 +233,9 @@ import products from '../../../content/products.json';
       cornerStrokeColor: '#5B6D61',
     });
 
-    // (No permanent cross-hair lines — guidelines appear only when dragging near center)
-
-    // Cross-hair guidelines when moving objects (only show near center + snap)
+    // Cross-hair guidelines when moving objects (center-based, only show near center + snap)
     canvas.on('object:moving', function(e) {
       drawGuidelines(e.target);
-      // Don't update preview during drag — it clears/toggles guidelines
     });
     canvas.on('object:modified', function() {
       clearGuidelines();
@@ -247,7 +244,7 @@ import products from '../../../content/products.json';
     canvas.on('before:selection:cleared', clearGuidelines);
     canvas.on('selection:cleared', clearGuidelines);
 
-    // Add delete control (top-right red ✕)
+    // Add delete control (top-right red ✕) — placed AFTER canvas init
     fabric.Object.prototype.controls.deleteControl = new fabric.Control({
       x: 0.5,
       y: -0.5,
@@ -291,7 +288,7 @@ import products from '../../../content/products.json';
       }
     });
 
-    // Keyboard: Delete key to remove selected object
+    // Keyboard: Delete / Backspace to remove selected object
     document.addEventListener('keydown', function(e) {
       if ((e.key === 'Delete' || e.key === 'Backspace') && canvas) {
         var active = canvas.getActiveObject();
@@ -333,6 +330,10 @@ import products from '../../../content/products.json';
     loadProducts();
   }
 
+  // ============================================
+  // CENTER ALIGNMENT with guidelines
+  // Uses obj.getCenterPoint() — NOT edge alignment
+  // ============================================
   function drawGuidelines(obj) {
     clearGuidelines();
     if (!obj || obj === baseImg) return;
@@ -340,7 +341,7 @@ import products from '../../../content/products.json';
     var centerX = cw / 2;
     var centerY = ch / 2;
 
-    // Object center position
+    // Use getCenterPoint() for CENTER-based alignment
     var cp = obj.getCenterPoint();
     var cx = cp.x;
     var cy = cp.y;
@@ -349,16 +350,23 @@ import products from '../../../content/products.json';
 
     if (Math.abs(cx - centerX) <= SNAP_THRESHOLD) {
       snapGuidelines.push(
-        new fabric.Line([centerX, 0, centerX, ch], { stroke: '#a0a0a0', strokeWidth: 1.5, strokeDashArray: [6,4], selectable: false, evented: false, excludeFromExport: true })
+        new fabric.Line([centerX, 0, centerX, ch], {
+          stroke: '#a0a0a0', strokeWidth: 1.5, strokeDashArray: [6,4],
+          selectable: false, evented: false, excludeFromExport: true
+        })
       );
-      // Snap object center to canvas center
+      // Snap object CENTER to canvas center
       obj.set('left', centerX - obj.width * obj.scaleX / 2);
     }
 
     if (Math.abs(cy - centerY) <= SNAP_THRESHOLD) {
       snapGuidelines.push(
-        new fabric.Line([0, centerY, cw, centerY], { stroke: '#a0a0a0', strokeWidth: 1.5, strokeDashArray: [6,4], selectable: false, evented: false, excludeFromExport: true })
+        new fabric.Line([0, centerY, cw, centerY], {
+          stroke: '#a0a0a0', strokeWidth: 1.5, strokeDashArray: [6,4],
+          selectable: false, evented: false, excludeFromExport: true
+        })
       );
+      // Snap object CENTER to canvas center
       obj.set('top', centerY - obj.height * obj.scaleY / 2);
     }
 
@@ -378,12 +386,15 @@ import products from '../../../content/products.json';
     }
   }
 
+  // ============================================
+  // Base image (product photo)
+  // ============================================
   function addBaseImage(src) {
     if (!canvas) return;
     if (baseImg) { canvas.remove(baseImg); baseImg = null; }
     fabric.Image.fromURL(src, function(img) {
       var cw = canvas.width, ch = canvas.height;
-      // Scale to fully cover canvas
+      // Scale to fully cover canvas using Math.max
       var s = Math.max(cw / img.width, ch / img.height);
       img.set({
         left: (cw - img.width * s) / 2,
@@ -431,7 +442,7 @@ import products from '../../../content/products.json';
     var colorEl = document.getElementById(fromMobile ? 'text-color-mobile' : 'text-color');
     var fill = colorEl ? colorEl.value : '#333333';
     var inputEl = isMobile ? document.getElementById('text-input-mobile') : document.getElementById('text-input');
-    var txt = (inputEl ? inputEl.value.trim() : '') || 'Your text';
+    var txt = (inputEl ? inputEl.value.trim() : '') || '你的文字';
     addTextObj(font, txt, fill);
   }
 
@@ -461,11 +472,10 @@ import products from '../../../content/products.json';
 
   function updatePreview() {
     if (!canvas) return;
-    // Don't clear guidelines — preview snapshot shows them (harmless, fast)
     var dataUrl = canvas.toDataURL({ format: 'png', multiplier: 0.5 });
     var thumb = document.getElementById('preview-thumb');
     if (thumb) {
-      thumb.innerHTML = '<img src="' + dataUrl + '" class="w-full h-full object-contain" alt="Preview" />';
+      thumb.innerHTML = '<img src="' + dataUrl + '" class="w-full h-full object-contain" alt="预览" />';
     }
   }
 
@@ -527,7 +537,7 @@ import products from '../../../content/products.json';
       var first = true;
       var html = '';
       Object.values(map).forEach(function(g) {
-        var displayName = (g.name && g.name.en) || g.id;
+        var displayName = (g.name && g.name.zh) || (g.name && g.name.en) || g.id;
         var thumb = g.allImages[0] || '';
         html += '<div class="product-item bg-white rounded-xl p-2 flex items-center gap-3 cursor-pointer border-2 transition-all ' +
           (first ? 'border-gray-700 shadow-sm' : 'border-transparent hover:border-gray-300 hover:shadow-sm') +
@@ -541,7 +551,7 @@ import products from '../../../content/products.json';
           '</div></div>';
         if (first) first = false;
       });
-      items.innerHTML = html || '<p class="text-xs text-gray-400 italic">No products</p>';
+      items.innerHTML = html || '<p class="text-xs text-gray-400 italic">暂无产品</p>';
 
       items.querySelectorAll('.product-item').forEach(function(el) {
         el.addEventListener('click', function() {
@@ -562,13 +572,13 @@ import products from '../../../content/products.json';
       var first = true;
       var mhtml = '';
       Object.values(map).forEach(function(g) {
-        var displayName = (g.name && g.name.en) || g.id;
+        var displayName = (g.name && g.name.zh) || (g.name && g.name.en) || g.id;
         mhtml += '<button class="prod-pill flex-shrink-0 px-3 py-1.5 rounded-full text-xs font-medium border-2 transition-all ' +
           (first ? 'bg-gray-700 text-white border-gray-700' : 'bg-white text-gray-600 border-gray-300') +
           '" data-id="' + g.id + '">' + displayName + '</button>';
         if (first) first = false;
       });
-      pills.innerHTML = mhtml || '<span class="text-xs text-gray-400 italic">No products</span>';
+      pills.innerHTML = mhtml || '<span class="text-xs text-gray-400 italic">暂无产品</span>';
 
       pills.querySelectorAll('.prod-pill').forEach(function(el) {
         el.addEventListener('click', function() {
@@ -605,7 +615,7 @@ import products from '../../../content/products.json';
     if (ppm) ppm.classList.remove('hidden');
 
     // Info panel
-    var displayName = (g.name && g.name.en) || g.id;
+    var displayName = (g.name && g.name.zh) || (g.name && g.name.en) || g.id;
     document.getElementById('info-name').textContent = displayName;
     document.getElementById('info-price').textContent = '$' + g.price;
     var inm = document.getElementById('info-name-mobile');
@@ -617,45 +627,13 @@ import products from '../../../content/products.json';
     // Color swatches
     var colorMap = { '白色': '#f0f0f0', '黑色': '#222', '杏色': '#f5deb3', '粉色': '#ffb6c1' };
     var colors = g.colors || [];
-    var chtml = colors.map(function(c) {
-      var bg = colorMap[c] || c;
-      var sel = c === state.currentColor;
-      return '<div class="w-7 h-7 rounded-full cursor-pointer border-2 ' +
-        (sel ? 'border-gray-700 ring-2 ring-gray-400 ring-offset-1' : 'border-gray-300 hover:border-gray-500') +
-        '" style="background:' + bg + '" title="' + c + '" data-c="' + c + '"></div>';
-    }).join('');
-    document.getElementById('color-options').innerHTML = chtml;
-    var co = document.getElementById('color-options-mobile');
-    if (co) co.innerHTML = chtml;
-
-    document.querySelectorAll('#color-options > div, #color-options-mobile > div').forEach(function(el) {
-      el.addEventListener('click', function() {
-        state.currentColor = el.dataset.c;
-        updateDetail();
-        reloadColor();
-        // Re-render swatches to update selection state
-        renderColorSwatches(colors, colorMap);
-      });
-    });
+    renderColorSwatches(colors, colorMap);
 
     // Size options
     var sizes = g.sizes || [];
-    var shtml = sizes.map(function(s) {
-      var sel = s === state.currentSize;
-      return '<div class="px-2.5 py-1 border rounded-full text-xs cursor-pointer transition-all ' +
-        (sel ? 'bg-gray-700 text-white border-gray-700' : 'bg-white text-gray-600 border-gray-300 hover:border-gray-500') +
-        '" data-s="' + s + '">' + s + '</div>';
-    }).join('');
-    document.getElementById('size-options').innerHTML = shtml;
+    renderSizeOptions(sizes);
 
-    document.querySelectorAll('#size-options > div').forEach(function(el) {
-      el.addEventListener('click', function() {
-        state.currentSize = el.dataset.s;
-        updateDetail();
-        renderSizeOptions(sizes);
-      });
-    });
-
+    // CRITICAL: Load product image immediately on click
     loadProductImage();
   }
 
@@ -722,7 +700,7 @@ import products from '../../../content/products.json';
     if (!state.currentProduct) return;
     var name = (state.currentProduct.name && state.currentProduct.name.en) || '';
     var zhName = (state.currentProduct.name && state.currentProduct.name.zh) || '';
-    var isKids = name.toLowerCase().includes('children') || zhName.includes('儿童');
+    var isKids = name.toLowerCase().includes('children') || name.toLowerCase().includes('kid') || zhName.includes('儿童');
     var c = state.currentColor || '白色';
 
     var baseSrc;
@@ -800,7 +778,7 @@ import products from '../../../content/products.json';
   }
 
   // ============================================
-  // Buttons
+  // Buttons — Reset / Center / Cart
   // ============================================
 
   document.getElementById('btn-reset').addEventListener('click', doReset);
@@ -845,7 +823,7 @@ import products from '../../../content/products.json';
 
   function doAddCart() {
     if (!state.currentProduct) {
-      alert('Please select a product first.');
+      alert('请先选择产品。');
       return;
     }
     var preview = '';
@@ -868,14 +846,13 @@ import products from '../../../content/products.json';
     } catch(e) { cart = []; }
     cart.push(item);
     localStorage.setItem('ps-cart', JSON.stringify(cart));
-    alert('Added to cart!');
+    alert('已加入购物车！');
   }
 
   // ============================================
-  // Init
+  // Init — wait for Fabric.js
   // ============================================
 
-  // Wait for fabric.js to be available (it's loaded via is:inline script src above)
   var checkCount = 0;
   function waitForFabric() {
     checkCount++;
