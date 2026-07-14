@@ -227,7 +227,7 @@ import products from '../../../content/products.json';
     // Cross-hair guidelines when moving objects (only show near center + snap)
     canvas.on('object:moving', function(e) {
       drawGuidelines(e.target);
-      updatePreview();
+      // Don't update preview during drag — it clears/toggles guidelines
     });
     canvas.on('object:modified', function() {
       clearGuidelines();
@@ -351,7 +351,7 @@ import products from '../../../content/products.json';
       obj.setCoords();
     }
 
-    snapGuidelines.forEach(function(g) { canvas.add(g); canvas.sendToBack(g); });
+    snapGuidelines.forEach(function(g) { canvas.add(g); g.moveTo(999); });
     canvas.requestRenderAll();
   }
 
@@ -445,16 +445,8 @@ import products from '../../../content/products.json';
 
   function updatePreview() {
     if (!canvas) return;
-    // Temporarily hide guidelines for clean preview snapshot
-    if (snapGuidelines) {
-      snapGuidelines.forEach(function(g) { g.set('visible', false); });
-      canvas.requestRenderAll();
-    }
+    // Don't clear guidelines — preview snapshot shows them (harmless, fast)
     var dataUrl = canvas.toDataURL({ format: 'png', multiplier: 0.5 });
-    if (snapGuidelines) {
-      snapGuidelines.forEach(function(g) { g.set('visible', true); });
-      canvas.requestRenderAll();
-    }
     var thumb = document.getElementById('preview-thumb');
     if (thumb) {
       thumb.innerHTML = '<img src="' + dataUrl + '" class="w-full h-full object-contain" alt="Preview" />';
