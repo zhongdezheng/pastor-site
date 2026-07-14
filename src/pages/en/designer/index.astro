@@ -146,7 +146,7 @@ import products from '../../../content/products.json';
         <div id="color-options-mobile" class="flex gap-1 flex-shrink-0"></div>
         <span class="text-gray-300 flex-shrink-0">|</span>
         <span class="text-[10px] font-bold text-gray-400 uppercase flex-shrink-0">Size</span>
-        <select id="size-select-mobile" class="px-2 py-1 bg-white border border-gray-200 rounded text-xs text-gray-700 flex-shrink-0 focus:outline-none focus:border-gray-400"></select>
+        <select id="size-select-mobile" class="px-2 py-1.5 bg-white border border-gray-200 rounded text-xs text-gray-700 flex-shrink-0 focus:outline-none focus:border-gray-400" style="min-width: 80px; -webkit-appearance: menulist; appearance: menulist; cursor: pointer;"></select>
         <span class="text-gray-300 flex-shrink-0">|</span>
         <span class="text-[10px] font-bold text-gray-400 uppercase flex-shrink-0">Qty</span>
         <button class="w-5 h-5 bg-white border border-gray-200 rounded text-xs font-bold flex-shrink-0" onclick="chgQty(-1)">−</button>
@@ -674,9 +674,11 @@ import products from '../../../content/products.json';
         return '<option value="' + s + '"' + (s === sel ? ' selected' : '') + '>' + s + '</option>';
       }).join('');
       sm.onchange = function() {
-        state.currentSize = sm.value;
+        state.currentSize = this.value;
         updateDetail();
       };
+      // Ensure dropdown works on mobile (remove any duplicate handler issue)
+      sm.style.pointerEvents = 'auto';
     }
     document.querySelectorAll('#size-options > div').forEach(function(el) {
       el.addEventListener('click', function() {
@@ -807,15 +809,18 @@ import products from '../../../content/products.json';
 
   function doCenter() {
     if (!canvas) return;
-    var obj = canvas.getActiveObject();
-    if (obj && obj !== baseImg) {
-      obj.set({
-        left: canvas.width / 2,
-        top: canvas.height / 2,
-        originX: 'center',
-        originY: 'center',
-      });
-      obj.setCoords();
+    var cw = canvas.width / 2;
+    var ch = canvas.height / 2;
+    var moved = false;
+    var objs = canvas.getObjects();
+    for (var i = 0; i < objs.length; i++) {
+      var o = objs[i];
+      if (o === baseImg) continue;
+      o.set({ left: cw - o.width * o.scaleX / 2, top: ch - o.height * o.scaleY / 2 });
+      o.setCoords();
+      moved = true;
+    }
+    if (moved) {
       canvas.requestRenderAll();
       updatePreview();
     }
