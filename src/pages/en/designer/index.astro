@@ -283,17 +283,32 @@ import products from '../../../content/products.json';
   function loadProducts() {
     var prods = JSON.parse(document.getElementById('__designerProducts').textContent);
     var map = {};
+    // Group by product (prod-2, prod-4) - each is a unique product with colors/sizes
     prods.forEach(function(p) {
-      var key = (p.name && p.name.zh || p.name && p.name.en || '').replace(/\s*—.*/, '');
-      if (!map[key]) map[key] = { name: key, name_en: (p.name&&p.name.en||'').replace(/\s*—.*/, ''), products: [] };
-      try { map[key].products.push({ ...p, colors: typeof p.colors==='string' ? JSON.parse(p.colors) : (p.colors||[]), sizes: typeof p.sizes==='string' ? JSON.parse(p.sizes) : (p.sizes||[]) }); } catch(e) {}
+      var key = p.id; // use id as key so we have 2 distinct products
+      var displayName = (p.name && p.name.zh) || (p.name && p.name.en) || p.id;
+      var firstImg = (p.images && p.images[0]) ? p.images[0] : '';
+      if (!map[key]) {
+        map[key] = {
+          id: p.id,
+          name: displayName,
+          name_en: (p.name && p.name.en) || displayName,
+          image: firstImg,
+          price: p.price,
+          colors: typeof p.colors === 'string' ? JSON.parse(p.colors || '[]') : (p.colors || []),
+          sizes: typeof p.sizes === 'string' ? JSON.parse(p.sizes || '[]') : (p.sizes || []),
+          allImages: (typeof p.images === 'string' ? JSON.parse(p.images || '[]') : (p.images || [])),
+          stock: p.stock
+        };
+      }
     });
 
     var html = '';
     var first = true;
     Object.values(map).forEach(function(g) {
-      html += '<div class="product-item bg-white rounded-lg p-2 flex items-center gap-2 cursor-pointer border-2 '+(first?'border-gray-700':'border-transparent hover:border-gray-300')+'" data-name="'+g.name+'">'
-        + '<span class="text-base">👕</span><div class="min-w-0"><p class="text-[11px] font-bold truncate">'+g.name+'</p><p class="text-[10px] text-green-600">¥'+g.products[0].price+'</p></div></div>';
+      html += '<div class="product-item bg-white rounded-lg p-1.5 flex items-center gap-2 cursor-pointer border-2 '+(first?'border-gray-700':'border-transparent hover:border-gray-300')+'" data-id="'+g.id+'">'
+        + (g.image ? '<img src="'+g.image+'" class="w-10 h-10 rounded object-cover bg-gray-100" onerror="this.style.display=\'none\'">' : '<div class="w-10 h-10 rounded bg-gray-100 flex items-center justify-center text-lg">👕</div>')
+        + '<div class="min-w-0"><p class="text-[11px] font-bold truncate">'+g.name+'</p><p class="text-[10px] text-green-600">¥'+g.price+'</p></div></div>';
       if (first) first = false;
     });
     var dp = document.getElementById('designer-products');
@@ -302,14 +317,14 @@ import products from '../../../content/products.json';
       el.onclick = function() {
         document.querySelectorAll('.product-item').forEach(function(e) { e.classList.remove('border-gray-700'); e.classList.add('border-transparent'); });
         el.classList.add('border-gray-700'); el.classList.remove('border-transparent');
-        selectProduct(el.dataset.name, map);
+        selectProduct(el.dataset.id, map);
       };
     });
 
     var mhtml = '';
     first = true;
     Object.values(map).forEach(function(g) {
-      mhtml += '<button class="prod-pill flex-shrink-0 px-3 py-1.5 rounded-full text-[11px] font-medium border-2 transition-colors '+(first?'bg-gray-700 text-white border-gray-700':'bg-white text-gray-600 border-gray-300')+'" data-name="'+g.name+'">'+g.name+'</button>';
+      mhtml += '<button class="prod-pill flex-shrink-0 px-3 py-1.5 rounded-full text-[11px] font-medium border-2 transition-colors '+(first?'bg-gray-700 text-white border-gray-700':'bg-white text-gray-600 border-gray-300')+'" data-id="'+g.id+'">'+g.name+'</button>';
       if (first) first = false;
     });
     var mp = document.getElementById('designer-products-mobile');
@@ -318,32 +333,33 @@ import products from '../../../content/products.json';
       el.onclick = function() {
         document.querySelectorAll('.prod-pill').forEach(function(e) { e.classList.remove('bg-gray-700','text-white','border-gray-700'); e.classList.add('bg-white','text-gray-600','border-gray-300'); });
         el.classList.add('bg-gray-700','text-white','border-gray-700'); el.classList.remove('bg-white','text-gray-600','border-gray-300');
-        selectProduct(el.dataset.name, map);
+        selectProduct(el.dataset.id, map);
       };
     });
 
-    if (Object.keys(map).length > 0) { selectProduct(Object.values(map)[0].name, map); }
+    if (Object.keys(map).length > 0) { selectProduct(Object.values(map)[0].id, map); }
   }
 
-  function selectProduct(name, map) {
-    var g = Object.values(map).find(function(x) { return x.name === name; });
+  function selectProduct(id, map) {
+    var g = map[id];
     if (!g) return;
     state.currentProduct = g;
-    state.currentColor = g.products[0].colors[0] || '';
-    state.currentSize = g.products[0].sizes[0] || '';
+    state.currentColor = g.colors[0] || '';
+    state.currentSize = g.sizes[0] || '';
 
     var pp = document.getElementById('product-params'); if (pp) pp.classList.remove('hidden');
     var ppm = document.getElementById('product-params-mobile'); if (ppm) ppm.classList.remove('hidden');
 
-    document.getElementById('info-name').textContent = name;
-    document.getElementById('info-price').textContent = '¥' + g.products[0].price;
-    var inm = document.getElementById('info-name-mobile'); if (inm) inm.textContent = name;
-    var ipm = document.getElementById('info-price-mobile'); if (ipm) ipm.textContent = '¥' + g.products[0].price;
+    document.getElementById('info-name').textContent = g.name;
+    document.getElementById('info-price').textContent = '¥' + g.price;
+    var inm = document.getElementById('info-name-mobile'); if (inm) inm.textContent = g.name;
+    var ipm = document.getElementById('info-price-mobile'); if (ipm) ipm.textContent = '¥' + g.price;
     updateDetail();
 
-    var colors = g.products[0].colors || [];
+    var colors = g.colors || [];
     var chtml = colors.map(function(c) {
-      return '<div class="px-2 py-0.5 border rounded-full text-[10px] cursor-pointer '+(c===state.currentColor?'bg-gray-700 text-white':'border-gray-300 hover:border-gray-500')+'" data-c="'+c+'">'+c+'</div>';
+      var bg = c==='白色'?'#f0f0f0':c==='黑色'?'#222':c==='杏色'?'#f5deb3':c==='粉色'?'#ffb6c1':c;
+      return '<div class="w-7 h-7 rounded-full cursor-pointer border-2 '+(c===state.currentColor?'border-gray-700 ring-2 ring-gray-400':'border-gray-300 hover:border-gray-500')+'" style="background:'+bg+'" title="'+c+'" data-c="'+c+'"></div>';
     }).join('');
     document.getElementById('color-options').innerHTML = chtml;
     var co = document.getElementById('color-options-mobile'); if (co) co.innerHTML = chtml;
@@ -351,7 +367,7 @@ import products from '../../../content/products.json';
       el.onclick = function() { state.currentColor = el.dataset.c; updateDetail(); reloadColor(); resetHighlightAll(el); };
     });
 
-    var sizes = g.products[0].sizes || [];
+    var sizes = g.sizes || [];
     var shtml = sizes.map(function(s) {
       return '<div class="px-2 py-0.5 border rounded-full text-[10px] cursor-pointer '+(s===state.currentSize?'bg-gray-700 text-white':'border-gray-300 hover:border-gray-500')+'" data-s="'+s+'">'+s+'</div>';
     }).join('');
@@ -365,9 +381,13 @@ import products from '../../../content/products.json';
   }
 
   function resetHighlightAll(el) {
-    var all = document.querySelectorAll('#color-options > div, #size-options > div, #color-options-mobile > div, #size-options-mobile > div');
-    all.forEach(function(e) { e.classList.remove('bg-gray-700','text-white'); e.classList.add('border-gray-300'); });
-    el.classList.add('bg-gray-700','text-white'); el.classList.remove('border-gray-300');
+    // Reset all color & size options
+    document.querySelectorAll('#color-options > div, #size-options > div, #color-options-mobile > div, #size-options-mobile > div').forEach(function(e) {
+      e.classList.remove('bg-gray-700','text-white','ring-2','ring-gray-400','border-gray-700');
+      e.classList.add('border-gray-300','border-2');
+    });
+    el.classList.add('border-gray-700','ring-2','ring-gray-400');
+    el.classList.remove('border-gray-300');
   }
 
   function updateDetail() {
