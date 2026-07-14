@@ -75,13 +75,13 @@ import products from '../../../content/products.json';
       
       <!-- Selected Info + Cart -->
       <div class="bg-gray-50 rounded-xl p-3">
-        <div class="flex items-start justify-between mb-1.5">
-          <h3 class="text-xs font-bold text-gray-500 uppercase tracking-wider">Selected</h3>
-          <button id="btn-cart" class="px-3 py-1.5 bg-gray-800 hover:bg-gray-700 active:bg-gray-900 text-white rounded-lg text-xs font-semibold transition-all">Cart</button>
-        </div>
+        <h3 class="text-xs font-bold text-gray-500 uppercase tracking-wider mb-1.5">Selected</h3>
         <p class="text-sm font-bold text-gray-800" id="info-name">Select a product</p>
         <p class="text-xs text-gray-400 mt-0.5" id="info-detail"></p>
-        <p class="text-xl font-bold text-gray-800 mt-1" id="info-price"></p>
+        <div class="flex items-center justify-between mt-1">
+          <p class="text-xl font-bold text-gray-800" id="info-price"></p>
+          <button id="btn-cart" class="px-3 py-1.5 bg-gray-800 hover:bg-gray-700 active:bg-gray-900 text-white rounded-lg text-xs font-semibold transition-all">Cart</button>
+        </div>
       </div>
 
       <!-- Params: Color / Size / Qty -->
@@ -179,7 +179,7 @@ import products from '../../../content/products.json';
 (function() {
   var state = { currentProduct: null, currentColor: '', currentSize: '', qty: 1, galleryImages: [] };
   var canvas = null, baseImg = null, isMobile = false;
-  var snapGuidelines = null, centerRef = null;
+  var snapGuidelines = null;
   var SNAP_THRESHOLD = 15;
 
   function getCanvasId() { return isMobile ? 'design-canvas-mobile' : 'design-canvas'; }
@@ -208,13 +208,7 @@ import products from '../../../content/products.json';
       cornerStrokeColor: '#5B6D61',
     });
 
-    // Subtle permanent center cross-hair reference lines
-    var cw = canvas.width, ch = canvas.height;
-    centerRef = [
-      new fabric.Line([cw/2, 0, cw/2, ch], { stroke: '#e0dcd3', strokeWidth: 1, strokeDashArray: [4,8], selectable: false, evented: false, excludeFromExport: true }),
-      new fabric.Line([0, ch/2, cw, ch/2], { stroke: '#e0dcd3', strokeWidth: 1, strokeDashArray: [4,8], selectable: false, evented: false, excludeFromExport: true }),
-    ];
-    centerRef.forEach(function(g) { canvas.add(g); canvas.sendToBack(g); });
+    // (No permanent cross-hair lines — guidelines appear only when dragging near center)
 
     // Cross-hair guidelines when moving objects (only show near center + snap)
     canvas.on('object:moving', function(e) {
