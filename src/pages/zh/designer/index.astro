@@ -213,6 +213,8 @@ import products from '../../../content/products.json';
 <!-- All designer logic in one inline script -->
 <script is:inline>
 (function() {
+  ['/images/products/180g-tee/black.jpeg','/images/products/180g-tee/white.jpeg','/images/products/kids-tee/black.jpeg','/images/products/kids-tee/white.jpeg','/images/products/kids-tee/pink.jpeg'].forEach(function(u){ new Image().src = u; });
+
   var state = { currentProduct: null, currentColor: '', currentSize: '', qty: 1, galleryImages: [], fontSize: 28 };
   var canvas = null, baseImg = null, isMobile = false;
   var snapGuidelines = null;
@@ -736,15 +738,15 @@ import products from '../../../content/products.json';
     var baseSrc;
     if (isKids) {
       if (c === '杏色' || c === '粉色') {
-        baseSrc = '/images/products/kids-tee/pink.png';
+        baseSrc = '/images/products/kids-tee/pink.jpeg';
       } else if (c === '黑色') {
-        baseSrc = '/images/products/kids-tee/black.png';
+        baseSrc = '/images/products/kids-tee/black.jpeg';
       } else {
-        baseSrc = '/images/products/kids-tee/white.png';
+        baseSrc = '/images/products/kids-tee/white.jpeg';
       }
     } else {
       if (c === '黑色') {
-        baseSrc = '/images/products/180g-tee/black.png';
+        baseSrc = '/images/products/180g-tee/black.jpeg';
       } else {
         baseSrc = '/images/products/180g-tee/white.jpeg';
       }
