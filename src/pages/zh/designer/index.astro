@@ -14,13 +14,13 @@ import products from '../../../content/products.json';
     <!-- LEFT PANEL -->
     <div class="w-[24%] min-w-[240px] max-w-[320px] bg-white border-r border-gray-200 overflow-y-auto p-1 flex flex-col gap-0.5">
       
-      <!-- 产品选择 -->
+      <!-- Product Selector -->
       <div class="bg-gray-50 rounded-xl p-2">
         <h3 class="text-[10px] font-semibold text-gray-400 uppercase tracking-wider mb-1.5">选择产品</h3>
         <div id="designer-products" class="space-y-1"></div>
       </div>
 
-      <!-- 参数 -->
+      <!-- Params -->
       <div class="bg-gray-50 rounded-xl p-2 hidden" id="product-params">
         <div class="space-y-2">
           <div><label class="text-[10px] font-semibold text-gray-400 uppercase tracking-wider">颜色</label>
@@ -45,13 +45,13 @@ import products from '../../../content/products.json';
         <h3 class="text-[10px] font-semibold text-gray-400 uppercase tracking-wider mb-1.5">上传图片</h3>
         <div id="upload-zone" class="border-2 border-dashed border-gray-200 rounded-xl p-4 text-center cursor-pointer hover:border-gray-400 hover:bg-gray-100/50 transition-all">
           <div class="w-8 h-8 mx-auto mb-1 rounded-full bg-gray-100 flex items-center justify-center text-sm">📁</div>
-          <p class="text-[10px] text-gray-400 font-medium">Click to upload</p>
+          <p class="text-[10px] text-gray-400 font-medium">点击上传图片</p>
           <input type="file" id="design-upload" accept="image/*" class="hidden">
         </div>
         <div id="image-gallery" class="grid grid-cols-4 gap-1.5 mt-2"></div>
       </div>
 
-      <!-- Text工具 -->
+      <!-- Text -->
       <div class="bg-gray-50 rounded-xl p-2">
         <h3 class="text-[10px] font-semibold text-gray-400 uppercase tracking-wider mb-1.5">文字</h3>
         <div class="relative mb-2">
@@ -69,7 +69,7 @@ import products from '../../../content/products.json';
             <option value="Comic Sans MS">Comic Sans MS</option>
           </select>
         </div>
-        <button class="w-full py-2 bg-gray-800 hover:bg-gray-700 text-white rounded-xl text-xs font-medium transition-colors" onclick="addTextFromSelect()">添加文字</button>
+        <button class="w-full py-2 bg-gray-800 hover:bg-gray-700 text-white rounded-xl text-xs font-medium transition-colors" onclick="addTextFromSelect()">文字</button>
       </div>
 
       <div class="flex gap-2">
@@ -132,7 +132,7 @@ import products from '../../../content/products.json';
       </div>
       <div class="flex gap-2">
         <input type="text" id="text-input-mobile" placeholder="Text..." class="flex-1 px-2 py-1.5 border rounded text-xs">
-        <button class="px-2 py-1.5 border rounded text-xs" onclick="addTextFromSelect(true)">添加</button>
+        <button class="px-2 py-1.5 border rounded text-xs" onclick="addTextFromSelect(true)">Add</button>
         <button class="px-2 py-1.5 border rounded text-xs" onclick="document.getElementById('design-upload-mobile').click()">📁</button>
         <input type="file" id="design-upload-mobile" accept="image/*" class="hidden">
       </div>
@@ -250,13 +250,13 @@ import products from '../../../content/products.json';
     var sel = document.getElementById('font-select');
     var font = sel ? sel.value : 'Arial';
     var inputEl = (fromMobile || isMobile) ? document.getElementById('text-input-mobile') : document.getElementById('text-input');
-    var txt = (inputEl ? inputEl.value : '') || '你的Text';
+    var txt = (inputEl ? inputEl.value : '') || '你的文字';
     addTextObj(font, txt);
   }
 
   function addText(font) {
     var inputEl = isMobile ? document.getElementById('text-input-mobile') : document.getElementById('text-input');
-    var txt = (inputEl ? inputEl.value : '') || '你的Text';
+    var txt = (inputEl ? inputEl.value : '') || '你的文字';
     addTextObj(font, txt);
   }
 
