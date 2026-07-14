@@ -415,7 +415,7 @@ import products from '../../../content/products.json';
         excludeFromExport: false,
       });
       canvas.add(img);
-      canvas.sendToBack(img);
+      canvas.moveTo(img, 0);
       baseImg = img;
       canvas.requestRenderAll();
       updatePreview();

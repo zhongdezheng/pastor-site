@@ -79,7 +79,7 @@ import products from '../../../content/products.json';
     <!-- CENTER CANVAS: flex-1 -->
     <div class="flex-1 bg-gray-200 flex items-center justify-center p-6">
       <div class="relative bg-white rounded-2xl shadow-xl overflow-hidden" style="width: min(100%, 540px); aspect-ratio: 1/1;">
-        <canvas id="design-canvas" style="width:100%;height:100%;display:block"></canvas>
+        <canvas id="design-canvas"></canvas>
       </div>
     </div>
 
@@ -136,7 +136,7 @@ import products from '../../../content/products.json';
     <!-- Canvas area -->
     <div class="flex-1 bg-gray-200 flex items-center justify-center p-2">
       <div class="relative bg-white rounded-2xl shadow-lg overflow-hidden w-full" style="max-width: min(92vw, 360px); aspect-ratio: 1/1;">
-        <canvas id="design-canvas-mobile" style="width:100%;height:100%;display:block"></canvas>
+        <canvas id="design-canvas-mobile"></canvas>
       </div>
     </div>
 
@@ -418,7 +418,7 @@ import products from '../../../content/products.json';
         excludeFromExport: false,
       });
       canvas.add(img);
-      canvas.sendToBack(img);
+      canvas.moveTo(img, 0);
       baseImg = img;
       canvas.requestRenderAll();
       updatePreview();
