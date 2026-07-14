@@ -445,8 +445,16 @@ import products from '../../../content/products.json';
 
   function updatePreview() {
     if (!canvas) return;
-    clearGuidelines();
+    // Temporarily hide guidelines for clean preview snapshot
+    if (snapGuidelines) {
+      snapGuidelines.forEach(function(g) { g.set('visible', false); });
+      canvas.requestRenderAll();
+    }
     var dataUrl = canvas.toDataURL({ format: 'png', multiplier: 0.5 });
+    if (snapGuidelines) {
+      snapGuidelines.forEach(function(g) { g.set('visible', true); });
+      canvas.requestRenderAll();
+    }
     var thumb = document.getElementById('preview-thumb');
     if (thumb) {
       thumb.innerHTML = '<img src="' + dataUrl + '" class="w-full h-full object-contain" alt="Preview" />';
