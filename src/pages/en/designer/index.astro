@@ -12,17 +12,17 @@ import products from '../../../content/products.json';
   <div class="hidden md:flex flex-1 overflow-hidden">
     
     <!-- LEFT PANEL -->
-    <div class="w-[24%] min-w-[240px] max-w-[320px] bg-white border-r border-gray-200 overflow-y-auto p-3 flex flex-col gap-2.5">
+    <div class="w-[24%] min-w-[240px] max-w-[320px] bg-white border-r border-gray-200 overflow-y-auto p-2 flex flex-col gap-1.5">
       
       <!-- 产品选择 -->
-      <div class="bg-gray-50 rounded-lg p-2.5">
-        <h3 class="text-[11px] font-bold text-gray-700 mb-1.5 uppercase tracking-wide">选择产品</h3>
+      <div class="bg-gray-50 rounded-lg p-2">
+        <h3 class="text-[11px] font-bold text-gray-700 mb-1 uppercase tracking-wide">选择产品</h3>
         <div id="designer-products" class="space-y-1.5"></div>
       </div>
 
       <!-- 参数 -->
-      <div class="bg-gray-50 rounded-lg p-2.5 hidden" id="product-params">
-        <h3 class="text-[11px] font-bold text-gray-700 mb-1.5 uppercase tracking-wide">参数</h3>
+      <div class="bg-gray-50 rounded-lg p-2 hidden" id="product-params">
+        <h3 class="text-[11px] font-bold text-gray-700 mb-1 uppercase tracking-wide">参数</h3>
         <div class="space-y-1.5">
           <div><label class="text-[10px] font-medium text-gray-500">颜色</label>
             <div class="flex flex-wrap gap-1 mt-0.5" id="color-options"></div>
@@ -41,8 +41,8 @@ import products from '../../../content/products.json';
       </div>
 
       <!-- 上传图片 -->
-      <div class="bg-gray-50 rounded-lg p-2.5">
-        <h3 class="text-[11px] font-bold text-gray-700 mb-1.5 uppercase tracking-wide">上传图片</h3>
+      <div class="bg-gray-50 rounded-lg p-2">
+        <h3 class="text-[11px] font-bold text-gray-700 mb-1 uppercase tracking-wide">上传图片</h3>
         <div id="upload-zone" class="border-2 border-dashed border-gray-300 rounded-lg p-3 text-center cursor-pointer hover:border-gray-500 transition-colors mb-2">
           <p class="text-[10px] text-gray-500">📁 点击上传图片</p>
           <input type="file" id="design-upload" accept="image/*" class="hidden">
@@ -51,8 +51,8 @@ import products from '../../../content/products.json';
       </div>
 
       <!-- 文字工具 -->
-      <div class="bg-gray-50 rounded-lg p-2.5">
-        <h3 class="text-[11px] font-bold text-gray-700 mb-1.5 uppercase tracking-wide">文字</h3>
+      <div class="bg-gray-50 rounded-lg p-2">
+        <h3 class="text-[11px] font-bold text-gray-700 mb-1 uppercase tracking-wide">文字</h3>
         <input type="text" id="text-input" placeholder="输入文字..." class="w-full px-2 py-1.5 border rounded text-[11px] mb-2">
         <div class="flex items-center gap-2 mb-2">
           <span class="text-[10px] text-gray-500">字体</span>
@@ -84,17 +84,17 @@ import products from '../../../content/products.json';
     </div>
 
     <!-- RIGHT PANEL -->
-    <div class="w-[24%] min-w-[240px] max-w-[320px] bg-white border-l border-gray-200 overflow-y-auto p-3 flex flex-col gap-2.5">
+    <div class="w-[24%] min-w-[240px] max-w-[320px] bg-white border-l border-gray-200 overflow-y-auto p-2 flex flex-col gap-1.5">
       
-      <div class="bg-gray-50 rounded-lg p-2.5">
-        <h3 class="text-[11px] font-bold text-gray-700 mb-1.5 uppercase tracking-wide">已选产品</h3>
+      <div class="bg-gray-50 rounded-lg p-2">
+        <h3 class="text-[11px] font-bold text-gray-700 mb-1 uppercase tracking-wide">已选产品</h3>
         <p class="text-sm font-bold text-gray-800" id="info-name">选择左侧产品</p>
         <p class="text-[11px] text-gray-500 mt-0.5" id="info-detail"></p>
         <p class="text-lg font-bold text-gray-800 mt-1" id="info-price"></p>
       </div>
 
-      <div class="bg-gray-50 rounded-lg p-2.5 flex-1 flex flex-col">
-        <h3 class="text-[11px] font-bold text-gray-700 mb-1.5 uppercase tracking-wide">预览</h3>
+      <div class="bg-gray-50 rounded-lg p-2 flex-1 flex flex-col">
+        <h3 class="text-[11px] font-bold text-gray-700 mb-1 uppercase tracking-wide">预览</h3>
         <div id="preview-thumb" class="flex-1 bg-white rounded-lg flex items-center justify-center overflow-hidden cursor-pointer border"
              onclick="openPreview()">
           <span class="text-3xl opacity-15">👕</span>
@@ -433,7 +433,14 @@ import products from '../../../content/products.json';
     alert('已加入购物车！');
   }
 
-  window.addEventListener('DOMContentLoaded', function() { setTimeout(function() { initCanvas(); loadProducts(); }, 200); });
+  window.addEventListener('DOMContentLoaded', function() {
+    // Load products first (doesn't need canvas)
+    loadProducts();
+    // Init canvas with delay for fabric.js
+    setTimeout(function() {
+      try { initCanvas(); } catch(e) { console.error('Canvas init failed:', e); }
+    }, 500);
+  });
   window.addEventListener('resize', function() {
     if (canvas) { var el = document.getElementById(getCanvasId()); if (!el) return; var w = el.parentElement.clientWidth; canvas.setDimensions({width: w, height: w}); clearGuidelines(); canvas.renderAll(); updatePreview(); }
   });
