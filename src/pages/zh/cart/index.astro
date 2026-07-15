@@ -10,23 +10,18 @@ import BaseLayout from '../../../layouts/BaseLayout.astro';
       <div id="cart-items"><p class="text-charcoal-400 text-center py-12">购物车是空的</p></div>
       <div id="cart-footer" class="hidden mt-6 pt-6 border-t border-beige-200">
         <div class="flex justify-between text-lg font-bold text-charcoal-800 mb-4"><span>总计</span><span id="cart-total">$0</span></div>
-        <button id="checkout-paypal" class="w-full py-3 bg-[#0070ba] hover:bg-[#005ea6] text-white rounded-xl font-medium text-sm transition-colors">PayPal 支付</button>
-        <div id="paypal-input" class="hidden mt-3 p-4 bg-beige-50 rounded-xl">
-          <p class="text-sm font-semibold text-charcoal-800 mb-2">PayPal 支付</p>
-          <p class="text-xs text-charcoal-500 mb-3">输入您的 PayPal 邮箱，我们将发送付款请求。</p>
-          <div class="flex gap-2">
-            <input type="email" id="paypal-email" placeholder="your@paypal.com" class="flex-1 px-3 py-2 border border-beige-300 rounded-lg text-sm">
-            <button id="paypal-send" class="px-4 py-2 bg-[#0070ba] hover:bg-[#005ea6] text-white rounded-lg text-sm font-medium">发送请求</button>
-          </div>
-          <p class="text-xs text-charcoal-400 mt-2" id="paypal-msg"></p>
-        </div>
+
+        <!-- PayPal + 信用卡/借记卡 + Apple Pay -->
+        <div id="paypal-button-container" class="mb-3"></div>
+        <p id="payment-error" class="text-red-500 text-xs text-center hidden mt-2"></p>
+        <p id="payment-success" class="hidden mt-2 text-center text-green-600 text-sm"></p>
       </div>
     </div>
   </section>
 </BaseLayout>
 
 <script is:inline>
-  var paypalInput=document.getElementById('paypal-input'),paypalSend=document.getElementById('paypal-send'),paypalMsg=document.getElementById('paypal-msg'),paypalEmail=document.getElementById('paypal-email'),cartItems=document.getElementById('cart-items'),cartFooter=document.getElementById('cart-footer'),cartTotal=document.getElementById('cart-total'),backLink=document.getElementById('cart-back-link');
+  var paypalContainer=document.getElementById('paypal-button-container'),paypalError=document.getElementById('payment-error'),paypalSuccess=document.getElementById('payment-success'),cartItems=document.getElementById('cart-items'),cartFooter=document.getElementById('cart-footer'),cartTotal=document.getElementById('cart-total'),backLink=document.getElementById('cart-back-link');
   function getCart(){return JSON.parse(localStorage.getItem('ps-cart')||'[]');}
   function saveCart(c){localStorage.setItem('ps-cart',JSON.stringify(c));}
   function getImgSrc(i){
@@ -59,13 +54,80 @@ import BaseLayout from '../../../layouts/BaseLayout.astro';
         +'<p class="text-sm font-bold text-charcoal-800">$'+(i.price*i.quantity).toFixed(2)+'</p>'
         +'<button class="text-xs text-red-400 hover:text-red-600 mt-1" onclick="removeItem('+idx+')">删除</button></div></div>';
     }).join('');
+    initPayPal();
   }
   window.changeQty=function(idx,d){var c=getCart();c[idx].quantity=Math.max(1,c[idx].quantity+d);saveCart(c);render();};
   window.removeItem=function(idx){var c=getCart();c.splice(idx,1);saveCart(c);render();};
-  document.getElementById('checkout-paypal').onclick=function(){paypalInput.classList.toggle('hidden');};
-  paypalSend.onclick=function(){
-    var e=paypalEmail.value.trim();if(!e){alert('请输入PayPal邮箱');return;}
-    paypalMsg.textContent='已发送！我们会尽快联系 '+e;
-  };
+
+  var paypalLoaded=false, paypalButtons=false;
+  function initPayPal(){
+    if(paypalButtons) return;
+    var c=getCart();
+    if(!c.length) return;
+    paypalContainer.innerHTML='<p class="text-charcoal-400 text-sm text-center py-4">正在加载支付方式...</p>';
+    fetch('https://admin.pastorjeffnchina.com/api/paypal/config')
+    .then(function(r){return r.json();})
+    .then(function(cfg){
+      if(!cfg.enabled || !cfg.clientId){
+        paypalContainer.innerHTML='<p class="text-charcoal-400 text-sm text-center py-2">支付暂时不可用</p>';
+        return;
+      }
+      loadPayPalSDK(cfg.clientId, cfg.mode);
+    }).catch(function(){
+      paypalContainer.innerHTML='<p class="text-charcoal-400 text-sm text-center py-2">支付暂时不可用</p>';
+    });
+  }
+
+  function loadPayPalSDK(clientId, mode){
+    if(paypalLoaded){ renderButtons(); return; }
+    paypalLoaded=true;
+    var s=document.createElement('script');
+    s.src='https://www.paypal.com/sdk/js?client-id='+clientId+'&currency=USD&intent=capture&disable-funding=credit&components=buttons';
+    if(mode==='sandbox') s.src+='&buyer-country=US';
+    s.onload=renderButtons;
+    s.onerror=function(){ paypalContainer.innerHTML='<p class="text-red-500 text-sm text-center py-2">支付加载失败，请刷新页面重试。</p>'; };
+    document.head.appendChild(s);
+  }
+
+  function renderButtons(){
+    var c=getCart();
+    if(!c.length) return;
+    paypalContainer.innerHTML='';
+    paypalButtons=true;
+    paypal.Buttons({
+      style: { layout:'vertical', color:'gold', shape:'rect', label:'paypal' },
+      createOrder: function(data,actions){
+        var cart=getCart();
+        return fetch('https://admin.pastorjeffnchina.com/api/paypal/create-order',{
+          method:'POST',headers:{'Content-Type':'application/json'},
+          body:JSON.stringify({items:cart.map(function(i){return {name:i.name||'Product',price:i.price,quantity:i.quantity,slug:i.slug||i.id};})})
+        }).then(function(r){return r.json();}).then(function(data){
+          if(data.error){ paypalError.textContent='支付错误: '+data.error; paypalError.classList.remove('hidden'); throw new Error(data.error); }
+          return data.id;
+        });
+      },
+      onApprove: function(data,actions){
+        paypalContainer.innerHTML='<p class="text-charcoal-400 text-sm text-center py-4">正在处理支付...</p>';
+        var cart=getCart();
+        return fetch('https://admin.pastorjeffnchina.com/api/paypal/capture-order',{
+          method:'POST',headers:{'Content-Type':'application/json'},
+          body:JSON.stringify({orderID:data.orderID, items:cart.map(function(i){return {name:i.name||'Product',price:i.price,quantity:i.quantity,slug:i.slug||i.id,color:i.color,size:i.size};})})
+        }).then(function(r){return r.json();}).then(function(result){
+          if(result.error){ paypalError.textContent='支付失败，请重试。'; paypalError.classList.remove('hidden'); return; }
+          localStorage.removeItem('ps-cart');
+          paypalSuccess.innerHTML='<div class="bg-green-50 border border-green-200 rounded-xl p-4"><p class="text-lg mb-1">🎉 支付成功！</p><p class="text-sm">感谢您的购买，上帝祝福您！</p></div>';
+          paypalSuccess.classList.remove('hidden');
+          render();
+        }).catch(function(e){
+          paypalError.textContent='支付失败，请重试。';
+          paypalError.classList.remove('hidden');
+        });
+      },
+      onError: function(err){
+        paypalError.textContent='支付出错，请稍后重试。';
+        paypalError.classList.remove('hidden');
+      }
+    }).render('#paypal-button-container');
+  }
   render();
 </script>
