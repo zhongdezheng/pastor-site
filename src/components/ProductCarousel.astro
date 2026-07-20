@@ -5,7 +5,7 @@ interface Props { lang: 'en' | 'zh' }
 const { lang } = Astro.props;
 
 const labels = {
-  en: { sizes:'Sizes', weight:'Weight', stock:'In Stock', outOfStock:'Out of Stock', addToCart:'Cart', all:'All', clothing:'Clothing', jewelry:'Jewelry' },
+  en: { sizes:'Sizes', weight:'Weight', stock:'In Stock', outOfStock:'Out of Stock', addToCart:'Add to Cart', all:'All', clothing:'Clothing', jewelry:'Jewelry' },
   zh: { sizes:'尺码', weight:'克重', stock:'库存', outOfStock:'已售罄', addToCart:'加入购物车', all:'全部', clothing:'服装', jewelry:'首饰' },
 };
 const t = labels[lang];
@@ -33,7 +33,7 @@ const t = labels[lang];
             )}
             {p.stock === 0 && <div class="absolute inset-0 bg-black/20 flex items-center justify-center"><span class="bg-red-500 text-white text-xs px-2 py-0.5 rounded">{t.outOfStock}</span></div>}
           </div>
-          <div class="p-4 flex flex-col gap-2" style="min-height:200px">
+          <div class="p-4 flex flex-col gap-2" style="min-height:240px">
             <h3 class="font-serif font-bold text-xs text-charcoal-800 leading-tight line-clamp-2 flex-shrink-0">{p.name[lang]}</h3>
             <div class="flex items-center gap-2 flex-shrink-0">
               <span class="font-bold text-sm text-charcoal-700">${p.price}</span>
@@ -43,16 +43,17 @@ const t = labels[lang];
                 <button class="carousel-qty-btn w-6 h-6 sm:w-5 sm:h-5 border border-charcoal-300 rounded-full flex items-center justify-center text-xs sm:text-[10px] text-charcoal-500 hover:bg-charcoal-100 leading-none" data-id={p.id} data-action="plus">+</button>
               </div>
             </div>
-            <div class="flex flex-wrap gap-1 flex-shrink-0" style="min-height:20px">
-              {p.sizes.map(s => <span class="text-[9px] border border-charcoal-200 rounded px-1 py-0 text-charcoal-500 whitespace-nowrap">{s}</span>)}
+            <div class="flex flex-wrap gap-1 flex-shrink-0" data-id={p.id} style="min-height:20px">
+              {p.sizes.map((s, i) => <span class="carousel-sz-opt text-[9px] border rounded px-1 py-0 whitespace-nowrap cursor-pointer transition-colors" style=`border-color:${i===0?'#333':'#d1d5db'};color:${i===0?'#1f2937':'#6b7280'}` data-id={p.id} data-size={s}>{s}</span>)}
             </div>
-            <div class="flex gap-1.5 flex-wrap mt-auto" data-id={p.id}>
+            <div class="flex gap-1.5 flex-wrap" data-id={p.id}>
               {p.colors.map((c, i) => {
                 const colorMap = { '白色': '#f0f0f0', '黑色': '#222', '灰色': '#999', '深蓝': '#1e3a5f', '米白': '#f5f0e8', '粉色': '#ffb6c1', '杏色': '#f5deb3' };
                 const bg = colorMap[c] || c;
                 return <span class="carousel-color-dot inline-block w-5 h-5 sm:w-4 sm:h-4 rounded-full cursor-pointer border-2 transition-colors" style={`background:${bg};border-color:${i===0?'#333':'#d1d5db'}`} data-id={p.id} data-color={c} title={c}></span>;
               })}
             </div>
+            <button class="carousel-add-cart-btn w-full py-2 bg-charcoal-800 hover:bg-charcoal-700 text-white rounded-lg text-xs font-medium transition-colors flex-shrink-0" data-id={p.id}>{t.addToCart}</button>
           </div>
         </a>
       ))}
@@ -61,10 +62,17 @@ const t = labels[lang];
 </section>
 
 <script type="application/json" id="__carouselLabels" set:html={JSON.stringify(labels[lang])}></script>
+<script type="application/json" id="__carouselProducts" set:html={JSON.stringify(products)}></script>
 <script is:inline>
   (function() {
     var LABELS = JSON.parse(document.getElementById('__carouselLabels').textContent);
+    var PRODUCTS = JSON.parse(document.getElementById('__carouselProducts').textContent);
+    var WHATSAPP = '8613602812927';
     var activeCat = 'all';
+
+    // Load cart from localStorage
+    var cartItems = [];
+    try { var s = localStorage.getItem('ps-cart'); if (s) cartItems = JSON.parse(s); } catch(e) {}
 
     document.querySelectorAll('.carousel-cat-btn').forEach(function(b){
       if (b.dataset.cat === 'all') b.textContent = LABELS.all;
@@ -85,7 +93,9 @@ const t = labels[lang];
       };
     });
 
-    // Quantity buttons — prevent link navigation
+    function saveCart() { localStorage.setItem('ps-cart', JSON.stringify(cartItems)); }
+
+    // Quantity buttons
     document.querySelectorAll('.carousel-qty-btn').forEach(function(btn) {
       btn.addEventListener('click', function(e) {
         e.stopPropagation();
@@ -101,7 +111,7 @@ const t = labels[lang];
       });
     });
 
-    // Color dot selection — prevent link navigation
+    // Color selection
     document.querySelectorAll('.carousel-color-dot').forEach(function(dot) {
       dot.addEventListener('click', function(e) {
         e.stopPropagation();
@@ -111,6 +121,53 @@ const t = labels[lang];
         document.querySelectorAll('.carousel-color-dot[data-id="' + pid + '"]').forEach(function(d) {
           d.style.borderColor = d.dataset.color === color ? '#333' : '#d1d5db';
         });
+      });
+    });
+
+    // Size selection
+    document.querySelectorAll('.carousel-sz-opt').forEach(function(el) {
+      el.addEventListener('click', function(e) {
+        e.stopPropagation();
+        e.preventDefault();
+        var pid = el.dataset.id;
+        var size = el.dataset.size;
+        document.querySelectorAll('.carousel-sz-opt[data-id="' + pid + '"]').forEach(function(s) {
+          s.style.borderColor = s.dataset.size === size ? '#333' : '#d1d5db';
+          s.style.color = s.dataset.size === size ? '#1f2937' : '#6b7280';
+        });
+      });
+    });
+
+    // Add to Cart button
+    document.querySelectorAll('.carousel-add-cart-btn').forEach(function(btn) {
+      btn.addEventListener('click', function(e) {
+        e.stopPropagation();
+        e.preventDefault();
+        var id = btn.dataset.id;
+        var prod = PRODUCTS.find(function(p) { return p.id === id; });
+        if (!prod) return;
+        // Get selected color
+        var colorDots = document.querySelectorAll('.carousel-color-dot[data-id="' + id + '"]');
+        var selColor = '';
+        colorDots.forEach(function(d) { if (d.style.borderColor === 'rgb(51, 51, 51)' || d.style.borderColor === '#333') selColor = d.dataset.color; });
+        if (!selColor) selColor = prod.colors[0];
+        // Get selected size
+        var szOpts = document.querySelectorAll('.carousel-sz-opt[data-id="' + id + '"]');
+        var selSize = '';
+        szOpts.forEach(function(s) { if (s.style.borderColor === 'rgb(51, 51, 51)' || s.style.borderColor === '#333') selSize = s.dataset.size; });
+        if (!selSize) selSize = prod.sizes[0];
+        // Get qty
+        var qtyEl = document.querySelector('.carousel-qty-val[data-id="' + id + '"]');
+        var qty = qtyEl ? parseInt(qtyEl.textContent) || 1 : 1;
+        // Add to cart
+        var existing = cartItems.find(function(i) { return i.id === id && i.size === selSize && i.color === selColor; });
+        if (existing) existing.quantity += qty;
+        else cartItems.push({ id: id, name: prod.name, price: prod.price, size: selSize, color: selColor, quantity: qty });
+        saveCart();
+        // Flash feedback
+        btn.textContent = '✓ ' + LABELS.addToCart;
+        btn.classList.add('bg-green-600');
+        setTimeout(function() { btn.textContent = LABELS.addToCart; btn.classList.remove('bg-green-600'); }, 1200);
       });
     });
   })();
