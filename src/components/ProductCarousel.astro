@@ -46,14 +46,16 @@ const t = labels[lang];
             <div class="flex flex-wrap gap-1 flex-shrink-0" data-id={p.id} style="min-height:20px">
               {p.sizes.map((s, i) => <span class="carousel-sz-opt text-[9px] border rounded px-1 py-0 whitespace-nowrap cursor-pointer transition-colors" style=`border-color:${i===0?'#333':'#d1d5db'};color:${i===0?'#1f2937':'#6b7280'}` data-id={p.id} data-size={s}>{s}</span>)}
             </div>
-            <div class="flex gap-1.5 flex-wrap" data-id={p.id}>
+            <div class="flex items-center gap-1.5 flex-wrap" data-id={p.id}>
+              <div class="flex gap-1.5">
               {p.colors.map((c, i) => {
                 const colorMap = { '白色': '#f0f0f0', '黑色': '#222', '灰色': '#999', '深蓝': '#1e3a5f', '米白': '#f5f0e8', '粉色': '#ffb6c1', '杏色': '#f5deb3' };
                 const bg = colorMap[c] || c;
                 return <span class="carousel-color-dot inline-block w-5 h-5 sm:w-4 sm:h-4 rounded-full cursor-pointer border-2 transition-colors" style={`background:${bg};border-color:${i===0?'#333':'#d1d5db'}`} data-id={p.id} data-color={c} title={c}></span>;
               })}
+              </div>
+            <button class="carousel-add-cart-btn py-1 px-3 ml-auto bg-charcoal-800 hover:bg-charcoal-700 text-white rounded-lg text-[10px] font-medium transition-colors flex-shrink-0" data-id={p.id}>{t.addToCart}</button>
             </div>
-            <button class="carousel-add-cart-btn w-full py-2 bg-charcoal-800 hover:bg-charcoal-700 text-white rounded-lg text-xs font-medium transition-colors flex-shrink-0" data-id={p.id}>{t.addToCart}</button>
           </div>
         </a>
       ))}
