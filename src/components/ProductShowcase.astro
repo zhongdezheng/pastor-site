@@ -72,24 +72,24 @@ const sizeGuide = lang === 'en'
               )}
               {p.stock === 0 && <div class="absolute inset-0 bg-black/20 flex items-center justify-center"><span class="bg-red-500 text-white text-xs px-2 py-0.5 rounded">{t.outOfStock}</span></div>}
             </div>
-           <div class="p-5 flex flex-col justify-between min-h-[180px]">
-              <h3 class="font-serif font-bold text-xs text-charcoal-800 leading-tight line-clamp-1">{p.name[lang]}</h3>
-              <div class="flex items-center gap-2 mt-0.5">
+           <div class="p-4 flex flex-col gap-2" style="min-height:200px">
+              <h3 class="font-serif font-bold text-xs text-charcoal-800 leading-tight line-clamp-2 flex-shrink-0">{p.name[lang]}</h3>
+              <div class="flex items-center gap-2 flex-shrink-0">
               <span class="font-bold text-sm text-charcoal-700">${p.price}</span>
               <div class="flex items-center gap-1">
-                <button class="showcase-qty-btn w-5 h-5 border border-charcoal-300 rounded-full flex items-center justify-center text-[10px] text-charcoal-500 hover:bg-charcoal-100 leading-none" data-id={p.id} data-action="minus">−</button>
-                <span class="showcase-qty-val text-xs text-charcoal-700 font-medium min-w-[14px] text-center" data-id={p.id}>1</span>
-                <button class="showcase-qty-btn w-5 h-5 border border-charcoal-300 rounded-full flex items-center justify-center text-[10px] text-charcoal-500 hover:bg-charcoal-100 leading-none" data-id={p.id} data-action="plus">+</button>
+                <button class="showcase-qty-btn w-6 h-6 sm:w-5 sm:h-5 border border-charcoal-300 rounded-full flex items-center justify-center text-xs sm:text-[10px] text-charcoal-500 hover:bg-charcoal-100 leading-none" data-id={p.id} data-action="minus">−</button>
+                <span class="showcase-qty-val text-xs text-charcoal-700 font-medium min-w-[16px] text-center" data-id={p.id}>1</span>
+                <button class="showcase-qty-btn w-6 h-6 sm:w-5 sm:h-5 border border-charcoal-300 rounded-full flex items-center justify-center text-xs sm:text-[10px] text-charcoal-500 hover:bg-charcoal-100 leading-none" data-id={p.id} data-action="plus">+</button>
               </div>
             </div>
-              <div class="flex gap-0.5 mt-1.5 flex-nowrap overflow-x-auto scrollbar-hide" style="max-height:20px">
-                {p.sizes.map(s => <span class="text-[9px] border border-charcoal-200 rounded px-1 py-0 text-charcoal-500 whitespace-nowrap flex-shrink-0">{s}</span>)}
+              <div class="flex flex-wrap gap-1 flex-shrink-0" style="min-height:20px">
+                {p.sizes.map(s => <span class="text-[9px] border border-charcoal-200 rounded px-1 py-0 text-charcoal-500 whitespace-nowrap">{s}</span>)}
               </div>
-              <div class="flex gap-1 mt-1.5">
-                {p.colors.map(c => {
+              <div class="flex gap-1.5 flex-wrap mt-auto" data-id={p.id}>
+                {p.colors.map((c, i) => {
                   const colorMap = { '白色': '#f0f0f0', '黑色': '#222', '灰色': '#999', '深蓝': '#1e3a5f', '米白': '#f5f0e8', '粉色': '#ffb6c1', '杏色': '#f5deb3' };
                   const bg = colorMap[c] || c;
-                  return <span class="inline-block w-3.5 h-3.5 rounded-full border border-charcoal-300" style={`background:${bg}`} title={c}></span>;
+                  return <span class="showcase-color-dot inline-block w-5 h-5 sm:w-4 sm:h-4 rounded-full cursor-pointer border-2 transition-colors" style={`background:${bg};border-color:${i===0?'#333':'#d1d5db'}`} data-id={p.id} data-color={c} title={c}></span>;
                 })}
               </div>
             </div>
@@ -245,6 +245,19 @@ const sizeGuide = lang === 'en'
         if (action === 'plus') val++;
         else if (action === 'minus') val = Math.max(1, val - 1);
         valEl.textContent = val;
+      });
+    });
+
+    // Product card color selection
+    document.querySelectorAll('.showcase-color-dot').forEach(function(dot) {
+      dot.addEventListener('click', function(e) {
+        e.stopPropagation();
+        e.preventDefault();
+        var pid = dot.dataset.id;
+        var color = dot.dataset.color;
+        document.querySelectorAll('.showcase-color-dot[data-id="' + pid + '"]').forEach(function(d) {
+          d.style.borderColor = d.dataset.color === color ? '#333' : '#d1d5db';
+        });
       });
     });
 
