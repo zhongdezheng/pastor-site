@@ -3,8 +3,8 @@
     "id": "prod-2",
     "category": "apparel",
     "name": {
-      "en": "180g Men's Crew Neck T-Shirt",
-      "zh": "180g男士圆领短袖T恤"
+      "en": "Men's Crew Neck T-Shirt",
+      "zh": "男士圆领短袖T恤"
     },
     "price": 10.0,
     "currency": "USD",
@@ -49,8 +49,8 @@
     "id": "prod-4",
     "category": "apparel",
     "name": {
-      "en": "180g Children's Pure Cotton Short-Sleeve T-Shirt",
-      "zh": "180g儿童纯棉短袖T恤"
+      "en": "Children's Pure Cotton Short-Sleeve T-Shirt",
+      "zh": "儿童纯棉短袖T恤"
     },
     "price": 13.0,
     "currency": "USD",

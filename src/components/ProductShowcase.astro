@@ -75,9 +75,13 @@ const sizeGuide = lang === 'en'
            <div class="p-5 flex flex-col justify-between min-h-[180px]">
               <h3 class="font-serif font-bold text-xs text-charcoal-800 leading-tight line-clamp-1">{p.name[lang]}</h3>
               <div class="flex items-center gap-2 mt-0.5">
-                <span class="font-bold text-sm text-charcoal-700">${p.price}</span>
-                <span class="text-[10px] text-charcoal-400">{t.weight}: {p.weight}</span>
+              <span class="font-bold text-sm text-charcoal-700">${p.price}</span>
+              <div class="flex items-center gap-1">
+                <button class="showcase-qty-btn w-5 h-5 border border-charcoal-300 rounded-full flex items-center justify-center text-[10px] text-charcoal-500 hover:bg-charcoal-100 leading-none" data-id={p.id} data-action="minus">−</button>
+                <span class="showcase-qty-val text-xs text-charcoal-700 font-medium min-w-[14px] text-center" data-id={p.id}>1</span>
+                <button class="showcase-qty-btn w-5 h-5 border border-charcoal-300 rounded-full flex items-center justify-center text-[10px] text-charcoal-500 hover:bg-charcoal-100 leading-none" data-id={p.id} data-action="plus">+</button>
               </div>
+            </div>
               <div class="flex gap-0.5 mt-1.5 flex-nowrap overflow-x-auto scrollbar-hide" style="max-height:20px">
                 {p.sizes.map(s => <span class="text-[9px] border border-charcoal-200 rounded px-1 py-0 text-charcoal-500 whitespace-nowrap flex-shrink-0">{s}</span>)}
               </div>
@@ -227,6 +231,22 @@ const sizeGuide = lang === 'en'
 
     // Cart toggle
     document.getElementById('cart-toggle').addEventListener('click', checkoutCart);
+
+    // Product card quantity buttons
+    document.querySelectorAll('.showcase-qty-btn').forEach(function(btn) {
+      btn.addEventListener('click', function(e) {
+        e.stopPropagation();
+        e.preventDefault();
+        var id = btn.dataset.id;
+        var action = btn.dataset.action;
+        var valEl = document.querySelector('.showcase-qty-val[data-id="' + id + '"]');
+        if (!valEl) return;
+        var val = parseInt(valEl.textContent) || 1;
+        if (action === 'plus') val++;
+        else if (action === 'minus') val = Math.max(1, val - 1);
+        valEl.textContent = val;
+      });
+    });
 
     // Order modal
     document.getElementById('order-close').addEventListener('click', () => document.getElementById('order-modal').classList.add('hidden'));
