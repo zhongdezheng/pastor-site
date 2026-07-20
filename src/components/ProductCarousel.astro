@@ -24,7 +24,7 @@ const t = labels[lang];
     <!-- Product grid — same style as ProductShowcase -->
     <div id="product-grid" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
       {products.map(p => (
-        <a href={`/${lang}/products/${p.id}/`} class="product-card-item block bg-white rounded-xl border border-beige-200 overflow-hidden cursor-pointer hover:shadow-lg transition-all duration-300 hover:-translate-y-0.5" data-category={p.category} data-id={p.id}>
+        <a href={`/${lang}/products/${p.id}/`} class="product-card-item block bg-white rounded-xl border border-beige-200 overflow-hidden cursor-pointer hover:shadow-2xl transition-all duration-500 hover:-translate-y-4 hover:scale-[1.02]" data-category={p.category} data-id={p.id}>
           <div class="aspect-square bg-beige-100 flex items-center justify-center relative">
             {p.images && p.images[0] ? (
               <img src={p.images[0]} alt="" class="w-full h-full object-cover" loading="lazy" />
@@ -33,9 +33,9 @@ const t = labels[lang];
             )}
             {p.stock === 0 && <div class="absolute inset-0 bg-black/20 flex items-center justify-center"><span class="bg-red-500 text-white text-xs px-2 py-0.5 rounded">{t.outOfStock}</span></div>}
           </div>
-          <div class="p-3">
-            <h3 class="font-serif font-bold text-xs text-charcoal-800 leading-tight line-clamp-1">{p.name[lang]}</h3>
-            <div class="flex items-center gap-2 mt-0.5">
+          <div class="p-5">
+            <h3 class="font-serif font-bold text-xs text-charcoal-800 leading-tight line-clamp-2">{p.name[lang]}</h3>
+            <div class="flex items-center gap-2 mt-2">
               <span class="font-bold text-sm text-charcoal-700">${p.price}</span>
               <span class="text-[10px] text-charcoal-400">{t.weight}: {p.weight}</span>
             </div>
