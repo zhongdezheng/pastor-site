@@ -72,7 +72,7 @@ const sizeGuide = lang === 'en'
               )}
               {p.stock === 0 && <div class="absolute inset-0 bg-black/20 flex items-center justify-center"><span class="bg-red-500 text-white text-xs px-2 py-0.5 rounded">{t.outOfStock}</span></div>}
             </div>
-            <div class="p-3">
+           <div class="p-5 flex flex-col justify-between min-h-[180px]">
               <h3 class="font-serif font-bold text-xs text-charcoal-800 leading-tight line-clamp-1">{p.name[lang]}</h3>
               <div class="flex items-center gap-2 mt-0.5">
                 <span class="font-bold text-sm text-charcoal-700">${p.price}</span>
