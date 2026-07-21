@@ -223,7 +223,7 @@ const sizeGuide = lang === 'en'
       if (!selectedSize) { alert('Please select a size'); return; }
       const existing = cartItems.find(i => i.id === currentProd.id && i.size === selectedSize && i.color === selectedColor);
       if (existing) existing.quantity += qty;
-      else cartItems.push({ id: currentProd.id, name: currentProd.name, price: currentProd.price, size: selectedSize, color: selectedColor, quantity: qty });
+      else cartItems.push({ id: currentProd.id, name: { en: currentProd.name.en, zh: currentProd.name.zh }, image: currentProd.images[0], price: currentProd.price, size: selectedSize, color: selectedColor, quantity: qty });
       saveCart(); updateCartUI();
       document.getElementById('cart-toggle').classList.add('scale-110');
       setTimeout(() => document.getElementById('cart-toggle').classList.remove('scale-110'), 200);

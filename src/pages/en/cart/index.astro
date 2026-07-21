@@ -24,11 +24,15 @@ import BaseLayout from '../../../layouts/BaseLayout.astro';
   var paypalContainer=document.getElementById('paypal-button-container'),paypalError=document.getElementById('payment-error'),paypalSuccess=document.getElementById('payment-success'),cartItems=document.getElementById('cart-items'),cartFooter=document.getElementById('cart-footer'),cartTotal=document.getElementById('cart-total'),backLink=document.getElementById('cart-back-link');
   function getCart(){return JSON.parse(localStorage.getItem('ps-cart')||'[]');}
   function saveCart(c){localStorage.setItem('ps-cart',JSON.stringify(c));}
+  function getProductName(i){
+    var n=i.name;
+    if(typeof n==='string') return n;
+    if(n&&n.en) return n.en;
+    return 'Product';
+  }
   function getImgSrc(i){
     if(i.image) return i.image;
-    if(i.preview) return i.preview;
-    var c=(i.color||'').indexOf('黑')>=0||(i.color||'').indexOf('Black')>=0?'黑色':'白色';
-    return '/images/products/180g-tee/962802505245275392_'+c+'_3.jpeg';
+    return '';
   }
   function render(){
     var c=getCart();
@@ -38,9 +42,9 @@ import BaseLayout from '../../../layouts/BaseLayout.astro';
     var last=c[c.length-1];backLink.href='/en/products/'+(last.slug||last.id||'tee-180g')+'/';
     cartItems.innerHTML=c.map(function(i,idx){
       var src=getImgSrc(i);
-      var imgHtml='<img src="'+src+'" style="width:100%;height:100%;object-fit:cover" onerror="this.parentElement.innerHTML=\'&#x1F455;\'">';
-      var name=i.name||"180g Men's Crew Neck T-Shirt";
+      var name=getProductName(i);
       var slug=i.slug||i.id||'tee-180g';
+      var imgHtml=src ? '<img src="'+src+'" style="width:100%;height:100%;object-fit:cover" onerror="this.parentElement.innerHTML=\'&#x1F455;\'">' : '&#x1F455;';
       return '<div class="flex gap-4 items-center bg-beige-50 rounded-xl p-4 mb-3">'
         +'<div class="w-16 h-16 rounded-lg overflow-hidden flex-shrink-0 bg-beige-200 flex items-center justify-center">'+imgHtml+'</div>'
         +'<div class="flex-1 min-w-0">'

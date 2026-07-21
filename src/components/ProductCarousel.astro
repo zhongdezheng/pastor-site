@@ -164,7 +164,7 @@ const t = labels[lang];
         // Add to cart
         var existing = cartItems.find(function(i) { return i.id === id && i.size === selSize && i.color === selColor; });
         if (existing) existing.quantity += qty;
-        else cartItems.push({ id: id, name: prod.name, price: prod.price, size: selSize, color: selColor, quantity: qty });
+        else cartItems.push({ id: id, name: { en: prod.name.en, zh: prod.name.zh }, image: prod.images[0], price: prod.price, size: selSize, color: selColor, quantity: qty });
         saveCart();
         // Flash feedback
         btn.textContent = '✓ ' + LABELS.addToCart;
