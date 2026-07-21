@@ -5,8 +5,8 @@ interface Props { lang: 'en' | 'zh' }
 const { lang } = Astro.props;
 
 const labels = {
-  en: { sizes:'Sizes', weight:'Weight', stock:'In Stock', outOfStock:'Out of Stock', addToCart:'Add to Cart', all:'All', clothing:'Clothing', jewelry:'Jewelry' },
-  zh: { sizes:'尺码', weight:'克重', stock:'库存', outOfStock:'已售罄', addToCart:'加入购物车', all:'全部', clothing:'服装', jewelry:'首饰' },
+  en: { sizes:'Sizes', weight:'Weight', stock:'In Stock', outOfStock:'Out of Stock', addToCart:'Cart', all:'All', clothing:'Clothing', jewelry:'Jewelry' },
+  zh: { sizes:'尺码', weight:'克重', stock:'库存', outOfStock:'已售罄', addToCart:'购物车', all:'全部', clothing:'服装', jewelry:'首饰' },
 };
 const t = labels[lang];
 ---
@@ -33,7 +33,7 @@ const t = labels[lang];
             )}
             {p.stock === 0 && <div class="absolute inset-0 bg-black/20 flex items-center justify-center"><span class="bg-red-500 text-white text-xs px-2 py-0.5 rounded">{t.outOfStock}</span></div>}
           </div>
-          <div class="p-4 flex flex-col gap-2" style="min-height:240px">
+          <div class="p-4 flex flex-col gap-1.5">
             <h3 class="font-serif font-bold text-xs text-charcoal-800 leading-tight line-clamp-2 flex-shrink-0">{p.name[lang]}</h3>
             <div class="flex items-center gap-2 flex-shrink-0">
               <span class="font-bold text-sm text-charcoal-700">${p.price}</span>
