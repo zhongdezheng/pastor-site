@@ -1,11 +1,5 @@
 [
   {
-    "zh": "「所以，不要为明天忧虑，因为明天自有明天的忧虑；一天的难处一天当就够了。」",
-    "refZh": "马太福音 6:34",
-    "en": "\"Therefore do not be anxious about tomorrow, for tomorrow will be anxious for itself. Sufficient for the day is its own trouble.\"",
-    "refEn": "Matthew 6:34"
-  },
-  {
     "zh": "「我岂没有吩咐你吗？你当刚强壮胆！不要惧怕，也不要惊惶；因为你无论往哪里去，耶和华你的神必与你同在。」",
     "refZh": "约书亚记 1:9",
     "en": "\"Have I not commanded you? Be strong and courageous. Do not be frightened, and do not be dismayed, for the Lord your God is with you wherever you go.\"",
@@ -46,5 +40,11 @@
     "refZh": "箴言 3:5-6",
     "en": "\"Trust in the Lord with all your heart, and do not lean on your own understanding. In all your ways acknowledge him, and he will make straight your paths.\"",
     "refEn": "Proverbs 3:5-6"
+  },
+  {
+    "zh": "「所以，不要为明天忧虑，因为明天自有明天的忧虑；一天的难处一天当就够了。」",
+    "refZh": "马太福音 6:34",
+    "en": "\"Therefore do not be anxious about tomorrow, for tomorrow will be anxious for itself. Sufficient for the day is its own trouble.\"",
+    "refEn": "Matthew 6:34"
   }
 ]
