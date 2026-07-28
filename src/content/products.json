@@ -115,45 +115,35 @@
     "id": "prod-7",
     "category": "apparel",
     "name": {
-      "en": "Men's Polyester Hooded Sweatshirt",
+      "en": "Mens Polyester Hooded Sweatshirt",
       "zh": "男士涤纶连帽卫衣"
     },
-    "price": 10.0,
+    "price": 15.0,
     "currency": "USD",
     "colors": [
-      "[\"黑色\"",
-      "\"白色\"",
-      "\"红色\"",
-      "\"浅灰\"",
-      "\"杏色\"",
-      "\"深灰\"",
-      "\"藏青\"",
-      "\"橙色\"",
-      "\"墨绿\"]"
+      "[\"\\u9ed1\\u8272\"",
+      "\"\\u767d\\u8272\"]"
     ],
     "sizes": [
       "[\"S\"",
       "\"M\"",
       "\"L\"",
       "\"XL\"",
-      "\"XXL\"",
-      "\"XXXL\"",
-      "\"XXXXL\"",
-      "\"XXXXXL\"]"
+      "\"2XL\"",
+      "\"3XL\"",
+      "\"4Xl\"",
+      "\"5XL\"]"
     ],
     "material": {
-      "en": "100%涤纶 (260g/m²)",
-      "zh": "100%涤纶 (260g/m²)"
+      "en": "100%涤纶",
+      "zh": "100%涤纶"
     },
     "description": {
-      "en": "Men's 260G polyester hooded sweatshirt. Loose fit with white ink heat transfer printing. All seasons. Soft, breathable, skin-friendly.",
-      "zh": "男士260g涤纶连帽卫衣。宽松版型，白墨烫画工艺，四季穿着。面料柔软透气亲肤。日常休闲、运动健身、旅游出行。"
+      "en": "test",
+      "zh": "测试"
     },
     "images": [
-      "/images/products/卫衣/U8009_01_main.jpg",
-      "/images/products/卫衣/U8009_02_colors_sizes.jpg",
-      "/images/products/卫衣/U8009_03_details.jpg",
-      "/images/products/卫衣/U8009_04_top.jpg"
+      "[\"/test.jpg\"]"
     ],
     "stock": 200,
     "details": {
