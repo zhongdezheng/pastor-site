@@ -99,5 +99,56 @@
       "en": "Material: 100% Cotton\nSizes: 3-4Y (100cm), 4-5Y (110cm), 5-6Y (120cm), 7-8Y (130cm), 9-10Y (140cm), 11-12Y (150cm), 13Y (160cm)\nColors: Apricot, Black, White",
       "zh": "材质：100%棉\n尺码：3-4Y（100cm）, 4-5Y（110cm）, 5-6Y（120cm）, 7-8Y（130cm）, 9-10Y（140cm）, 11-12Y（150cm）, 13Y（160cm）\n颜色：杏色, 黑色, 白色"
     }
+  },
+  {
+    "id": "prod-U8009",
+    "category": "apparel",
+    "name": {
+      "en": "Men's Polyester Hooded Sweatshirt",
+      "zh": "男士涤纶连帽卫衣"
+    },
+    "price": 10.0,
+    "currency": "USD",
+    "colors": [
+      "黑色",
+      "白色",
+      "红色",
+      "浅灰",
+      "杏色",
+      "深灰",
+      "藏青",
+      "橙色",
+      "墨绿"
+    ],
+    "sizes": [
+      "S",
+      "M",
+      "L",
+      "XL",
+      "XXL",
+      "XXXL",
+      "XXXXL",
+      "XXXXXL"
+    ],
+    "weight": "425g",
+    "material": {
+      "en": "100% Polyester",
+      "zh": "100%涤纶"
+    },
+    "description": {
+      "en": "Men's 260G polyester hooded sweatshirt. Loose fit with white ink heat transfer printing. All seasons. Soft, breathable, skin-friendly. Daily casual, sports, travel.",
+      "zh": "男士260g涤纶连帽卫衣。宽松版型，白墨烫画工艺，四季穿着。面料柔软透气亲肤。日常休闲、运动健身、旅游出行。"
+    },
+    "images": [
+      "/images/products/卫衣/U8009_01_main.jpg",
+      "/images/products/卫衣/U8009_02_colors_sizes.jpg",
+      "/images/products/卫衣/U8009_03_details.jpg",
+      "/images/products/卫衣/U8009_04_top.jpg"
+    ],
+    "stock": 200,
+    "details": {
+      "en": "Fabric: 100% Polyester, 260gsm. Weight: 425g. Process: White ink heat transfer. Season: All seasons. Fit: Loose. Hood with drawstrings. Kangaroo pocket.",
+      "zh": "面料：100%涤纶，260克重。重量：425g。工艺：白墨烫画。季节：四季。版型：宽松。带抽绳连帽。袋鼠口袋。"
+    }
   }
 ]
