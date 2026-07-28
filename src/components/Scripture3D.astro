@@ -128,88 +128,111 @@ const { lang } = Astro.props;
       return window.innerWidth >= 768 ? 24 : 16;
     }
 
-    var currentIdx = 0;
-    var autoTimer = null;
-    var AUTO_DELAY = 5000;  // 每张卡片停留 5 秒，可改
+    var animFrame = null;
+    var scrollPos = 0;
+    var targetCard = 0;
+    var paused = false;
+    var lastTime = 0;
+    var SCROLL_SPEED = 30;
 
-    function render(idx) {
-      currentIdx = idx;
+    function getCardUnit(){
+      return getCardWidth() + getGap();
+    }
+
+    function animate(timestamp){
+      if (paused) { animFrame = null; return; }
+      if (!lastTime) lastTime = timestamp;
+      var dt = Math.min(timestamp - lastTime, 100);
+      lastTime = timestamp;
+      scrollPos += SCROLL_SPEED * (dt / 1000);
       var unit = getCardUnit();
-      var centerX = (window.innerWidth / 2) - (getCardWidth() / 2);
-      var translateX = centerX - idx * unit;
-      track.style.transform = 'translateX(' + translateX + 'px)';
+      var totalWidth = total * unit;
+      while (scrollPos >= totalWidth) scrollPos -= totalWidth;
+      var floatIdx = (scrollPos / unit) % total;
+      targetCard = Math.round(floatIdx) % total;
+      renderSmooth(targetCard);
+      animFrame = requestAnimationFrame(animate);
+    }
 
-      cards.forEach(function(card, i) {
+    function renderSmooth(targetIndex){
+      var unit = getCardUnit();
+      var idx = targetIndex;
+      var centerX = (window.innerWidth / 2) - (getCardWidth() / 2);
+      var offset = idx * unit - scrollPos % (total * unit);
+      if (offset < -unit * 2) offset += total * unit;
+      if (offset > total * unit - unit * 2) offset -= total * unit;
+      var translateX = centerX - offset;
+      track.style.transform = 'translateX(' + translateX + 'px)';
+      cards.forEach(function(card, i){
         var relIdx = (i - idx + total) % total;
-        if (relIdx > total / 2) relIdx -= total;
-        card.setAttribute('data-offset', String(relIdx));
+        if (relIdx > total/2) relIdx -= total;
+        var o = Math.abs(relIdx);
+        var el = card;
+        el.setAttribute('data-offset', String(relIdx));
       });
-      dots.forEach(function(d, i) {
+      dots.forEach(function(d, i){
         d.classList.toggle('active', i === idx);
       });
     }
 
-    function next() {
-      currentIdx = (currentIdx + 1) % total;
-      render(currentIdx);
+    function go(dir){
+      paused = true;
+      var unit = getCardUnit();
+      scrollPos = ((targetCard + dir + total) % total) * unit;
+      targetCard = (targetCard + dir + total) % total;
+      renderSmooth(targetCard);
+      setTimeout(function(){ resumeAuto(); }, 3000);
     }
 
-    function prev() {
-      currentIdx = (currentIdx - 1 + total) % total;
-      render(currentIdx);
+    function pauseAuto(){
+      paused = true;
+      if (animFrame) { cancelAnimationFrame(animFrame); animFrame = null; }
     }
 
-    function go(dir) {
-      clearInterval(autoTimer);
-      if (dir > 0) next(); else prev();
-      // 手动翻页后，停 5 秒再恢复自动
-      autoTimer = setInterval(next, AUTO_DELAY);
+    function resumeAuto(){
+      paused = false;
+      lastTime = 0;
+      animFrame = requestAnimationFrame(animate);
     }
-
-    // 初始渲染
-    render(0);
-    // 自动轮播
-    autoTimer = setInterval(next, AUTO_DELAY);
-
-    // 鼠标悬停暂停，离开恢复
-    track.parentElement.addEventListener('mouseenter', function() {
-      clearInterval(autoTimer);
-    });
-    track.parentElement.addEventListener('mouseleave', function() {
-      clearInterval(autoTimer);
-      autoTimer = setInterval(next, AUTO_DELAY);
-    });
 
     if (prevBtn) prevBtn.addEventListener('click', function(){ go(-1); });
     if (nextBtn) nextBtn.addEventListener('click', function(){ go(1); });
 
-        // ── Dot clicks ──
-    dots.forEach(function(dot, i) {
-      dot.addEventListener('click', function() {
-        clearInterval(autoTimer);
-        render(i);
-        autoTimer = setInterval(next, AUTO_DELAY);
+    dots.forEach(function(dot, i){
+      dot.addEventListener('click', function(){
+        paused = true;
+        var unit = getCardUnit();
+        scrollPos = i * unit;
+        targetCard = i;
+        renderSmooth(i);
+        setTimeout(function(){ resumeAuto(); }, 3000);
       });
     });
 
-    // ── Touch swipe ──
+    track.addEventListener('mouseenter', pauseAuto);
+    track.addEventListener('mouseleave', resumeAuto);
+
     var touchStartX = 0;
-    track.addEventListener('touchstart', function(e) {
+    track.addEventListener('touchstart', function(e){
       touchStartX = e.changedTouches[0].screenX;
-      clearInterval(autoTimer);
-    }, { passive: true });
-    track.addEventListener('touchend', function(e) {
+      pauseAuto();
+    }, {passive: true});
+    track.addEventListener('touchend', function(e){
       var diff = touchStartX - e.changedTouches[0].screenX;
       if (Math.abs(diff) > 40) go(diff > 0 ? 1 : -1);
-      else autoTimer = setInterval(next, AUTO_DELAY);
-    }, { passive: true });
+      else resumeAuto();
+    }, {passive: true});
 
-    // ── Resize + keyboard ──
-    window.addEventListener('resize', function() { render(currentIdx); });
-    document.addEventListener('keydown', function(e) {
+    window.addEventListener('resize', function(){ renderSmooth(targetCard); });
+    document.addEventListener('keydown', function(e){
       if (e.key === 'ArrowLeft') go(-1);
       if (e.key === 'ArrowRight') go(1);
     });
+
+    scrollPos = 0;
+    targetCard = 0;
+    renderSmooth(0);
+    resumeAuto();
   }
   initScriptureCarousel();
   document.addEventListener('astro:page-load', initScriptureCarousel);
