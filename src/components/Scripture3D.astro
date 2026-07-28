@@ -183,41 +183,33 @@ const { lang } = Astro.props;
     if (prevBtn) prevBtn.addEventListener('click', function(){ go(-1); });
     if (nextBtn) nextBtn.addEventListener('click', function(){ go(1); });
 
-    dots.forEach(function(dot, i){
-      dot.addEventListener('click', function(){
-        paused = true;
-        var unit = getCardUnit();
-        scrollPos = i * unit;
-        targetCard = i;
-        renderSmooth(i);
-        setTimeout(function(){ resumeAuto(); }, 3000);
+        // ── Dot clicks ──
+    dots.forEach(function(dot, i) {
+      dot.addEventListener('click', function() {
+        clearInterval(autoTimer);
+        render(i);
+        autoTimer = setInterval(next, AUTO_DELAY);
       });
     });
 
-    track.addEventListener('mouseenter', pauseAuto);
-    track.addEventListener('mouseleave', resumeAuto);
-
+    // ── Touch swipe ──
     var touchStartX = 0;
-    track.addEventListener('touchstart', function(e){
+    track.addEventListener('touchstart', function(e) {
       touchStartX = e.changedTouches[0].screenX;
-      pauseAuto();
-    }, {passive: true});
-    track.addEventListener('touchend', function(e){
+      clearInterval(autoTimer);
+    }, { passive: true });
+    track.addEventListener('touchend', function(e) {
       var diff = touchStartX - e.changedTouches[0].screenX;
       if (Math.abs(diff) > 40) go(diff > 0 ? 1 : -1);
-      else resumeAuto();
-    }, {passive: true});
+      else autoTimer = setInterval(next, AUTO_DELAY);
+    }, { passive: true });
 
-    window.addEventListener('resize', function(){ renderSmooth(targetCard); });
-    document.addEventListener('keydown', function(e){
+    // ── Resize + keyboard ──
+    window.addEventListener('resize', function() { render(currentIdx); });
+    document.addEventListener('keydown', function(e) {
       if (e.key === 'ArrowLeft') go(-1);
       if (e.key === 'ArrowRight') go(1);
     });
-
-    scrollPos = 0;
-    targetCard = 0;
-    renderSmooth(0);
-    resumeAuto();
   }
   initScriptureCarousel();
   document.addEventListener('astro:page-load', initScriptureCarousel);
