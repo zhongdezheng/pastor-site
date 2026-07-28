@@ -9,15 +9,15 @@
     "price": 10.0,
     "currency": "USD",
     "colors": [
-      "[\"\\u767d\\u8272\"]"
+      "白色"
     ],
     "sizes": [
-      "[\"S\"",
-      "\"M\"",
-      "\"L\"",
-      "\"XL\"",
-      "\"2XL\"",
-      "\"3XL\"]"
+      "S",
+      "M",
+      "L",
+      "XL",
+      "2XL",
+      "3XL"
     ],
     "material": {
       "en": "100%棉（200gsm）",
@@ -27,9 +27,7 @@
       "en": "[Design] Area print on front\n[Material] 100% Cotton (200gsm)\n[Performance] Soft, comfortable, slight stretch\n[Scenes] Daily, home, travel, fitness\n[Target] Men\n[Wash] Hand/machine wash, ≤45°C, no bleach",
       "zh": "【设计说明】前面区域印花\n【材质说明】100%棉（200gsm）\n【产品性能】手感柔软舒适，微弹，版型好穿又好搭，舒适又时尚，简约实用，不易缩水，耐穿，时尚潮流\n【适用场景】日常，居家，旅行，健身运动等\n【适用人群】男士\n【洗涤说明】可手洗可机洗，不要长时间浸泡，不可漂白，洗涤液温度不能超过45ºC。"
     },
-    "images": [
-      "[]"
-    ],
+    "images": [],
     "stock": 200,
     "details": {
       "en": "",
@@ -46,15 +44,15 @@
     "price": 10.0,
     "currency": "USD",
     "colors": [
-      "[\"\\u9ed1\\u8272\"]"
+      "黑色"
     ],
     "sizes": [
-      "[\"S\"",
-      "\"M\"",
-      "\"L\"",
-      "\"XL\"",
-      "\"2XL\"",
-      "\"3XL\"]"
+      "S",
+      "M",
+      "L",
+      "XL",
+      "2XL",
+      "3XL"
     ],
     "material": {
       "en": "100%棉（200gsm）",
@@ -64,9 +62,7 @@
       "en": "[Design] Area print on front\n[Material] 100% Cotton (200gsm)\n[Performance] Soft, comfortable, slight stretch\n[Scenes] Daily, home, travel, fitness\n[Target] Men\n[Wash] Hand/machine wash, ≤45°C, no bleach",
       "zh": "【设计说明】前面区域印花\n【材质说明】100%棉（200gsm）\n【产品性能】手感柔软舒适，微弹，版型好穿又好搭，舒适又时尚，简约实用，不易缩水，耐穿，时尚潮流\n【适用场景】日常，居家，旅行，健身运动等\n【适用人群】男士\n【洗涤说明】可手洗可机洗，不要长时间浸泡，不可漂白，洗涤液温度不能超过45ºC。"
     },
-    "images": [
-      "[]"
-    ],
+    "images": [],
     "stock": 200,
     "details": {
       "en": "",
@@ -83,16 +79,16 @@
     "price": 13.0,
     "currency": "USD",
     "colors": [
-      "[\"\\u767d\\u8272\\uff0c\\u9ed1\\u8272\\uff0c\\u674f\\u8272\"]"
+      "白色，黑色，杏色"
     ],
     "sizes": [
-      "[\"3-4Y\\uff08100cm\\uff09\"",
-      "\"4-5Y\\uff08110cm\\uff09\"",
-      "\"5-6Y\\uff08120cm\\uff09\"",
-      "\"7-8Y\\uff08130cm\\uff09\"",
-      "\"9-10Y\\uff08140cm\\uff09\"",
-      "\"11-12Y\\uff08150cm\\uff09\"",
-      "\"13Y\\uff08160cm\\uff09\"]"
+      "3-4Y（100cm）",
+      "4-5Y（110cm）",
+      "5-6Y（120cm）",
+      "7-8Y（130cm）",
+      "9-10Y（140cm）",
+      "11-12Y（150cm）",
+      "13Y（160cm）"
     ],
     "material": {
       "en": "100%棉",
@@ -102,9 +98,7 @@
       "en": "Material:\n100% Cotton\nProduct Features:\nSoft and comfortable fabric; slightly stretchy and breathable.\nSuitable Occasions:\nDaily wear, casual outings, sports, outdoor activities, travel, etc.\nWashing Instructions:\nHand or machine washable. Do not soak for extended periods; do not bleach. Water temperature should not exceed 45ºC.\nSpecial Notes:\nSize measurements are taken with the garment laid flat; a margin of error of 1–2 cm is normal due to different measurement methods. Please avoid using colors in your design that match the garment's base color, as this can prevent ink application during production; such issues are not covered by after-sales service.",
       "zh": "材质说明：\n100%纯棉\n商品性能：\n面料柔软舒适，微弹，透气性好\n适用场景：\n日常，外出，运动，户外活动，旅行等\n洗涤说明：\n可手洗可机洗，不要长时间浸泡，不可漂白，洗涤液温度不能超过45ºC。\n特别说明：\n此尺码数据在平铺下测量所得，因测量方法不同，误差在1-2cm内的属于正常现象。设计图片请勿使用与衣服底色相同颜色，生产时会造成无法出墨情况，将不予纳入售后处理范畴。"
     },
-    "images": [
-      "[]"
-    ],
+    "images": [],
     "stock": 200,
     "details": {
       "en": "",
@@ -121,18 +115,18 @@
     "price": 15.0,
     "currency": "USD",
     "colors": [
-      "[\"\\u9ed1\\u8272\"",
-      "\"\\u767d\\u8272\"]"
+      "黑色",
+      "白色"
     ],
     "sizes": [
-      "[\"S\"",
-      "\"M\"",
-      "\"L\"",
-      "\"XL\"",
-      "\"2XL\"",
-      "\"3XL\"",
-      "\"4Xl\"",
-      "\"5XL\"]"
+      "S",
+      "M",
+      "L",
+      "XL",
+      "2XL",
+      "3XL",
+      "4Xl",
+      "5XL"
     ],
     "material": {
       "en": "100%涤纶",
@@ -143,7 +137,7 @@
       "zh": "测试"
     },
     "images": [
-      "[\"/test.jpg\"]"
+      "/test.jpg"
     ],
     "stock": 200,
     "details": {
