@@ -2,203 +2,302 @@
 /*
  * ============================================================================
  * 文件位置: src/components/Scripture3D.astro
- * 作用: 经文横向滚动组件，所有经文卡片从左到右连续滚动，全部可见
+ * 作用: 经文轮播组件，以卡片轮播方式展示圣经经文，支持自动滚动、手动切换、触摸滑动和键盘操作
  * 被谁调用: src/pages/index.astro（首页）中引入
  * 修改指南:
  *   - 【修改】经文内容: 编辑 src/content/scriptures.json（每条含zh/en/refZh/refEn字段）
- *   - 【修改】滚动速度: 编辑 JS 中 SCROLL_SPEED（当前 40，像素/秒，越大越快）
- *   - 【修改】卡片尺寸: 编辑 <style> 中 .scripture-card 的 width
+ *   - 【修改】滚动速度: 编辑 JS 中的 SCROLL_SPEED（当前 30，越大越快）
+ *   - 【修改】卡片尺寸: 编辑 <style> 中 .scripture-card 的 width/height
+ *   - 【修改】卡片层叠效果: 编辑 [data-offset] 选择器的 opacity/scale/blur
+ *   - 【修改】暂停恢复延迟: 编辑 setTimeout 的 3000（ms）
  *   - 【修改】区域背景: 编辑 section 的 bg-gradient-to-b from/to 颜色
+ *   - 注意: 轮播使用 requestAnimationFrame 实现平滑滚动，非简单 CSS transition
  * ============================================================================
  */
 
+// 导入经文数据（诗歌内容 + 引用）
 import scriptures from '../content/scriptures.json';
 
+// Props：接收语言参数
 interface Props { lang: 'en' | 'zh' }
 const { lang } = Astro.props;
 ---
 
+<!-- ====== 经文轮播区域 ====== -->
+<!-- 【修改】背景渐变: from-white to-beige-100 -->
+<!-- 【修改】垂直间距: py-24 lg:py-32 -->
 <section id="scriptures" class="py-24 lg:py-32 px-4 sm:px-6 bg-gradient-to-b from-white to-beige-100 overflow-hidden">
-  <div class="max-w-7xl mx-auto">
-    <div class="scripture-viewport relative w-full overflow-hidden" style="height: 300px;">
+  <div class="max-w-5xl mx-auto">
 
-      <div id="scripture-track" class="scripture-track flex items-center" style="height: 100%; gap: 24px;">
+    <!-- ====== 轮播容器 ====== -->
+    <!-- 【修改】容器高度: style="height: 380px;"，根据卡片高度调整 -->
+    <div id="scripture-carousel" class="scripture-carousel relative select-none" style="height: 380px;">
+
+      <!-- ====== 轮播轨道：flex 布局 + transform 平移实现滚动 ====== -->
+      <!-- 【修改】过渡速度: duration-700（700ms），修改为更快/更慢 -->
+      <div id="scripture-track" class="scripture-track flex items-center justify-center h-full transition-transform duration-700 ease-out">
         {scriptures.map((s, i) => (
-          <div class="scripture-card shrink-0 bg-white rounded-2xl shadow-md border border-beige-200 p-6 flex flex-col justify-center"
-               data-index={i}>
-            <p class="text-base leading-relaxed font-serif italic text-charcoal-700 mb-4 line-clamp-5">
+          <!-- ====== 单张经文卡片 ====== -->
+          <!-- 【修改】卡片圆角: rounded-2xl, 阴影: shadow-lg, 边框: border-beige-200 -->
+          <div
+            class="scripture-card shrink-0 bg-white rounded-2xl shadow-lg border border-beige-200 p-8 md:p-10 transition-all duration-700 ease-out"
+            data-index={i}
+          >
+            <!-- 经文正文（最多显示 6 行，超出省略） -->
+            <!-- 【修改】字号: text-base md:text-xl -->
+            <p class="text-base md:text-xl leading-relaxed font-serif italic text-charcoal-700 mb-5 line-clamp-6">
               {s[lang]}
             </p>
-            <p class="text-xs text-charcoal-400 font-medium tracking-wide border-t border-beige-200 pt-4">
-              — {lang === 'en' ? s.refEn : s.refZh}
-            </p>
+            <!-- 经文出处（顶部 border 分隔） -->
+            <p class="text-sm text-charcoal-400 font-medium tracking-wide border-t border-beige-200 pt-4">— {lang === 'en' ? s.refEn : s.refZh}</p>
           </div>
         ))}
-        <div class="shrink-0" style="width:24px;"></div>
       </div>
 
+      <!-- ====== 左右渐变遮罩（制造景深效果） ====== -->
+      <!-- 左侧渐变：白色 → 透明，防止边缘突兀 -->
+      <div class="absolute inset-y-0 left-0 w-16 md:w-28 pointer-events-none bg-gradient-to-r from-white/90 to-transparent z-10"></div>
+      <!-- 右侧渐变：透明 → 白色 -->
+      <div class="absolute inset-y-0 right-0 w-16 md:w-28 pointer-events-none bg-gradient-to-l from-white/90 to-transparent z-10"></div>
+
+      <!-- ====== 左箭头按钮 ====== -->
+      <!-- 【修改】按钮样式: 圆 + 毛玻璃 + 阴影，hover 时变化 -->
+      <button id="scr-prev" class="scr-btn scr-prev absolute left-1 md:left-4 top-1/2 -translate-y-1/2 w-11 h-11 rounded-full bg-white/80 backdrop-blur-sm shadow-md border border-beige-300 flex items-center justify-center text-charcoal-500 hover:bg-white hover:text-charcoal-800 hover:shadow-lg hover:border-charcoal-300 transition-all z-20" aria-label="Previous">
+        <!-- 左箭头 SVG -->
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/></svg>
+      </button>
+
+      <!-- ====== 右箭头按钮 ====== -->
+      <button id="scr-next" class="scr-btn scr-next absolute right-1 md:right-4 top-1/2 -translate-y-1/2 w-11 h-11 rounded-full bg-white/80 backdrop-blur-sm shadow-md border border-beige-300 flex items-center justify-center text-charcoal-500 hover:bg-white hover:text-charcoal-800 hover:shadow-lg hover:border-charcoal-300 transition-all z-20" aria-label="Next">
+        <!-- 右箭头 SVG -->
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
+      </button>
     </div>
 
+    <!-- ====== 指示点（Dot） ====== -->
+    <!-- 【修改】激活态颜色: bg-charcoal-700, 非激活: bg-charcoal-300 -->
     <div class="flex justify-center gap-2 mt-8">
       {scriptures.map((_, i) => (
-        <span class={`scr-dot w-2.5 h-2.5 rounded-full cursor-pointer transition-all duration-300 ${i === 0 ? 'bg-charcoal-700 scale-125' : 'bg-charcoal-300 hover:bg-charcoal-400'}`} data-sdot={i}></span>
+        <span class={`scr-dot w-2.5 h-2.5 rounded-full cursor-pointer transition-all duration-400 ${i === 0 ? 'bg-charcoal-700 scale-125' : 'bg-charcoal-300 hover:bg-charcoal-400'}`} data-sdot={i}></span>
       ))}
     </div>
   </div>
 </section>
 
+<!-- ====== Scoped CSS（只影响本组件内的元素） ====== -->
 <style>
+  /* ── 固定卡片尺寸 ── */
+  /* 【修改】卡片宽度/高度：移动端 280x320，桌面端 340x360 */
   .scripture-card {
-    width: 320px;
-    min-height: 240px;
-    user-select: none;
+    width: 280px;
+    height: 320px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
   }
   @media (min-width: 768px) {
     .scripture-card {
-      width: 380px;
-      min-height: 260px;
+      width: 340px;
+      height: 360px;
     }
   }
+
+  /* ── 卡片状态（根据离中心的偏移量 data-offset） ── */
+  /* 【修改】各偏移量对应的透明度/缩放/模糊值 */
+  /* 偏移 ±3：完全不可见 */
+  .scripture-card[data-offset="-3"],
+  .scripture-card[data-offset="3"] {
+    opacity: 0;
+    transform: scale(0.7);
+    pointer-events: none;
+  }
+  /* 偏移 ±2：强模糊，很低可见 */
+  .scripture-card[data-offset="-2"],
+  .scripture-card[data-offset="2"] {
+    opacity: 0.25;
+    transform: scale(0.78);
+    filter: blur(1px);
+    pointer-events: none;
+  }
+  /* 偏移 ±1：半透明，可点击切到中间 */
+  .scripture-card[data-offset="-1"],
+  .scripture-card[data-offset="1"] {
+    opacity: 0.55;
+    transform: scale(0.86);
+    cursor: pointer;
+  }
+  /* 偏移 0（中间）：完全可见，最大阴影 */
+  .scripture-card[data-offset="0"] {
+    opacity: 1;
+    transform: scale(1);
+    box-shadow: 0 20px 50px rgba(120,100,80,0.12), 0 8px 20px rgba(120,100,80,0.06);
+    z-index: 5;
+  }
+
+  /* ── 卡片间距 ── */
+  #scripture-track {
+    gap: 16px;
+  }
+  @media (min-width: 768px) {
+    #scripture-track { gap: 24px; }
+  }
+
+  /* ── Dot 激活态 ── */
   .scr-dot.active {
     @apply bg-charcoal-700 scale-125;
   }
+
+  /* ── 箭头按钮 hover 效果 ── */
+  .scr-btn {
+    opacity: 0.9;
+  }
+  .scr-btn:hover {
+    opacity: 1;
+  }
 </style>
 
+<!-- ====== 内联 JS：经文轮播核心逻辑 ====== -->
 <script is:inline>
   function initScriptureCarousel() {
+    // 获取 DOM 元素
     var track = document.getElementById('scripture-track');
-    var cards = track.querySelectorAll('.scripture-card');
+    var cards = document.querySelectorAll('.scripture-card');
     var dots = document.querySelectorAll('.scr-dot');
+    var prevBtn = document.getElementById('scr-prev');
+    var nextBtn = document.getElementById('scr-next');
     if (!track || cards.length === 0) return;
     var total = cards.length;
 
-    var SCROLL_SPEED = 40;    // 【修改】滚动速度（像素/秒）
-    var animFrame = null;
-    var paused = false;
-    var translateX = 0;       // 当前平移距离
-    var lastTime = 0;
-    var activeIndex = 0;
+    // 获取卡片宽度（响应式：移动端 280，桌面端 340）
+    function getCardWidth() { return window.innerWidth >= 768 ? 340 : 280; }
+    // 获取卡片间距（响应式：移动端 16，桌面端 24）
+    function getGap() { return window.innerWidth >= 768 ? 24 : 16; }
 
-    function getCardWidth() {
-      return window.innerWidth >= 768 ? 380 : 320;
-    }
-    function getGap() { return 24; }
-    function getUnit() { return getCardWidth() + getGap(); }
-    function getTotalWidth() { return total * getUnit(); }
+    var animFrame = null;       // requestAnimationFrame ID
+    var scrollPos = 0;          // 当前滚动位置（像素）
+    var targetCard = 0;         // 当前目标卡片索引
+    var paused = false;         // 是否暂停
+    var lastTime = 0;           // 上一帧时间戳
+    var SCROLL_SPEED = 30;      // 【修改】自动滚动速度：像素/秒，越大越快
 
-    // 无缝循环滚动
+    // 单张卡片 + 间距的总宽度
+    function getCardUnit() { return getCardWidth() + getGap(); }
+
+    // 动画帧循环：实现平滑自动滚动
     function animate(timestamp) {
       if (paused) { animFrame = null; return; }
       if (!lastTime) lastTime = timestamp;
-      var dt = Math.min(timestamp - lastTime, 100);
+      var dt = Math.min(timestamp - lastTime, 100); // 限制 deltaTime 最大 100ms，防止切标签页后跳跃
       lastTime = timestamp;
-
-      translateX -= SCROLL_SPEED * (dt / 1000);
-
-      // 无缝循环：当第一组卡片完全滚出，重置位置
-      var tw = getTotalWidth();
-      while (translateX <= -tw) translateX += tw;
-      while (translateX > 0) translateX -= tw;
-
-      track.style.transform = 'translateX(' + translateX + 'px)';
-
-      // 更新当前激活的卡片索引（用于 dot 指示器）
-      var idx = Math.floor((-translateX % tw + tw) % tw / getUnit()) % total;
-      if (idx !== activeIndex) {
-        activeIndex = idx;
-        dots.forEach(function(d, i) {
-          d.classList.toggle('active', i === activeIndex);
-        });
-      }
-
+      scrollPos += SCROLL_SPEED * (dt / 1000);      // 按时间增量滚动
+      var unit = getCardUnit();
+      var totalWidth = total * unit;
+      while (scrollPos >= totalWidth) scrollPos -= totalWidth; // 循环滚动
+      var floatIdx = (scrollPos / unit) % total;
+      targetCard = Math.round(floatIdx) % total;
+      renderSmooth(targetCard);
       animFrame = requestAnimationFrame(animate);
     }
 
-    // 为了无缝循环，克隆整组卡片
-    function initClones() {
-      // 至少需要 3 组才能保证屏幕始终被卡片填满
-      var clonesNeeded = Math.max(2, Math.ceil(window.innerWidth * 2 / getTotalWidth()));
-      var clones = [];
-      for (var c = 0; c < clonesNeeded; c++) {
-        cards.forEach(function(card, i) {
-          var clone = card.cloneNode(true);
-          clone.setAttribute('data-index', String(i));
-          clones.push(clone);
-          track.appendChild(clone);
-        });
-      }
+    // 平滑渲染：根据目标卡片计算 track 的 translateX，并更新每张卡片的 data-offset
+    function renderSmooth(targetIndex) {
+      var unit = getCardUnit();
+      var idx = targetIndex;
+      var centerX = (window.innerWidth / 2) - (getCardWidth() / 2);
+      // 计算偏移量，使目标卡片居中
+      var offset = idx * unit - scrollPos % (total * unit);
+      if (offset < -unit * 2) offset += total * unit;
+      if (offset > total * unit - unit * 2) offset -= total * unit;
+      var translateX = centerX - offset;
+      track.style.transform = 'translateX(' + translateX + 'px)';
+
+      // 更新每张卡片相对于中心的偏移量（data-offset）
+      cards.forEach(function(card, i) {
+        var relIdx = (i - idx + total) % total;
+        if (relIdx > total / 2) relIdx -= total;
+        card.setAttribute('data-offset', String(relIdx));
+      });
+
+      // 更新 Dot 指示器
+      dots.forEach(function(d, i) {
+        d.classList.toggle('active', i === idx);
+      });
     }
 
+    // 手动切换方向（dir: +1 下一张，-1 上一张）
+    function go(dir) {
+      paused = true;
+      var unit = getCardUnit();
+      scrollPos = ((targetCard + dir + total) % total) * unit;
+      targetCard = (targetCard + dir + total) % total;
+      renderSmooth(targetCard);
+      // 3 秒后恢复自动播放
+      setTimeout(function() { resumeAuto(); }, 3000);
+    }
+
+    // 暂停自动播放
     function pauseAuto() {
       paused = true;
       if (animFrame) { cancelAnimationFrame(animFrame); animFrame = null; }
     }
 
+    // 恢复自动播放
     function resumeAuto() {
       paused = false;
       lastTime = 0;
       animFrame = requestAnimationFrame(animate);
     }
 
-    // 跳转到指定卡片
-    function goTo(index) {
-      paused = true;
-      translateX = -(index * getUnit() + getCardWidth() / 2 - window.innerWidth / 2);
-      var tw = getTotalWidth();
-      while (translateX <= -tw) translateX += tw;
-      while (translateX > 0) translateX -= tw;
-      activeIndex = index;
-      track.style.transform = 'translateX(' + translateX + 'px)';
-      dots.forEach(function(d, i) { d.classList.toggle('active', i === activeIndex); });
-      setTimeout(function() { resumeAuto(); }, 3000);
-    }
+    // 绑定箭头按钮点击事件
+    if (prevBtn) prevBtn.addEventListener('click', function() { go(-1); });
+    if (nextBtn) nextBtn.addEventListener('click', function() { go(1); });
 
-    // Dot 点击
+    // 绑定 Dot 点击事件：跳到指定卡片
     dots.forEach(function(dot, i) {
-      dot.addEventListener('click', function() { goTo(i); });
+      dot.addEventListener('click', function() {
+        paused = true;
+        var unit = getCardUnit();
+        scrollPos = i * unit;
+        targetCard = i;
+        renderSmooth(i);
+        setTimeout(function() { resumeAuto(); }, 3000);
+      });
     });
 
-    // 鼠标悬停暂停
+    // 鼠标悬停暂停，离开恢复
     track.addEventListener('mouseenter', pauseAuto);
     track.addEventListener('mouseleave', resumeAuto);
 
-    // 触摸滑动
-    var touchStartX = 0, touchStartTX = 0;
+    // 触摸滑动支持：左右滑动切换卡片
+    var touchStartX = 0;
     track.addEventListener('touchstart', function(e) {
       touchStartX = e.changedTouches[0].screenX;
-      touchStartTX = translateX;
       pauseAuto();
     }, { passive: true });
-    track.addEventListener('touchmove', function(e) {
-      var dx = e.changedTouches[0].screenX - touchStartX;
-      translateX = touchStartTX + dx;
-      var tw = getTotalWidth();
-      while (translateX <= -tw) translateX += tw;
-      while (translateX > 0) translateX -= tw;
-      track.style.transform = 'translateX(' + translateX + 'px)';
+    track.addEventListener('touchend', function(e) {
+      var diff = touchStartX - e.changedTouches[0].screenX;
+      if (Math.abs(diff) > 40) go(diff > 0 ? 1 : -1); // 滑动超过 40px 触发切换
+      else resumeAuto();
     }, { passive: true });
-    track.addEventListener('touchend', function() {
-      setTimeout(function() { resumeAuto(); }, 2000);
-    });
 
-    // 窗口大小变化时重新计算
-    window.addEventListener('resize', function() {
-      track.style.transform = 'translateX(' + translateX + 'px)';
-    });
+    // 窗口大小变化时重新渲染
+    window.addEventListener('resize', function() { renderSmooth(targetCard); });
 
-    // 键盘
+    // 键盘左右箭头切换
     document.addEventListener('keydown', function(e) {
-      if (e.key === 'ArrowRight') goTo((activeIndex + 1) % total);
-      if (e.key === 'ArrowLeft') goTo((activeIndex - 1 + total) % total);
+      if (e.key === 'ArrowLeft') go(-1);
+      if (e.key === 'ArrowRight') go(1);
     });
 
-    // 初始化
-    initClones();
-    translateX = 0;
-    track.style.transform = 'translateX(0px)';
+    // 初始化：从第一张开始自动播放
+    scrollPos = 0;
+    targetCard = 0;
+    renderSmooth(0);
     resumeAuto();
   }
 
+  // 初始化轮播
   initScriptureCarousel();
+  // Astro 页面切换时重新初始化（SPA 导航支持）
   document.addEventListener('astro:page-load', initScriptureCarousel);
 </script>
