@@ -74,11 +74,9 @@ const hasMore = moreParagraphs.length > 0;
     <!-- ====== 可展开的更多段落（默认隐藏） ====== -->
     {hasMore && (
       <div>
-        <!-- vision-more: 默认 hidden，点击展开按钮后显示 -->
         <div id="vision-more" class="hidden text-charcoal-600 leading-relaxed font-serif max-w-4xl mx-auto space-y-4 text-[15px] sm:text-base mt-4">
           {moreParagraphs.map((p: string) => <p>{p}</p>)}
         </div>
-        <!-- 【修改】展开/收起按钮：sage 色调边框 + 圆角 -->
         <button id="vision-toggle" class="inline-flex items-center gap-1 mt-4 px-4 py-1.5 text-sm text-sage-600 hover:text-sage-700 border border-sage-300 rounded-full transition-colors">{t.more}</button>
       </div>
     )}

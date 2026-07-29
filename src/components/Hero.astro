@@ -85,7 +85,6 @@ const photos = [
           <div class="absolute bottom-6 left-1/2 -translate-x-1/2 flex gap-2 z-10">
             {photos.map((_, i) => (
               <button
-                <!-- 第一个点默认激活（白色 + 宽一些），其余半透明 -->
                 class={`w-2.5 h-2.5 rounded-full transition-all duration-300 ${i === 0 ? 'bg-white w-6' : 'bg-white/50'}`}
                 data-dot={i}
                 aria-label={`Photo ${i + 1}`}

@@ -29,16 +29,11 @@ import testimonies from '../../../content/testimonies.json';  // 见证数据（
     <!-- 【见证列表】垂直排列，底部边框分隔 -->
     <div class="space-y-1">
         {testimonies.map((t, idx) => (
-          <!-- 【列表项】链接到见证详情页 — 【修改】样式在此 -->
           <a href={`/zh/testimonies/${t.id}/`} class="block py-4 border-b border-beige-200 hover:bg-beige-50/50 transition-colors">
             <p class="text-charcoal-800 text-sm sm:text-base text-left">
-              <!-- 【编号】序号 -->
               <span class="text-charcoal-500 font-medium">{idx + 1}.</span>
-              <!-- 【标题】衬线字体、加粗 -->
               <span class="font-serif font-bold">{t.title.zh}</span>
-              <!-- 【分隔符】 -->
               <span class="text-charcoal-500 mx-1">——</span>
-              <!-- 【日期+作者】灰色 -->
               <span class="text-charcoal-400">{t.date} · {t.author.zh}</span>
             </p>
           </a>

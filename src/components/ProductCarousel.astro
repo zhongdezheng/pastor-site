@@ -51,32 +51,22 @@ const t = labels[lang];
     <!-- 【修改】列数: grid-cols-2 sm:3 lg:4 -->
     <div id="product-grid" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
       {products.map(p => (
-        <!-- ====== 单张产品卡片 ====== -->
-        <!-- 整卡可点击跳转到产品详情页 -->
-        <!-- 【修改】hover 动画: hover:-translate-y-4 hover:scale-[1.02] -->
         <a href={`/${lang}/products/${p.id}/`} class="product-card-item block bg-white rounded-xl border border-beige-200 overflow-hidden cursor-pointer hover:shadow-2xl transition-all duration-500 hover:-translate-y-4 hover:scale-[1.02]" data-category={p.category} data-id={p.id}>
 
-          <!-- 图片区域（正方形） -->
           <div class="aspect-square bg-beige-100 flex items-center justify-center relative">
             {p.images && p.images[0] ? (
               <img src={p.images[0]} alt="" class="w-full h-full object-cover" loading="lazy" />
             ) : (
-              <!-- 无图时的占位 emoji -->
               <span class="text-3xl">👕</span>
             )}
-            <!-- 售罄遮罩 -->
             {p.stock === 0 && <div class="absolute inset-0 bg-black/20 flex items-center justify-center"><span class="bg-red-500 text-white text-xs px-2 py-0.5 rounded">{t.outOfStock}</span></div>}
           </div>
 
-          <!-- 信息区域 -->
           <div class="p-4 flex flex-col gap-1.5">
-            <!-- 产品名 -->
             <h3 class="font-serif font-bold text-xs text-charcoal-800 leading-tight line-clamp-2 flex-shrink-0">{p.name[lang]}</h3>
 
-            <!-- 价格 + 数量选择器 -->
             <div class="flex items-center gap-2 flex-shrink-0">
               <span class="font-bold text-sm text-charcoal-700">${p.price}</span>
-              <!-- 数量 +/− 按钮组 -->
               <div class="flex items-center gap-1">
                 <button class="carousel-qty-btn w-6 h-6 sm:w-5 sm:h-5 border border-charcoal-300 rounded-full flex items-center justify-center text-xs sm:text-[10px] text-charcoal-500 hover:bg-charcoal-100 leading-none" data-id={p.id} data-action="minus">−</button>
                 <span class="carousel-qty-val text-xs text-charcoal-700 font-medium min-w-[16px] text-center" data-id={p.id}>1</span>
@@ -84,14 +74,11 @@ const t = labels[lang];
               </div>
             </div>
 
-            <!-- 尺码选择标签 -->
             <div class="flex flex-wrap gap-1 flex-shrink-0" data-id={p.id} style="min-height:20px">
               {p.sizes.map((s, i) => <span class="carousel-sz-opt text-[9px] border rounded px-1 py-0 whitespace-nowrap cursor-pointer transition-colors" style=`border-color:${i===0?'#333':'#d1d5db'};color:${i===0?'#1f2937':'#6b7280'}` data-id={p.id} data-size={s}>{s}</span>)}
             </div>
 
-            <!-- 颜色选择圆点 + 加入购物车按钮 -->
             <div class="flex items-center gap-1.5 flex-wrap" data-id={p.id}>
-              <!-- 颜色圆点 -->
               <div class="flex gap-1.5">
               {p.colors.map((c, i) => {
                 // 【修改】颜色映射表：中文颜色名 → 十六进制色值，添加新颜色在此扩展
@@ -100,7 +87,6 @@ const t = labels[lang];
                 return <span class="carousel-color-dot inline-block w-5 h-5 sm:w-4 sm:h-4 rounded-full cursor-pointer border-2 transition-colors" style={`background:${bg};border-color:${i===0?'#333':'#d1d5db'}`} data-id={p.id} data-color={c} title={c}></span>;
               })}
               </div>
-            <!-- 加入购物车按钮 -->
             <button class="carousel-add-cart-btn py-1 px-3 ml-auto bg-charcoal-800 hover:bg-charcoal-700 text-white rounded-lg text-[10px] font-medium transition-colors flex-shrink-0" data-id={p.id}>{t.addToCart}</button>
             </div>
           </div>

@@ -93,27 +93,20 @@ const sizeGuide = lang === 'en'
       <!-- 【修改】列数: grid-cols-2 sm:3 lg:4 -->
       <div id="product-grid" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
         {products.map(p => (
-          <!-- 单张产品卡片（点击打开详情弹窗，非跳转链接） -->
-          <!-- 【修改】hover 动画比 ProductCarousel 轻（-translate-y-0.5） -->
           <a href={`/${lang}/products/${p.id}/`} class="product-card-item block bg-white rounded-xl border border-beige-200 overflow-hidden cursor-pointer hover:shadow-lg transition-all duration-300 hover:-translate-y-0.5" data-category={p.category} data-id={p.id}>
 
-            <!-- 图片 -->
             <div class="aspect-square bg-beige-100 flex items-center justify-center relative">
               {p.images && p.images[0] ? (
                 <img src={p.images[0]} alt="" class="w-full h-full object-cover" loading="lazy" />
               ) : (
                 <span class="text-3xl">👕</span>
               )}
-              <!-- 售罄遮罩 -->
               {p.stock === 0 && <div class="absolute inset-0 bg-black/20 flex items-center justify-center"><span class="bg-red-500 text-white text-xs px-2 py-0.5 rounded">{t.outOfStock}</span></div>}
             </div>
 
-            <!-- 信息区（带最小高度保证对齐） -->
            <div class="p-4 flex flex-col gap-2" style="min-height:200px">
-              <!-- 产品名 -->
               <h3 class="font-serif font-bold text-xs text-charcoal-800 leading-tight line-clamp-2 flex-shrink-0">{p.name[lang]}</h3>
 
-              <!-- 价格 + 数量 -->
               <div class="flex items-center gap-2 flex-shrink-0">
                 <span class="font-bold text-sm text-charcoal-700">${p.price}</span>
                 <div class="flex items-center gap-1">
@@ -123,12 +116,10 @@ const sizeGuide = lang === 'en'
                 </div>
               </div>
 
-              <!-- 尺码标签（只读展示，不可点击选择，与 ProductCarousel 不同） -->
               <div class="flex flex-wrap gap-1 flex-shrink-0" style="min-height:20px">
                 {p.sizes.map(s => <span class="text-[9px] border border-charcoal-200 rounded px-1 py-0 text-charcoal-500 whitespace-nowrap">{s}</span>)}
               </div>
 
-              <!-- 颜色圆点 -->
               <div class="flex gap-1.5 flex-wrap mt-auto" data-id={p.id}>
                 {p.colors.map((c, i) => {
                   // 【修改】颜色映射表

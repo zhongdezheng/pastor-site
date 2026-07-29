@@ -28,9 +28,7 @@ import testimonies from '../../../content/testimonies.json';
     <!-- 📋 见证列表（简洁竖排 + 底部分隔线） -->
     <div class="space-y-1">
         {testimonies.map((t, idx) => (
-          <!-- 🔗 每条见证是一个可点击链接，跳转到详情页 -->
           <a href={`/en/testimonies/${t.id}/`} class="block py-4 border-b border-beige-200 hover:bg-beige-50/50 transition-colors">
-            <!-- 📌 格式：[序号] 标题 —— 日期 · 作者 -->
             <p class="text-charcoal-800 text-sm sm:text-base text-left"><span class="text-charcoal-500 font-medium">{idx + 1}.</span> <span class="font-serif font-bold">{t.title.en}</span><span class="text-charcoal-500 mx-1">——</span><span class="text-charcoal-400">{t.date} · {t.author.en}</span></p>
           </a>
         ))}
