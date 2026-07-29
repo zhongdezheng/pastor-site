@@ -38,10 +38,10 @@ const { lang } = Astro.props;
       </div>
     </div>
 
-    <!-- Dots -->
-    <div class="flex justify-center gap-2 mt-8">
+    <!-- Dots：全部初始灰色，JS 激活第一个 -->
+    <div class="flex justify-center gap-2 mt-8" id="scr-dots">
       {scriptures.map((_, i) => (
-        <span class="scr-dot w-2.5 h-2.5 rounded-full cursor-pointer transition-all duration-300 {i === 0 ? 'bg-charcoal-700 scale-125' : 'bg-charcoal-300 hover:bg-charcoal-400'}" data-sdot={i}></span>
+        <span class="scr-dot w-2.5 h-2.5 rounded-full cursor-pointer bg-charcoal-300 hover:bg-charcoal-400" data-sdot={i}></span>
       ))}
     </div>
   </div>
@@ -89,47 +89,64 @@ const { lang } = Astro.props;
 </style>
 
 <script is:inline>
-  // Dot 指示器：根据滚动位置高亮当前经文的 dot
   (function(){
     var track = document.querySelector('.scr-track');
-    var dots = document.querySelectorAll('.scr-dot');
-    if (!track || !dots.length) return;
-    var total = dots.length;
+    var dots = document.getElementById('scr-dots');
+    if (!track || !dots) return;
+    var dotEls = dots.querySelectorAll('.scr-dot');
+    var total = dotEls.length;
 
-    // 监听 animation 进度
-    var cardEl = track.querySelector('.scr-card');
-    function updateDot(){
-      if (!cardEl) return;
-      var cardW = cardEl.offsetWidth;
-      var gap = parseInt(getComputedStyle(track).gap) || 20;
-      var unit = cardW + gap;
-      // 读取当前 transform
-      var matrix = new DOMMatrix(getComputedStyle(track).transform);
-      var tx = Math.abs(matrix.m41);
-      var tw = total * unit;
-      var idx = Math.floor((tx % tw + tw) % tw / unit) % total;
-      dots.forEach(function(d,i){ d.classList.toggle('active', i===idx); });
-      window.__scrActive = idx;
-      requestAnimationFrame(updateDot);
-    }
-    updateDot();
+    // 初始化：激活第一个 dot
+    dotEls[0].classList.add('active');
 
-    // Dot 点击：跳转到指定卡片
-    dots.forEach(function(dot,i){
+    // Dot 点击：暂停动画，手动跳到目标位置
+    dotEls.forEach(function(dot, i){
       dot.addEventListener('click', function(){
+        var cardEl = track.querySelector('.scr-card');
+        if (!cardEl) return;
         var cardW = cardEl.offsetWidth;
         var gap = parseInt(getComputedStyle(track).gap) || 20;
         var unit = cardW + gap;
-        // 暂停动画
-        track.style.animationPlayState = 'paused';
+
+        // 暂停 CSS animation
+        track.style.animation = 'none';
+        // 设 transform 跳到目标位置（只偏移第一组距离）
         track.style.transform = 'translateX(-' + (i * unit) + 'px)';
-        dots.forEach(function(d,j){ d.classList.toggle('active', j===i); });
-        // 3s 后恢复
+        // 强制重排
+        track.offsetHeight;
+
+        // 更新 dot 状态
+        dotEls.forEach(function(d, j){ d.classList.toggle('active', j === i); });
+
+        // 3s 后恢复动画
         clearTimeout(window.__scrResume);
         window.__scrResume = setTimeout(function(){
-          track.style.animationPlayState = 'running';
+          track.style.animation = '';
+          track.style.transform = '';
         }, 3000);
       });
     });
+
+    // 实时同步 dot：对比 transform 偏移量
+    var cardEl = track.querySelector('.scr-card');
+    if (!cardEl) return;
+    var activeIdx = 0;
+    var lastTx = 0;
+    function syncDot(){
+      var cardW = cardEl.offsetWidth;
+      var gap = parseInt(getComputedStyle(track).gap) || 20;
+      var unit = cardW + gap;
+      // 从 computed transform 矩阵读取 translateX
+      var m = new DOMMatrixReadOnly(getComputedStyle(track).transform);
+      var tx = -m.m41;
+      if (tx < 0) tx = 0;
+      var idx = Math.floor(((tx % (total * unit)) + (total * unit)) % (total * unit) / unit) % total;
+      if (idx !== activeIdx) {
+        activeIdx = idx;
+        dotEls.forEach(function(d, j){ d.classList.toggle('active', j === idx); });
+      }
+      requestAnimationFrame(syncDot);
+    }
+    syncDot();
   })();
 </script>
