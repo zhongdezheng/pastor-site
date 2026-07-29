@@ -66,10 +66,10 @@ const { lang } = Astro.props;
 
 <!-- ====== Scoped CSS（只影响本组件内的元素） ====== -->
 <style>
-  /* 所有卡片统一尺寸，全部可见，不移除模糊效果 */
+  /* ── 固定卡片尺寸（与旧版一致）── */
   .scripture-card {
     width: 280px;
-    min-height: 280px;
+    height: 320px;
     display: flex;
     flex-direction: column;
     justify-content: center;
@@ -78,7 +78,7 @@ const { lang } = Astro.props;
   @media (min-width: 768px) {
     .scripture-card {
       width: 340px;
-      min-height: 340px;
+      height: 360px;
     }
   }
 
@@ -126,9 +126,9 @@ const { lang } = Astro.props;
     function cardHTML(s) {
       var text = s.text || '';
       var ref = s.ref || '';
-      return '<div class="scripture-card shrink-0 bg-white rounded-2xl shadow-md border border-beige-200 p-6 flex flex-col justify-center">' +
-        '<p class="text-base leading-relaxed font-serif italic text-charcoal-700 mb-4 line-clamp-5">' + text + '</p>' +
-        '<p class="text-xs text-charcoal-400 font-medium tracking-wide border-t border-beige-200 pt-4">— ' + ref + '</p></div>';
+      return '<div class="scripture-card shrink-0 bg-white rounded-2xl shadow-lg border border-beige-200 p-8 md:p-10 flex flex-col justify-center">' +
+        '<p class="text-base md:text-xl leading-relaxed font-serif italic text-charcoal-700 mb-5 line-clamp-6">' + text + '</p>' +
+        '<p class="text-sm text-charcoal-400 font-medium tracking-wide border-t border-beige-200 pt-4">— ' + ref + '</p></div>';
     }
 
     // 填充卡片（3 组实现无缝循环）
