@@ -31,7 +31,7 @@ const { lang } = Astro.props;
 
     <!-- ====== 轮播容器 ====== -->
     <!-- 【修改】容器高度: style="height: 380px;"，根据卡片高度调整 -->
-    <div id="scripture-carousel" class="scripture-carousel relative select-none" style="height: 380px;">
+    <div id="scripture-carousel" class="scripture-carousel relative select-none" style="height: 300px;">
 
       <!-- ====== 经文数据注入（供 JS 读取） ====== -->
       <script type="application/json" id="__scriptureData" set:html={JSON.stringify(scriptures.map(s => ({text: s[lang], ref: lang === 'en' ? s.refEn : s.refZh})))}></script>
@@ -73,7 +73,7 @@ const { lang } = Astro.props;
   /* ── 固定卡片尺寸（与旧版一致）── */
   .scripture-card {
     width: 280px;
-    height: 320px;
+    height: 240px;
     display: flex;
     flex-direction: column;
     justify-content: center;
@@ -82,7 +82,7 @@ const { lang } = Astro.props;
   @media (min-width: 768px) {
     .scripture-card {
       width: 340px;
-      height: 360px;
+      height: 280px;
     }
   }
 
