@@ -1,21 +1,40 @@
 ---
+/**
+ * 📍 文件位置: src/pages/en/account/index.astro
+ * 🌐 路由: /en/account/
+ * 🎯 作用: 英文账号页面——用户登录后通过 Supabase auth 获取会话，展示订单历史和代祷记录
+ * 🔧 修改指南:
+ *   - Supabase 凭证：修改 createClient() 中的 URL 和 publishable key
+ *   - 订单数据来源：supabase.from('orders').select('*').eq('user_id', user.id)
+ *   - 代祷数据来源：supabase.from('prayer_requests').select('*').eq('email', user.email)
+ *   - 状态颜色映射：statusColors 对象中维护订单状态 → CSS 类名
+ *   - 未登录状态：显示 #not-logged-in，登录后隐藏并显示 #account-content
+ *   - 退出登录：调用 supabase.auth.signOut() 后跳转 /en/auth
+ *   - Supabase SDK：从 esm.sh CDN 动态导入（不需要 npm install）
+ */
+
+// 【修改】引入基础布局
 import BaseLayout from '../../../layouts/BaseLayout.astro';
 ---
 
 <BaseLayout lang="en" title="My Account — Livingstone">
+  <!-- 👤 账号页主容器 · 渐变米色背景 -->
   <section class="pt-24 pb-16 px-4 sm:px-6 min-h-screen" style="background: linear-gradient(180deg, #fefcf5 0%, #f0ece0 100%);">
     <div class="max-w-4xl mx-auto">
+      <!-- 🚫 未登录状态 -->
       <div id="not-logged-in">
         <p class="text-center text-charcoal-600 py-20">Please <a href="/en/auth" class="text-sage-600 underline">sign in</a> to view your account.</p>
       </div>
 
+      <!-- ✅ 已登录内容区（初始隐藏，init() 中根据会话状态显示） -->
       <div id="account-content" class="hidden space-y-8">
+        <!-- 👤 标题栏：账号名 + 退出按钮 -->
         <div class="flex items-center justify-between">
           <h1 class="text-2xl font-serif font-bold text-charcoal-900">My Account</h1>
           <button id="btn-logout" class="text-xs text-charcoal-400 underline hover:text-charcoal-600">Sign Out</button>
         </div>
 
-        <!-- Orders -->
+        <!-- 📦 我的订单 -->
         <div>
           <h2 class="text-lg font-semibold text-charcoal-800 mb-4">My Orders</h2>
           <div id="order-list" class="space-y-3">
@@ -23,7 +42,7 @@ import BaseLayout from '../../../layouts/BaseLayout.astro';
           </div>
         </div>
 
-        <!-- Prayer History -->
+        <!-- 🙏 我的代祷记录 -->
         <div>
           <h2 class="text-lg font-semibold text-charcoal-800 mb-4">My Prayer Requests</h2>
           <div id="prayer-list" class="space-y-3">
@@ -35,65 +54,83 @@ import BaseLayout from '../../../layouts/BaseLayout.astro';
   </section>
 </BaseLayout>
 
+<!-- 🤖 账号页面逻辑：Supabase 认证 + 数据加载（is:inline） -->
 <script is:inline>
+// 🔗 从 esm.sh CDN 动态导入 Supabase SDK
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 
+// 🔗 初始化 Supabase 客户端
 const supabase = createClient(
-  'https://uwebpdtjkucbcyscfzmq.supabase.co',
-  'sb_publishable_TfquiTSSQip7GcF4Sodsjg_PNc_OzNl'
+  'https://uwebpdtjkucbcyscfzmq.supabase.co',       // 【修改】Supabase 项目 URL
+  'sb_publishable_TfquiTSSQip7GcF4Sodsjg_PNc_OzNl' // 【修改】Supabase 可公开的 key（非 secret）
 );
 
+// 🚀 页面初始化
 async function init(){
+  // 🔑 获取当前会话
   var { data } = await supabase.auth.getSession();
+  // ⛔ 未登录 → 保持 #not-logged-in 显示
   if (!data.session) return;
 
+  // ✅ 已登录 → 隐藏未登录提示，显示账号内容区
   var user = data.session.user;
   document.getElementById('not-logged-in').classList.add('hidden');
   document.getElementById('account-content').classList.remove('hidden');
 
-  // Load orders
+  // 📦 加载订单：按创建时间倒序
   var { data: orders } = await supabase.from('orders').select('*').eq('user_id', user.id).order('created_at', { ascending: false });
   var ol = document.getElementById('order-list');
   if (!orders || orders.length === 0) {
+    // 空状态：引导去设计器
     ol.innerHTML = '<p class="text-charcoal-400 text-sm">No orders yet. <a href="/en/designer" class="text-sage-600 underline">Design your own</a></p>';
   } else {
+    // 🎨 订单状态 → 颜色样式映射
+    var statusColors = {pending:'text-yellow-600 bg-yellow-50',confirmed:'text-blue-600 bg-blue-50',shipped:'text-purple-600 bg-purple-50',delivered:'text-green-600 bg-green-50',cancelled:'text-red-600 bg-red-50'};
     ol.innerHTML = orders.map(function(o){
       var items = [];
       try { items = typeof o.items === 'string' ? JSON.parse(o.items) : o.items; } catch(e) {}
-      var statusColors = {pending:'text-yellow-600 bg-yellow-50',confirmed:'text-blue-600 bg-blue-50',shipped:'text-purple-600 bg-purple-50',delivered:'text-green-600 bg-green-50',cancelled:'text-red-600 bg-red-50'};
       return '<div class="bg-white rounded-xl p-4 border border-beige-200 shadow-sm">' +
         '<div class="flex justify-between items-center mb-2">' +
         '<span class="text-charcoal-800 font-medium">Order #' + o.id + '</span>' +
+        // 🏷️ 订单状态标签
         '<span class="text-xs px-2 py-0.5 rounded ' + (statusColors[o.status] || 'text-gray-500') + '">' + o.status + '</span>' +
         '</div>' +
+        // 📊 订单摘要：商品数量 · 总金额 · 下单时间
         '<p class="text-charcoal-500 text-xs">' + items.length + ' items · $' + o.total + ' · ' + new Date(o.created_at).toLocaleString() + '</p>' +
         '</div>';
     }).join('');
   }
 
-  // Load prayer history by email
+  // 🙏 加载代祷记录：按用户邮箱查询，最近 20 条
   var { data: prayers } = await supabase.from('prayer_requests').select('*').eq('email', user.email).order('created_at', { ascending: false }).limit(20);
   var pl = document.getElementById('prayer-list');
   if (!prayers || prayers.length === 0) {
+    // 空状态：引导去代祷页
     pl.innerHTML = '<p class="text-charcoal-400 text-sm">No prayer requests yet. <a href="/en/prayer" class="text-sage-600 underline">Submit a prayer</a></p>';
   } else {
     pl.innerHTML = prayers.map(function(p){
       return '<div class="bg-white rounded-xl p-4 border border-beige-200 shadow-sm">' +
         '<div class="flex justify-between items-start mb-1">' +
+        // 📅 提交时间
         '<span class="text-charcoal-500 text-xs">' + new Date(p.created_at).toLocaleString() + '</span>' +
+        // ✅ 代祷状态：已代祷 / 等待中
         '<span class="text-xs ' + (p.prayed ? 'text-green-600' : 'text-charcoal-400') + '">' + (p.prayed ? '🙏 Prayed' : 'Waiting') + '</span>' +
         '</div>' +
+        // 📝 代祷内容（HTML 转义防止 XSS）
         '<p class="text-charcoal-700 text-sm">' + h(p.request) + '</p>' +
         '</div>';
     }).join('');
   }
 }
 
+// 🚪 退出登录
 document.getElementById('btn-logout')?.addEventListener('click', function(){
   supabase.auth.signOut().then(function(){ location.href = '/en/auth'; });
 });
 
+// 🛡️ HTML 转义函数（防止 XSS）
 function h(s) { return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 
+// 🚀 执行初始化
 init();
 </script>

@@ -1,21 +1,52 @@
 ---
+/*
+ * ============================================================================
+ * 文件位置: src/layouts/BaseLayout.astro
+ * 作用: 全局布局组件，定义网站的统一框架（导航栏、页脚、购物车浮窗、WhatsApp 浮窗）
+ * 被谁调用: 所有页面（src/pages/ 下的 .astro 文件）通过 <BaseLayout> 包裹使用
+ * 修改指南:
+ *   - 【修改】导航链接: 编辑 navLinks 数组，增减链接项
+ *   - 【修改】导航标签文案: 编辑 labels 对象的 en/zh 属性
+ *   - 【修改】网站名称/tagline: 编辑 src/content/site.json
+ *   - 【修改】页脚版权/经文: 编辑 <footer> 内的文案
+ *   - 【修改】购物车浮窗位置: 编辑 cart-floating 的 fixed bottom-24 right-6
+ *   - 【修改】WhatsApp 浮窗: 编辑 wa-btn 的 href 和位置
+ *   - 注意: 多语言通过 lang prop 切换，新增语言需同时修改 labels 和 navLinks
+ * ============================================================================
+ */
+
+// 导入站点配置数据（站点名、tagline、WhatsApp 号等）
 import siteData from '../content/site.json';
+// 解构取出 site 对象
 const { site } = siteData;
+
+// Props 接口定义：【修改】如需新增 prop，在此添加
 interface Props {
-  lang: 'en' | 'zh';
-  title?: string;
-  description?: string;
+  lang: 'en' | 'zh';  // 【修改】支持更多语言时扩充联合类型
+  title?: string;     // 可选页面标题，不传则用 site.name
+  description?: string; // 可选页面描述，不传则用 site.tagline
 }
+
+// 从 Astro.props 解构 props
 const { lang, title, description } = Astro.props;
+
+// 计算另一种语言的代码（用于语言切换链接）
 const otherLang = lang === 'en' ? 'zh' : 'en';
+
+// 获取当前路径（去掉语言前缀），用于生成另一语言版本的 URL
 const currentPathRaw = Astro.url.pathname.replace(/^\/(en|zh)\//, '/');
+// 拼接出另一语言版本的完整路径
 const otherPath = `/${otherLang}${currentPathRaw}`;
+
+// 【修改】多语言标签字典：key 对应 navLinks 中的 key
 const labels = {
   en: { home: 'Home', vision: 'Vision', products: 'Products', designer: 'Design', prayer: 'Prayer', testimonies: 'Testimonies', courses: 'Courses', give: 'Give', auth: 'Account', langSwitch: '中文', menu: 'Menu' },
   zh: { home: '首页', vision: '异象', products: '产品', designer: '设计', prayer: '代祷', testimonies: '见证', courses: '课程', give: '奉献', auth: '账号', langSwitch: 'English', menu: '菜单' },
 };
+// 根据当前语言取出对应的标签
 const t = labels[lang];
 
+// 【修改】导航链接数组：增删导航项在此修改
 const navLinks = [
   { key: 'home', href: `/${lang}/` },
   { key: 'vision', href: `/${lang}/vision/` },
@@ -28,43 +59,71 @@ const navLinks = [
 ];
 ---
 
+<!-- ====== HTML 文档根，lang 属性用于 SEO 和可访问性 ====== -->
 <!doctype html>
 <html lang={lang}>
 <head>
   <meta charset="UTF-8" />
+  <!-- 【修改】viewport: 控制移动端缩放行为 -->
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <!-- 页面标题：优先使用传入 title，否则用 site.name -->
   <title>{title || site.name[lang]}</title>
-  <meta name="description" content={description || site.tagline[lang]} />
+  <!-- 页面描述：优先使用传入 description，否则用 site.tagline -->
+  <meta name="description" content={description || site.name[lang]} />
+
+  <!-- favicon，【修改】更换图标替换 /favicon.svg -->
   <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
 </head>
 <body>
+  <!-- ====== 导航栏：固定顶部、毛玻璃效果 ====== -->
+  <!-- 【修改】背景色: bg-beige-50/95 控制透明度和玻璃效果 -->
+  <!-- 【修改】边框: border-beige-200/50 控制底部分隔线 -->
   <nav class="fixed top-0 left-0 right-0 z-40 bg-beige-50/95 backdrop-blur-md border-b border-beige-200/50">
     <div class="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
+
+      <!-- Logo + 站名，【修改】站名来自 site.json -->
       <a href={`/${lang}/`} class="font-serif text-lg sm:text-xl font-bold text-charcoal-800 tracking-tight">
         ✝ {site.name[lang]}
       </a>
 
-      <!-- Desktop nav -->
+      <!-- ====== 桌面端导航（md 及以上显示） ====== -->
+      <!-- 【修改】导航链接样式: gap-6 控制间距, text-sm 控制字号 -->
       <div class="hidden md:flex items-center gap-6 text-sm font-medium text-charcoal-500">
         {navLinks.map(l => {
+          // 判断当前页面是否激活（精确匹配或子路径匹配）
           const isActive = Astro.url.pathname === l.href || Astro.url.pathname.startsWith(l.href.replace(/\/$/, '/') + '/');
+          // 【修改】激活态样式: font-bold + text-charcoal-800
           return <a href={l.href} class={`hover:text-charcoal-800 transition-colors ${isActive ? 'font-bold text-charcoal-800' : ''}`}>{t[l.key]}</a>;
         })}
+
+        <!-- 账号按钮 -->
         <a href={`/${lang}/auth/`} class="px-3 py-1.5 border border-charcoal-300 rounded-full text-xs text-charcoal-500 hover:text-charcoal-700 hover:border-charcoal-400 transition-colors">{t.auth}</a>
+
+        <!-- 语言切换按钮 -->
         <a href={otherPath} class="px-3 py-1.5 border border-charcoal-300 rounded-full text-xs text-charcoal-500 hover:text-charcoal-700 hover:border-charcoal-400 transition-colors">{t.langSwitch}</a>
       </div>
 
-      <!-- Mobile: hamburger + lang -->
+      <!-- ====== 移动端：汉堡菜单 + 语言切换 ====== -->
       <div class="flex items-center gap-3 md:hidden">
         <a href={`/${lang}/auth/`} class="text-xs text-charcoal-500 border border-charcoal-300 rounded-full px-2 py-1">{t.auth}</a>
         <a href={otherPath} class="text-xs text-charcoal-500 border border-charcoal-300 rounded-full px-2 py-1">{t.langSwitch}</a>
+
+        <!-- 汉堡菜单按钮，点击切换 menu-icon-open/menu-icon-close 的 hidden 状态 -->
+        <!-- 【修改】按钮样式: w-9 h-9 控制大小, rounded-lg 控制圆角 -->
         <button id="menu-toggle" class="w-9 h-9 flex items-center justify-center rounded-lg hover:bg-beige-100 transition-colors" aria-label={t.menu}>
-          <svg class="w-6 h-6 text-charcoal-700" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path id="menu-icon-open" stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16"/><path id="menu-icon-close" stroke-linecap="round" stroke-linejoin="round" d="M6 6l12 12M18 6L6 18" class="hidden"/></svg>
+          <svg class="w-6 h-6 text-charcoal-700" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+            <!-- 打开图标（三条横线） -->
+            <path id="menu-icon-open" stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16"/>
+            <!-- 关闭图标（X），默认隐藏 -->
+            <path id="menu-icon-close" stroke-linecap="round" stroke-linejoin="round" d="M6 6l12 12M18 6L6 18" class="hidden"/>
+          </svg>
         </button>
       </div>
     </div>
 
-    <!-- Mobile menu dropdown -->
+    <!-- ====== 移动端下拉菜单（默认隐藏） ====== -->
+    <!-- 【修改】背景色: bg-beige-50, 点击汉堡按钮切换 hidden -->
     <div id="mobile-menu" class="hidden md:hidden bg-beige-50 border-b border-beige-200/50 px-4 pb-4">
       <div class="flex flex-col gap-1 pt-2">
         {navLinks.map(l => {
@@ -75,15 +134,23 @@ const navLinks = [
     </div>
   </nav>
 
+  <!-- ====== 主内容区：pt-16 给固定导航栏留出空间 ====== -->
   <main class="pt-16">
     <slot />
   </main>
 
+  <!-- ====== 页脚 ====== -->
+  <!-- 【修改】背景: bg-charcoal-900, 文字: text-beige-300 -->
+  <!-- 【修改】padding: py-12 控制上下间距 -->
   <footer class="bg-charcoal-900 text-beige-300 py-12 px-4 sm:px-6">
     <div class="max-w-4xl mx-auto text-center">
+      <!-- 站名 -->
       <p class="font-serif text-xl sm:text-2xl font-bold text-beige-100 mb-2">✝ {site.name[lang]}</p>
+      <!-- tagline -->
       <p class="text-sm text-beige-500 mb-2">{site.tagline[lang]}</p>
+      <!-- 邮箱 -->
       <p class="text-xs text-beige-400 mb-6">{site.email}</p>
+      <!-- 版权 + 经文 -->
       <p class="text-xs text-beige-600">
         &copy; {new Date().getFullYear()} {site.name.en}. {
           lang === 'en'
@@ -94,12 +161,22 @@ const navLinks = [
     </div>
   </footer>
 
-  <!-- Cart Floating Button -->
+  <!-- ====== 购物车浮窗按钮 ====== -->
+  <!-- 【修改】位置: fixed bottom-24 right-6（底部留出 WhatsApp 按钮空间） -->
+  <!-- 【修改】大小: w-14 h-14 -->
+  <!-- 【修改】背景: bg-charcoal-800 -->
   <a href={`/${lang}/cart/`} id="cart-floating" class="fixed bottom-24 right-6 z-50 w-14 h-14 bg-charcoal-800 hover:bg-charcoal-700 rounded-full flex items-center justify-center shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-110" aria-label="Cart">
+    <!-- 购物车图标（SVG） -->
     <svg class="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 100 4 2 2 0 000-4z"/></svg>
+    <!-- 购物车数量角标，默认 hidden，通过 JS 读取 localStorage 后显示 -->
+    <!-- 【修改】角标颜色: bg-red-500 -->
     <span id="cart-badge-main" class="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] w-5 h-5 rounded-full flex items-center justify-center font-bold hidden">0</span>
   </a>
-  <!-- WhatsApp Floating Button -->
+
+  <!-- ====== WhatsApp 浮窗按钮 ====== -->
+  <!-- 【修改】号码: site.whatsapp（在 site.json 中配置） -->
+  <!-- 【修改】位置: fixed bottom-6 right-6 -->
+  <!-- 【修改】背景: bg-green-500（WhatsApp 品牌色） -->
   <a
     href={`https://wa.me/${site.whatsapp}?text=${lang === 'en' ? 'Hi! I visited your website and would like to know more.' : '你好！我访问了你的网站，想了解更多。'}`}
     target="_blank" rel="noopener"
@@ -107,11 +184,13 @@ const navLinks = [
     class="fixed bottom-6 right-6 z-50 w-14 h-14 bg-green-500 hover:bg-green-400 rounded-full flex items-center justify-center shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-110"
     aria-label="WhatsApp"
   >
+    <!-- WhatsApp 图标（SVG path） -->
     <svg class="w-7 h-7" viewBox="0 0 24 24" fill="white"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 0 1 2.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0 0 12.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 0 0 5.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 0 0-3.48-8.413z"/></svg>
   </a>
 
+<!-- ====== 内联 JS（is:inline 确保不被 Astro 打包处理，原样保留在 HTML 中） ====== -->
 <script is:inline>
-  // Mobile menu toggle
+  // 移动端菜单切换：点击汉堡按钮显示/隐藏下拉菜单，同时切换图标
   document.getElementById('menu-toggle').onclick = function() {
     var menu = document.getElementById('mobile-menu');
     var open = document.getElementById('menu-icon-open');
@@ -120,8 +199,17 @@ const navLinks = [
     open.classList.toggle('hidden');
     close.classList.toggle('hidden');
   };
-  // Cart badge
-  (function(){var c=JSON.parse(localStorage.getItem('ps-cart')||'[]');var n=c.reduce(function(s,i){return s+i.quantity;},0);var b=document.getElementById('cart-badge-main');if(b&&n>0){b.textContent=n;b.classList.remove('hidden');}})();
+
+  // 购物车角标初始化：从 localStorage 读取购物车数据，更新浮窗上的数字角标
+  (function(){
+    // ps-cart 是购物车数据在 localStorage 中的 key
+    var c = JSON.parse(localStorage.getItem('ps-cart') || '[]');
+    // 累加所有商品数量
+    var n = c.reduce(function(s, i) { return s + i.quantity; }, 0);
+    var b = document.getElementById('cart-badge-main');
+    // 有商品时显示角标，否则隐藏
+    if (b && n > 0) { b.textContent = n; b.classList.remove('hidden'); }
+  })();
 </script>
 </body>
 </html>

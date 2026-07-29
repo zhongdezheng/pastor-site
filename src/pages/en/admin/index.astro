@@ -1,8 +1,28 @@
 ---
+/*
+ * ============================================================================
+ * 📁 文件位置: src/pages/en/admin/index.astro
+ * 🌐 路由: /en/admin/
+ * 🎯 作用: 后台管理面板 — 三个标签页：祷告(Prayers)、订单(Orders)、内容管理(Content)
+ * 🔒 权限: 需要 Supabase Auth 登录后才可访问，未登录显示"请先登录"提示
+ * 🔧 修改指南:
+ *   【修改】标签页 → 改 tab-btn 的 data-tab 名和对应的 div id
+ *   【修改】Supabase 连接 → 改 createClient 参数
+ *   【修改】API 端点 → 改 fetch URL（目前指向 admin.pastorjeffnchina.com）
+ *   【修改】样式 → 所有 class 都加了注释
+ * ============================================================================
+ */
 import BaseLayout from '../../../layouts/BaseLayout.astro';
 ---
 
 <BaseLayout lang="en" title="Admin — Pastor Jeff">
+  <!-- 
+    管理后台整体: 深色主题
+    style: 深蓝渐变背景 #1a1a2e → #16213e
+    pt-20: 顶部留白80px给导航栏
+    min-h-screen: 最低撑满屏幕
+  -->
+  <section class="pt-20 pb-12 px-4" style="background: linear-gradient(180deg, #1a1a2e 0%, #16213e 100%); min-height:100vh;">
   <section class="pt-20 pb-12 px-4" style="background: linear-gradient(180deg, #1a1a2e 0%, #16213e 100%); min-height:100vh;">
     <div class="max-w-7xl mx-auto">
       <div class="flex items-center justify-between mb-6">

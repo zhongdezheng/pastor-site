@@ -1,8 +1,30 @@
 ---
+/*
+ * ============================================================================
+ * 文件位置: src/components/Hero.astro
+ * 作用: 首页大图横幅组件，包含文字介绍（牧师名、头衔、经文）和照片轮播
+ * 被谁调用: src/pages/index.astro（首页）中引入
+ * 修改指南:
+ *   - 【修改】轮播照片: 编辑 photos 数组，更换 src/alt，也可增减照片数量
+ *   - 【修改】文字内容: 编辑 src/content/hero.json，或直接改模板中的字段名
+ *   - 【修改】轮播间隔: 编辑 setInterval 的 5000（毫秒）
+ *   - 【修改】动画过渡时间: 编辑 img 的 duration-[1200ms]
+ *   - 【修改】照片容器比例: 编辑 aspect-[4/5]（宽高比）
+ *   - 注意: 轮播通过自定义 Web Component <photo-carousel> 实现，Dot 按钮和箭头在组件内部
+ * ============================================================================
+ */
+
+// 导入首页大图数据（名称、头衔、经文等）
 import heroData from '../content/hero.json';
+
+// Props：接收 lang 来决定显示英文还是中文
 interface Props { lang: 'en' | 'zh' }
 const { lang } = Astro.props;
+
+// 取出当前语言的数据
 const t = heroData[lang];
+
+// 【修改】轮播照片列表：修改 src 路径替换照片，可增减条目
 const photos = [
   { src: '/images/hero-1.jpg', alt: 'Pastor Jeff' },
   { src: '/images/hero-2.jpg', alt: 'Ministry' },
@@ -11,22 +33,32 @@ const photos = [
 ];
 ---
 
+<!-- ====== Hero 区域：最小高度满屏，垂直居中 ====== -->
+<!-- 【修改】背景/间距: min-h-screen pt-8 -->
 <section id="hero" class="min-h-screen pt-8 flex items-center">
   <div class="max-w-7xl mx-auto px-6 w-full">
+    <!-- 双列布局：左侧文字 + 右侧照片 -->
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-16 items-center py-8 lg:py-12">
-      <!-- Left: Text -->
+
+      <!-- ====== 左侧：文字区（移动端排在照片下方，桌面端在左） ====== -->
       <div class="order-2 lg:order-1">
+        <!-- 牧师名字（大标题） -->
         <h1 class="text-3xl sm:text-4xl lg:text-5xl font-serif font-bold text-charcoal-900 leading-tight mb-6">
           {t.name}
         </h1>
+        <!-- 头衔/副标题 -->
         <p class="text-lg text-charcoal-500 font-serif italic mb-8">{t.title}</p>
+        <!-- 简介段落 -->
         <div class="space-y-4 text-charcoal-600 leading-relaxed max-w-lg mb-6">
           <p>{t.preview}</p>
         </div>
+        <!-- 经文引用块 -->
         <blockquote class="border-l-2 border-beige-400 pl-6 mb-6">
           <p class="text-charcoal-500 italic font-serif">{t.verse}</p>
+          <!-- 经文出处 -->
           <cite class="text-sm text-charcoal-400 not-italic mt-2 block">{t.verseRef}</cite>
         </blockquote>
+        <!-- "更多"链接 -->
         <div class="text-right">
           <a href={`/${lang}/testimonies/`} class="inline-flex items-center gap-1 text-sage-500 hover:text-sage-600 font-medium text-sm transition-colors">
             {lang === 'en' ? 'Read More' : '更多'} <span class="text-lg">&rarr;</span>
@@ -34,7 +66,9 @@ const photos = [
         </div>
       </div>
 
-      <!-- Right: Photo Carousel -->
+      <!-- ====== 右侧：照片轮播（自定义 Web Component） ====== -->
+      <!-- 【修改】容器比例: aspect-[4/5] 控制宽高比 -->
+      <!-- 【修改】背景占位色: bg-beige-200 -->
       <div class="order-1 lg:order-2">
         <photo-carousel class="block relative w-full aspect-[4/5] rounded-2xl overflow-hidden bg-beige-200 shadow-xl">
           {photos.map((photo, i) => (
@@ -46,10 +80,12 @@ const photos = [
               loading={i === 0 ? 'eager' : 'lazy'}
             />
           ))}
-          <!-- Dots -->
+          <!-- ====== 轮播指示点 ====== -->
+          <!-- 位置: 绝对定位在容器底部中央，通过 JS 控制激活状态 -->
           <div class="absolute bottom-6 left-1/2 -translate-x-1/2 flex gap-2 z-10">
             {photos.map((_, i) => (
               <button
+                <!-- 第一个点默认激活（白色 + 宽一些），其余半透明 -->
                 class={`w-2.5 h-2.5 rounded-full transition-all duration-300 ${i === 0 ? 'bg-white w-6' : 'bg-white/50'}`}
                 data-dot={i}
                 aria-label={`Photo ${i + 1}`}
@@ -62,36 +98,51 @@ const photos = [
   </div>
 </section>
 
+<!-- ====== 内联 JS：照片轮播逻辑 ====== -->
 <script is:inline>
   (function(){
+    // 获取轮播容器
     var container = document.querySelector('photo-carousel');
     if (!container) return;
+
+    // 获取所有照片和指示点
     var photos = container.querySelectorAll('[data-photo-index]');
     var dots = container.querySelectorAll('[data-dot]');
-    if (photos.length < 2) return;
+    if (photos.length < 2) return; // 只有一张照片时不需要轮播
+
     var current = 0, interval;
+
+    // 【修改】核心切换函数：根据 index 显示对应照片，更新指示点样式
     function show(idx){
-      photos.forEach(function(p,i){
+      photos.forEach(function(p, i){
         p.classList.toggle('opacity-100', i===idx);
         p.classList.toggle('opacity-0', i!==idx);
       });
-      dots.forEach(function(d,i){
-        d.classList.toggle('bg-white', i===idx);
-        d.classList.toggle('bg-white/50', i!==idx);
-        d.classList.toggle('w-6', i===idx);
-        d.classList.toggle('w-2.5', i!==idx);
+      dots.forEach(function(d, i){
+        d.classList.toggle('bg-white', i===idx);       // 激活的白色
+        d.classList.toggle('bg-white/50', i!==idx);     // 未激活的半透明
+        d.classList.toggle('w-6', i===idx);             // 激活的宽一点
+        d.classList.toggle('w-2.5', i!==idx);           // 未激活的标准宽度
       });
       current = idx;
     }
-    function next(){ show((current+1) % photos.length); }
+
+    // 下一张
+    function next(){ show((current + 1) % photos.length); }
+
+    // 点击指示点切换
     dots.forEach(function(dot){
       dot.addEventListener('click', function(){
-        show(parseInt(dot.getAttribute('data-dot')||'0'));
+        show(parseInt(dot.getAttribute('data-dot') || '0'));
         clearInterval(interval);
-        interval = setInterval(next, 5000);
+        interval = setInterval(next, 5000); // 【修改】轮播间隔: 5000ms → 改成想要的时间
       });
     });
-    interval = setInterval(next, 5000);
+
+    // 自动轮播
+    interval = setInterval(next, 5000); // 【修改】轮播间隔同上
+
+    // 鼠标悬停时暂停，离开后继续
     container.addEventListener('mouseenter', function(){ clearInterval(interval); });
     container.addEventListener('mouseleave', function(){ interval = setInterval(next, 5000); });
   })();

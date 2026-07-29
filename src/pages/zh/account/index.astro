@@ -1,20 +1,41 @@
+<!--
+============================================================
+📁 文件位置: src/pages/zh/account/index.astro
+🌐 路由: /zh/account/
+🎯 作用: 账号页 — 用户登录后查看订单 + 代祷记录
+📝 修改指南:
+   【修改】Supabase 连接：改 createClient 的 URL 和 anon key
+   【修改】订单状态标签：改 statusLabels 中文映射
+   【修改】订单状态颜色：改 statusColors 映射
+   【修改】未登录提示文案：改 "请先登录" 文本和链接
+   【修改】空订单提示：改 "暂无订单" + 链接
+   【修改】空代祷提示：改 "暂无代祷" + 链接
+   【修改】日志操作按钮：改 btn-logout 点击后跳转
+============================================================
+-->
 ---
-import BaseLayout from '../../../layouts/BaseLayout.astro';
+// ── 导入 ────────────────────────────────────────────────────
+import BaseLayout from '../../../layouts/BaseLayout.astro'; // 全局布局
 ---
 
 <BaseLayout lang="zh" title="我的账号 — 活石">
+  <!-- 【主容器】米色渐变背景 -->
   <section class="pt-24 pb-16 px-4 sm:px-6 min-h-screen" style="background: linear-gradient(180deg, #fefcf5 0%, #f0ece0 100%);">
     <div class="max-w-4xl mx-auto">
+      <!-- 【未登录状态】默认显示 — 登录后隐藏 -->
       <div id="not-logged-in">
         <p class="text-center text-charcoal-600 py-20">请先<a href="/zh/auth" class="text-sage-600 underline">登录</a>查看你的账号。</p>
       </div>
 
+      <!-- 【登录后内容】初始隐藏 — 登录后显示 -->
       <div id="account-content" class="hidden space-y-8">
+        <!-- 【顶部栏】标题 + 退出按钮 -->
         <div class="flex items-center justify-between">
           <h1 class="text-2xl font-serif font-bold text-charcoal-900">我的账号</h1>
           <button id="btn-logout" class="text-xs text-charcoal-400 underline hover:text-charcoal-600">退出登录</button>
         </div>
 
+        <!-- 【订单区域】 -->
         <div>
           <h2 class="text-lg font-semibold text-charcoal-800 mb-4">我的订单</h2>
           <div id="order-list" class="space-y-3">
@@ -22,6 +43,7 @@ import BaseLayout from '../../../layouts/BaseLayout.astro';
           </div>
         </div>
 
+        <!-- 【代祷区域】 -->
         <div>
           <h2 class="text-lg font-semibold text-charcoal-800 mb-4">我的代祷</h2>
           <div id="prayer-list" class="space-y-3">
@@ -33,22 +55,39 @@ import BaseLayout from '../../../layouts/BaseLayout.astro';
   </section>
 </BaseLayout>
 
+<!--
+============================================================
+📌 内联脚本：Supabase 认证 + 数据加载
+   - 检查 session → 未登录显示登录提示
+   - 加载用户订单列表
+   - 加载用户代祷列表
+   - 退出登录
+   【修改】Supabase URL + Key：改 createClient 参数
+   【修改】订单表名：改 .from('orders')
+   【修改】代祷表名：改 .from('prayer_requests')
+   【修改】退出后跳转：改 location.href
+============================================================
+-->
 <script is:inline>
+// 【导入】Supabase 客户端 — 【修改】替换 URL 和 anon key
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 
 const supabase = createClient(
-  'https://uwebpdtjkucbcyscfzmq.supabase.co',
-  'sb_publishable_TfquiTSSQip7GcF4Sodsjg_PNc_OzNl'
+  'https://uwebpdtjkucbcyscfzmq.supabase.co',           // 【修改】项目URL
+  'sb_publishable_TfquiTSSQip7GcF4Sodsjg_PNc_OzNl'     // 【修改】anon public key
 );
 
 async function init(){
+  // 【检查】获取当前 session
   var { data } = await supabase.auth.getSession();
-  if (!data.session) return;
+  if (!data.session) return; // 未登录 → 不做任何操作（保持 "请先登录" 状态）
 
   var user = data.session.user;
+  // 切换 UI：隐藏未登录状态、显示账号内容
   document.getElementById('not-logged-in').classList.add('hidden');
   document.getElementById('account-content').classList.remove('hidden');
 
+  // ── 加载订单 ──────────────────────────────────────────────
   var { data: orders } = await supabase.from('orders').select('*').eq('user_id', user.id).order('created_at', { ascending: false });
   var ol = document.getElementById('order-list');
   if (!orders || orders.length === 0) {
@@ -57,7 +96,9 @@ async function init(){
     ol.innerHTML = orders.map(function(o){
       var items = [];
       try { items = typeof o.items === 'string' ? JSON.parse(o.items) : o.items; } catch(e) {}
+      // 【状态标签】中英文映射 — 【修改】添加/修改状态文案
       var statusLabels = {pending:'待确认',confirmed:'已确认',shipped:'已发货',delivered:'已送达',cancelled:'已取消'};
+      // 【状态颜色】Tailwind class — 【修改】调整颜色
       var statusColors = {pending:'text-yellow-600 bg-yellow-50',confirmed:'text-blue-600 bg-blue-50',shipped:'text-purple-600 bg-purple-50',delivered:'text-green-600 bg-green-50',cancelled:'text-red-600 bg-red-50'};
       return '<div class="bg-white rounded-xl p-4 border border-beige-200 shadow-sm">' +
         '<div class="flex justify-between items-center mb-2">' +
@@ -69,6 +110,7 @@ async function init(){
     }).join('');
   }
 
+  // ── 加载代祷 ─────────────────────────────────────────────
   var { data: prayers } = await supabase.from('prayer_requests').select('*').eq('email', user.email).order('created_at', { ascending: false }).limit(20);
   var pl = document.getElementById('prayer-list');
   if (!prayers || prayers.length === 0) {
@@ -86,11 +128,13 @@ async function init(){
   }
 }
 
+// 【退出登录】— 【修改】退出后跳转目标改 location.href
 document.getElementById('btn-logout')?.addEventListener('click', function(){
   supabase.auth.signOut().then(function(){ location.href = '/zh/auth'; });
 });
 
+// 【HTML转义】防止XSS
 function h(s) { return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 
-init();
+init(); // 页面加载时初始化
 </script>

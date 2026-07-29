@@ -1,14 +1,31 @@
 ---
+/*
+ * ============================================================================
+ * 文件位置: src/components/PrayerForm.astro
+ * 作用: 独立代祷页面使用的完整代祷表单（含匿名选项、email 必填、成功/错误提示）
+ * 被谁调用: src/pages/zh/prayer.astro 和 src/pages/en/prayer.astro（代祷页面）
+ * 修改指南:
+ *   - 【修改】表单文案: 编辑 labels 对象的 en/zh 属性
+ *   - 【修改】匿名选项: 通过 anonymous checkbox 控制，后端据此处理
+ *   - 【修改】提交 API: 编辑 /api/prayer 端点和提交数据字段
+ *   - 【修改】成功/错误样式: 编辑 prayer-success 和 prayer-error 的 class
+ *   - 【修改】表单字段必填: 每个 input/textarea 的 required 属性
+ *   - 与其他代祷组件的区别：此表单 email 为必填，有匿名选项，用于独立页面
+ * ============================================================================
+ */
+
+// Props：接收语言参数
 interface Props { lang: 'en' | 'zh' }
 const { lang } = Astro.props;
 
+// 【修改】多语言标签字典
 const labels = {
   en: {
     title: 'Prayer Requests',
     subtitle: 'We would be honored to pray for you. Every request is read and prayed over with care.',
     name: 'Name',
     namePlaceholder: 'Your name (optional)',
-    anonymous: 'Pray anonymously',
+    anonymous: 'Pray anonymously',           // 匿名代祷选项
     email: 'Email',
     emailPlaceholder: 'your@email.com',
     request: 'Prayer Request',
@@ -25,7 +42,7 @@ const labels = {
     subtitle: '我们很荣幸为你代祷。每一条需求都会被认真阅读和祷告。',
     name: '姓名',
     namePlaceholder: '你的名字（选填）',
-    anonymous: '匿名代祷',
+    anonymous: '匿名代祷',                   // 匿名代祷选项
     email: '邮箱',
     emailPlaceholder: '你的邮箱',
     request: '代祷事项',
@@ -41,13 +58,21 @@ const labels = {
 const t = labels[lang];
 ---
 
+<!-- ====== 代祷页面区域 ====== -->
+<!-- 【修改】背景: bg-beige-100, 间距: py-24 lg:py-32 -->
 <section id="prayer" class="py-24 lg:py-32 px-6 bg-beige-100">
   <div class="max-w-2xl mx-auto">
+
+    <!-- 标题 -->
     <h2 class="section-title text-charcoal-900">{t.title}</h2>
+    <!-- 副标题说明 -->
     <p class="section-subtitle mb-12">{t.subtitle}</p>
 
+    <!-- ====== 代祷表单 ====== -->
+    <!-- 【修改】表单样式: 较宽的内边距 p-8 md:p-10 -->
     <form id="prayer-form" class="bg-white rounded-2xl shadow-lg p-8 md:p-10 space-y-6 border border-beige-200">
-      <!-- Name -->
+
+      <!-- ====== 姓名（可选） ====== -->
       <div>
         <label class="block text-sm font-medium text-charcoal-600 mb-2">{t.name}</label>
         <input
@@ -56,13 +81,15 @@ const t = labels[lang];
         />
       </div>
 
-      <!-- Anonymous -->
+      <!-- ====== 匿名选项 ====== -->
+      <!-- 【修改】勾选后提交 data.anonymous = true，后端隐藏姓名 -->
       <label class="flex items-center gap-3 cursor-pointer">
         <input type="checkbox" name="anonymous" class="w-4 h-4 rounded border-beige-300 text-charcoal-700 focus:ring-sage-400" />
         <span class="text-sm text-charcoal-500">{t.anonymous}</span>
       </label>
 
-      <!-- Email -->
+      <!-- ====== 邮箱（必填） ====== -->
+      <!-- 注意：PrayerGlobe/PrayerHomeSection 中 email 为可选，此处为必填 -->
       <div>
         <label class="block text-sm font-medium text-charcoal-600 mb-2">{t.email}</label>
         <input
@@ -71,7 +98,8 @@ const t = labels[lang];
         />
       </div>
 
-      <!-- Prayer Request -->
+      <!-- ====== 代祷事项（必填） ====== -->
+      <!-- 【修改】行数: rows="5" -->
       <div>
         <label class="block text-sm font-medium text-charcoal-600 mb-2">{t.request} *</label>
         <textarea
@@ -80,34 +108,44 @@ const t = labels[lang];
         ></textarea>
       </div>
 
+      <!-- 提交按钮 -->
+      <!-- 【修改】按钮样式: py-4 更厚, text-lg 更大字号 -->
       <button
         type="submit"
         class="w-full py-4 bg-sage-500 hover:bg-sage-600 text-white font-medium rounded-xl transition-colors text-lg"
       >{t.submit}</button>
     </form>
 
-    <!-- Success / Error messages -->
+    <!-- ====== 成功消息（默认隐藏） ====== -->
     <div id="prayer-success" class="hidden mt-8 bg-green-50 border border-green-200 rounded-2xl p-8 text-center">
       <p class="text-4xl mb-4">🙏</p>
       <h3 class="font-serif text-xl font-bold text-green-800 mb-2">{t.successTitle}</h3>
       <p class="text-green-600">{t.successMsg}</p>
     </div>
+
+    <!-- ====== 错误消息（默认隐藏） ====== -->
     <div id="prayer-error" class="hidden mt-8 bg-red-50 border border-red-200 rounded-2xl p-8 text-center">
       <p class="text-red-600">{t.errorMsg}</p>
     </div>
   </div>
 </section>
 
+<!-- ====== JS：表单提交逻辑（使用 TypeScript 风格的 as 断言） ====== -->
+<!-- 注意：此 script 没有 is:inline，会被 Astro 打包到 bundle 中 -->
 <script>
   function initPrayerForm() {
+    // 获取 DOM 元素并做类型断言
     const form = document.getElementById('prayer-form') as HTMLFormElement;
     const success = document.getElementById('prayer-success')!;
     const error = document.getElementById('prayer-error')!;
     const btn = form?.querySelector('button')!;
 
+    // 绑定提交事件
     form?.addEventListener('submit', async (e) => {
       e.preventDefault();
       const formData = new FormData(form);
+
+      // 【修改】构造提交数据：包含 anonymous 字段
       const data = {
         name: formData.get('name') || '',
         anonymous: formData.get('anonymous') === 'on',
@@ -117,15 +155,18 @@ const t = labels[lang];
         timestamp: new Date().toISOString(),
       };
 
+      // 验证代祷事项不为空
       if (!data.request.trim()) {
         alert('{t.required}');
         return;
       }
 
+      // 按钮进入 loading 状态
       btn.textContent = '{t.submitting}';
       btn.classList.add('opacity-70', 'pointer-events-none');
 
       try {
+        // 提交到后端 API
         const res = await fetch('/api/prayer', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -133,6 +174,7 @@ const t = labels[lang];
         });
 
         if (res.ok) {
+          // 成功：隐藏表单，显示成功消息
           form.classList.add('hidden');
           success.classList.remove('hidden');
           error.classList.add('hidden');
@@ -140,16 +182,20 @@ const t = labels[lang];
           throw new Error('Failed');
         }
       } catch (err) {
+        // 失败：显示错误消息
         error.classList.remove('hidden');
         success.classList.add('hidden');
         console.error(err);
       } finally {
+        // 恢复按钮状态
         btn.textContent = '{t.submit}';
         btn.classList.remove('opacity-70', 'pointer-events-none');
       }
     });
   }
 
+  // 初始化
   initPrayerForm();
+  // Astro SPA 导航时重新初始化
   document.addEventListener('astro:page-load', initPrayerForm);
 </script>

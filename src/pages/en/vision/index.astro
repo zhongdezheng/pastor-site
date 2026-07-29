@@ -1,20 +1,41 @@
 ---
+/**
+ * 📍 文件位置: src/pages/en/vision/index.astro
+ * 🌐 路由: /en/vision/
+ * 🎯 作用: 展示 Livingstone 异象（Vision）的详细页面，从 content/vision.json 读取英文内容并渲染
+ * 🔧 修改指南:
+ *   - 修改异象内容：编辑 content/vision.json → en 字段
+ *   - 修改样式：调整下方 HTML 中的 Tailwind 类名
+ *   - 段落分割：代码用 \n\n 分割正文，确保 JSON 中以双换行分隔段落
+ *   - 页面标题格式：{v.title} — Livingstone，可在 BaseLayout 的 title 属性修改
+ */
+
+// 【修改】引入 BaseLayout 布局组件
 import BaseLayout from '../../../layouts/BaseLayout.astro';
+// 【修改】引入异象数据（JSON 格式），包含 en 和 zh 两种语言
 import visionData from '../../../content/vision.json';
+
+// 📝 v = visionData.en：英文异象对象 { title, content }
 const v = visionData.en;
+// 📝 用双换行（\n\n）分割正文为段落数组，配合下方的 {paragraphs.map()} 逐段渲染
 const paragraphs = v.content.split('\n\n').filter(p => p.trim());
 ---
 
 <BaseLayout lang="en" title={`${v.title} — Livingstone`}>
+  <!-- 🎨 异象页面主容器 · 渐变背景 · 响应式内边距 -->
   <section class="py-24 lg:py-32 px-6 bg-beige-50 min-h-screen">
     <div class="max-w-3xl mx-auto">
+      <!-- 装饰分隔线：短横线 + ✦ 星号 -->
       <div class="flex items-center justify-center gap-3 mb-6">
         <span class="block w-12 h-px bg-beige-400"></span>
         <span class="text-beige-400 text-lg">✦</span>
         <span class="block w-12 h-px bg-beige-400"></span>
       </div>
+      <!-- 📌 页面主标题 -->
       <h1 class="text-2xl md:text-3xl font-serif font-bold text-charcoal-900 text-center mb-10">{v.title}</h1>
+      <!-- 📄 异象正文卡片（白色圆角卡片 + 阴影） -->
       <article class="bg-white rounded-2xl shadow-lg border border-beige-200 p-8 md:p-12">
+        <!-- ✍️ 逐段渲染正文，段落间通过 space-y-6 保持间距 -->
         <div class="text-charcoal-700 leading-relaxed font-serif text-lg space-y-6">
           {paragraphs.map(p => <p>{p}</p>)}
         </div>

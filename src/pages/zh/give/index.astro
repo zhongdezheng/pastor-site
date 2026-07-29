@@ -1,27 +1,52 @@
+<!--
+============================================================
+📁 文件位置: src/pages/zh/give/index.astro
+🌐 路由: /zh/give/
+🎯 作用: 奉献页 — 预设金额选择 + 自定义金额 + PayPal 奉献
+📝 修改指南:
+   【修改】预设金额：改 onclick="selectAmount(10|50|100)" 的数值
+   【修改】PayPal 链接：改 script 中的 paypal.me/pastorjeffinchina
+   【修改】奉献描述文案：改 "一次性奉献"/"每月支持"/"慷慨奉献"
+   【修改】引导语：改 <p class="text-charcoal-500 ..."> 内容
+   【修改】自定义金额限制：改 input min="1"
+   【修改】新增金额选项：复制一个金额卡片 div
+============================================================
+-->
 ---
-import BaseLayout from '../../../layouts/BaseLayout.astro';
+// ── 导入 ────────────────────────────────────────────────────
+import BaseLayout from '../../../layouts/BaseLayout.astro'; // 全局布局
 ---
 
 <BaseLayout lang="zh" title="奉献 — 活石">
+  <!-- 【主容器】白色背景 -->
   <section class="pt-24 pb-16 px-4 sm:px-6 bg-white min-h-screen">
     <div class="max-w-3xl mx-auto text-center">
+      <!-- 【标题】 -->
       <h1 class="font-serif text-3xl font-bold text-charcoal-800 mb-3">奉献支持</h1>
+      <!-- 【引导语】 — 【修改】直接改此段文案 -->
       <p class="text-charcoal-500 mb-8 text-sm max-w-xl mx-auto">邀请你成为这片庄稼地上的国度同工。用你的金钱在职场与全地共同服侍，将天国的文化带下，一同见证那不可震动的国！</p>
 
+      <!-- 【预设金额卡片】3列响应式 -->
       <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-10">
+        <!-- 【$10】一次性奉献 -->
         <div class="bg-beige-50 rounded-2xl p-6 border border-beige-200 hover:shadow-lg transition-shadow cursor-pointer" onclick="selectAmount(10)"><p class="text-3xl font-bold text-charcoal-800">$10</p><p class="text-xs text-charcoal-400 mt-1">一次性奉献</p></div>
+        <!-- 【$50】每月支持 -->
         <div class="bg-beige-50 rounded-2xl p-6 border border-beige-200 hover:shadow-lg transition-shadow cursor-pointer" onclick="selectAmount(50)"><p class="text-3xl font-bold text-charcoal-800">$50</p><p class="text-xs text-charcoal-400 mt-1">每月支持</p></div>
+        <!-- 【$100】慷慨奉献 -->
         <div class="bg-beige-50 rounded-2xl p-6 border border-beige-200 hover:shadow-lg transition-shadow cursor-pointer" onclick="selectAmount(100)"><p class="text-3xl font-bold text-charcoal-800">$100</p><p class="text-xs text-charcoal-400 mt-1">慷慨奉献</p></div>
       </div>
 
+      <!-- 【自定义金额区域】 -->
       <div class="bg-white rounded-2xl border p-6 max-w-sm mx-auto">
         <label class="text-sm font-semibold text-charcoal-600 mb-2 block">自定义金额</label>
         <div class="flex gap-2 mb-4"><span class="text-xl font-bold text-charcoal-400 self-center">$</span><input type="number" id="give-amount" value="10" min="1" class="flex-1 text-2xl font-bold text-charcoal-800 border-b-2 border-charcoal-300 focus:border-charcoal-600 outline-none text-center bg-transparent py-2"></div>
+        <!-- 【可选信息】姓名、邮箱、留言 -->
         <div class="text-left space-y-3 mb-4">
           <input type="text" id="give-name" placeholder="您的姓名" class="w-full px-3 py-2 border rounded-lg text-sm">
           <input type="email" id="give-email" placeholder="邮箱" class="w-full px-3 py-2 border rounded-lg text-sm">
           <textarea id="give-note" rows="2" placeholder="留言或代祷事项..." class="w-full px-3 py-2 border rounded-lg text-sm"></textarea>
         </div>
+        <!-- 【提交按钮】PayPal支付 — 【修改】按钮文案在此 -->
         <button class="w-full py-3 bg-charcoal-800 hover:bg-charcoal-700 text-white rounded-xl font-medium text-sm transition-colors" onclick="submitGive()">通过 PayPal 奉献</button>
       </div>
       
@@ -29,8 +54,27 @@ import BaseLayout from '../../../layouts/BaseLayout.astro';
   </section>
 </BaseLayout>
 
+<!--
+============================================================
+📌 内联脚本：奉献金额选择与支付跳转
+   - selectAmount: 更新金额输入框
+   - submitGive: 收集信息后打开 PayPal.me 链接
+   【修改】PayPal 用户名：改 paypal.me/pastorjeffinchina
+   【修改】如需记录到后端：在 submitGive 加 fetch POST
+============================================================
+-->
 <script is:inline>
+  // 【金额选择】点击预设卡片时更新输入框
   function selectAmount(amt){document.getElementById('give-amount').value=amt;}
-  function submitGive(){var a=document.getElementById('give-amount').value,n=document.getElementById('give-name').value.trim(),e=document.getElementById('give-email').value.trim(),m=document.getElementById('give-note').value.trim();var lines=['我想奉献 $'+a,'姓名: '+n,'邮箱: '+e,'留言: '+m,'支付: PayPal'];window.open('https://www.paypal.com/paypalme/pastorjeffinchina/'+a,'_blank');}
+  // 【提交】收集信息 → 打开 PayPal.me 支付链接
+  function submitGive(){
+    var a=document.getElementById('give-amount').value,
+        n=document.getElementById('give-name').value.trim(),
+        e=document.getElementById('give-email').value.trim(),
+        m=document.getElementById('give-note').value.trim();
+    var lines=['我想奉献 $'+a,'姓名: '+n,'邮箱: '+e,'留言: '+m,'支付: PayPal'];
+    // 【修改】PayPal 链接：替换 paypalme 用户名
+    window.open('https://www.paypal.com/paypalme/pastorjeffinchina/'+a,'_blank');
+  }
 </script>
 </BaseLayout>

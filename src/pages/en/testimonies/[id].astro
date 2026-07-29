@@ -1,34 +1,58 @@
 ---
+/**
+ * 📍 文件位置: src/pages/en/testimonies/[id].astro
+ * 🌐 路由: /en/testimonies/:id/（动态路由，id = 见证 JSON 中的 id 数字）
+ * 🎯 作用: 英文见证详情页——展示单篇见证的标题/作者/日期/正文，数据来自 content/testimonies.json
+ * 🔧 修改指南:
+ *   - 修改见证内容：编辑 content/testimonies.json → 对应 id 的 en 字段
+ *   - 修改静态路径：getStaticPaths() 自动从 testimonies.json 生成所有详情页
+ *   - 段落分割：代码用 \n\n 分割正文，确保 JSON 中以双换行分隔段落
+ *   - 标题格式：(no title) 为默认值，来自 BaseLayout 的 title 属性
+ *   - 不存在的 id 会重定向到 /en/testimonies/
+ */
+
+// 【修改】引入基础布局
 import BaseLayout from '../../../layouts/BaseLayout.astro';
+// 【修改】引入见证数据
 import testimonies from '../../../content/testimonies.json';
 
+// 🗺️ getStaticPaths：为每个见证生成一条静态路由
 export function getStaticPaths() {
   return testimonies.map(t => ({ params: { id: String(t.id) } }));
 }
 
+// 📝 从 URL 中提取 id 参数并转为数字
 const id = Number(Astro.params.id);
+// 📝 根据 id 查找对应见证
 const t = testimonies.find(tm => tm.id === id);
+// ⛔ 见证不存在 → 重定向到见证列表页
 if (!t) return Astro.redirect('/en/testimonies/');
 ---
 
 <BaseLayout lang="en" title={`${t.title.en} — Livingstone`}>
+  <!-- 📖 见证详情页主容器 -->
   <section class="py-24 lg:py-32 px-6 bg-beige-50 min-h-screen">
     <div class="max-w-3xl mx-auto">
+      <!-- ↩️ 返回见证列表（带左箭头 SVG） -->
       <a href="/en/testimonies/" class="inline-flex items-center gap-1 text-charcoal-400 hover:text-sage-500 text-sm transition-colors mb-12">
         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/></svg>
         Back to Testimonies
       </a>
 
+      <!-- 📄 见证正文卡片 -->
       <article class="bg-white rounded-2xl shadow-lg border border-beige-200 p-8 md:p-12">
+        <!-- 🏷️ 标题 + 日期 · 作者 -->
         <header class="mb-10">
           <h1 class="text-3xl md:text-4xl font-serif font-bold text-charcoal-900 mb-3">{t.title.en}</h1>
           <p class="text-charcoal-400 text-sm">{t.date} &middot; {t.author.en}</p>
         </header>
 
+        <!-- ✍️ 见证正文（用双换行分段） -->
         <div class="text-charcoal-700 leading-relaxed font-serif text-xl">
           {t.content.en.split('\n\n').map(para => <p class="mb-6">{para}</p>)}
         </div>
 
+        <!-- 📝 页尾：作者署名 -->
         <footer class="mt-12 pt-6 border-t border-beige-200">
           <p class="text-charcoal-400 text-sm italic">— {t.author.en}</p>
         </footer>

@@ -1,16 +1,35 @@
 ---
-import BaseLayout from '../../layouts/BaseLayout.astro';
-import Hero from '../../components/Hero.astro';
-import Scripture3D from '../../components/Scripture3D.astro';
-import ProductCarousel from '../../components/ProductCarousel.astro';
-import VisionSection from '../../components/VisionSection.astro';
-import PrayerHomeSection from '../../components/PrayerHomeSection.astro';
+/**
+ * 📍 文件位置: src/pages/en/index.astro
+ * 🌐 路由: /en/（英文首页）
+ * 🎯 作用: 英文首页，按顺序串起 Hero → Scripture3D → Vision → ProductCarousel → PrayerHomeSection 五个版块
+ * 🔧 修改指南:
+ *   - 调整首页版块顺序：只需修改下方组件排列顺序
+ *   - 增加/移除版块：对应增减 BaseLayout 内部的组件标签
+ *   - 所有版块组件支持 lang prop，当前传 "en"，国际化无需改动此处
+ *   - Hero 和 PrayerHomeSection 使用 BaseLayout 传入的 title 数据，无需额外 props
+ */
+
+// 【修改】引入的布局和组件
+import BaseLayout from '../../layouts/BaseLayout.astro';         // 基础布局（包含 header/footer）
+import Hero from '../../components/Hero.astro';                   // 首屏英雄区组件
+import Scripture3D from '../../components/Scripture3D.astro';     // 3D 经文展示组件
+import ProductCarousel from '../../components/ProductCarousel.astro'; // 产品轮播组件
+import VisionSection from '../../components/VisionSection.astro';     // 异象展示组件
+import PrayerHomeSection from '../../components/PrayerHomeSection.astro'; // 代祷入口组件
 ---
 
+<!-- 🌐 英文首页整体结构 -->
+<!-- BaseLayout 带 lang="en" 传递语言上下文，title 设置页面标题 -->
 <BaseLayout lang="en" title="Light & Grace — A Young Pastor's Journey">
+  <!-- 🎬 第1屏：英雄区（大字标题 + 背景） -->
   <Hero lang="en" />
+  <!-- 📖 第2屏：3D 经文动画展示 -->
   <Scripture3D lang="en" />
+  <!-- 👁️ 第3屏：异象文字内容 -->
   <VisionSection lang="en" />
+  <!-- 🛍️ 第4屏：产品轮播（T恤等商品展示） -->
   <ProductCarousel lang="en" />
+  <!-- 🙏 第5屏：代祷入口 -->
   <PrayerHomeSection lang="en" />
 </BaseLayout>

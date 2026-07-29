@@ -1,17 +1,34 @@
 ---
+/**
+ * 📍 文件位置: src/pages/en/contact/index.astro
+ * 🌐 路由: /en/contact/
+ * 🎯 作用: 英文联系我们页——展示 WhatsApp、Email、代祷三个联系入口卡片，数据来自 content/site.json
+ * 🔧 修改指南:
+ *   - 修改 WhatsApp 号码 / Email：编辑 content/site.json → site.whatsapp / site.email
+ *   - 修改卡片文字：编辑下方 <h3> / <p> 标签
+ *   - 增加/移除联系入口：增减 <a> 卡片，保持样式一致
+ *   - section-title / section-subtitle 类名来自全局 CSS 样式
+ */
+
+// 【修改】引入基础布局
 import BaseLayout from '../../../layouts/BaseLayout.astro';
+// 【修改】引入站点数据（site.json 包含 site.whatsapp 和 site.email）
 import siteData from '../../../content/site.json';
+// 🌐 提取 site 对象
 const { site } = siteData;
 ---
 
 <BaseLayout lang="en" title="Contact — Livingstone">
+  <!-- ✉️ 联系我们页面主容器 -->
   <section class="py-24 lg:py-32 px-6 bg-beige-50 min-h-screen">
     <div class="max-w-2xl mx-auto text-center">
+      <!-- 📌 页面标题 + 副标题 -->
       <h2 class="section-title text-charcoal-900">Get in Touch</h2>
       <p class="section-subtitle mb-16">We'd love to hear from you. Reach out anytime.</p>
 
+      <!-- 🔗 联系入口卡片列表（垂直排列） -->
       <div class="space-y-8">
-        <!-- WhatsApp -->
+        <!-- 💬 WhatsApp 卡片：点击跳转 WhatsApp 聊天 -->
         <a href={`https://wa.me/${site.whatsapp}?text=Hi! I visited your website and would like to connect.`}
            target="_blank" rel="noopener"
            class="block bg-white rounded-2xl shadow-lg border border-beige-200 p-8 hover:shadow-xl transition-all group">
@@ -22,7 +39,7 @@ const { site } = siteData;
           <p class="text-charcoal-500 text-sm">Fastest way to reach us — chat directly on WhatsApp</p>
         </a>
 
-        <!-- Email -->
+        <!-- ✉️ Email 卡片：点击打开邮箱客户端 -->
         <a href={`mailto:${site.email}`}
            class="block bg-white rounded-2xl shadow-lg border border-beige-200 p-8 hover:shadow-xl transition-all group">
           <div class="w-16 h-16 mx-auto mb-4 bg-charcoal-100 rounded-full flex items-center justify-center text-3xl group-hover:scale-110 transition-transform">
@@ -32,7 +49,7 @@ const { site } = siteData;
           <p class="text-charcoal-500 text-sm">{site.email}</p>
         </a>
 
-        <!-- Prayer -->
+        <!-- 🙏 代祷卡片：点击跳转到代祷页面 -->
         <a href="/en/prayer/"
            class="block bg-white rounded-2xl shadow-lg border border-beige-200 p-8 hover:shadow-xl transition-all group">
           <div class="w-16 h-16 mx-auto mb-4 bg-charcoal-100 rounded-full flex items-center justify-center text-3xl group-hover:scale-110 transition-transform">
