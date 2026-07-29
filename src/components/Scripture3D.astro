@@ -38,7 +38,11 @@ const { lang } = Astro.props;
 
       <!-- ====== 轮播轨道：flex + transform 横向连续滚动，所有经文全部可见 ====== -->
       <!-- 【修改】滚动速度: JS 中 SCROLL_SPEED（当前 40，像素/秒，越大越快） -->
-      <div id="scripture-track" class="scripture-track flex items-center h-full"></div>
+      <div id="scripture-track" class="scripture-track flex items-center justify-center h-full transition-transform duration-700 ease-out"></div>
+
+      <!-- ====== 左右渐变遮罩（制造景深效果） ====== -->
+      <div class="absolute inset-y-0 left-0 w-16 md:w-28 pointer-events-none bg-gradient-to-r from-white/90 to-transparent z-10"></div>
+      <div class="absolute inset-y-0 right-0 w-16 md:w-28 pointer-events-none bg-gradient-to-l from-white/90 to-transparent z-10"></div>
 
       <!-- ====== 左箭头按钮 ====== -->
       <!-- 【修改】按钮样式: 圆 + 毛玻璃 + 阴影，hover 时变化 -->
@@ -126,7 +130,7 @@ const { lang } = Astro.props;
     function cardHTML(s) {
       var text = s.text || '';
       var ref = s.ref || '';
-      return '<div class="scripture-card shrink-0 bg-white rounded-2xl shadow-lg border border-beige-200 p-8 md:p-10 flex flex-col justify-center">' +
+      return '<div class="scripture-card shrink-0 bg-white rounded-2xl shadow-lg border border-beige-200 p-8 md:p-10 transition-all duration-700 ease-out flex flex-col justify-center">' +
         '<p class="text-base md:text-xl leading-relaxed font-serif italic text-charcoal-700 mb-5 line-clamp-6">' + text + '</p>' +
         '<p class="text-sm text-charcoal-400 font-medium tracking-wide border-t border-beige-200 pt-4">— ' + ref + '</p></div>';
     }
