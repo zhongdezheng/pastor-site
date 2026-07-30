@@ -39,7 +39,7 @@ const { lang } = Astro.props;
     </div>
 
     <!-- Dots：全部初始灰色，JS 激活第一个 -->
-    <div class="flex justify-center gap-2 mt-8" id="scr-dots">
+    <div class="flex justify-between gap-2 mt-8" id="scr-dots">
       {scriptures.map((_, i) => (
         <span class="scr-dot w-2.5 h-2.5 rounded-full cursor-pointer bg-charcoal-300 hover:bg-charcoal-400" data-sdot={i}></span>
       ))}
