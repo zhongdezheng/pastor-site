@@ -65,10 +65,10 @@ const { lang } = Astro.props;
 
   .scr-track {
     gap: 20px;
-    animation: scr-scroll 50s linear infinite;
+    animation: scr-scroll 40s linear infinite;
   }
   @media (min-width: 768px) {
-    .scr-track { gap: 28px; }
+    .scr-track { gap: 28px; animation-duration: 40s; }
   }
 
   @keyframes scr-scroll {
