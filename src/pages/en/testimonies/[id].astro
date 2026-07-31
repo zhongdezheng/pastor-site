@@ -57,6 +57,19 @@ if (!t) return Astro.redirect('/en/testimonies/');
           <p class="text-charcoal-400 text-sm italic">— {t.author.en}</p>
         </footer>
       </article>
+      <!-- 📚 见证目录：列出所有见证，当前页高亮 -->
+      <nav class="mt-12">
+        <h2 class="text-lg font-serif font-bold text-charcoal-800 mb-4">More Testimonies</h2>
+        <div class="space-y-1">
+          {testimonies.map((tm, idx) => (
+            <a href={`/en/testimonies/${tm.id}/`} class={`block py-3 px-4 rounded-lg border transition-colors ${tm.id === id ? 'bg-sage-50 border-sage-200 text-sage-700 font-bold' : 'border-beige-200 hover:bg-beige-50 text-charcoal-700'}`}>
+              <span class="text-charcoal-400 text-sm mr-2">{idx + 1}.</span>
+              <span class="font-serif">{tm.title.en}</span>
+              <span class="text-charcoal-400 text-xs ml-2">{tm.date}</span>
+            </a>
+          ))}
+        </div>
+      </nav>
     </div>
   </section>
 </BaseLayout>
