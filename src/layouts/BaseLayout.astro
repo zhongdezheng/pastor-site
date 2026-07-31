@@ -172,6 +172,19 @@ const navLinks = [
     <!-- 【修改】角标颜色: bg-red-500 -->
     <span id="cart-badge-main" class="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] w-5 h-5 rounded-full flex items-center justify-center font-bold hidden">0</span>
   </a>
+  
+    <!-- ====== Email 浮动按钮 ====== -->
+  <a
+    href={`mailto:${site.email}`}
+    id="email-btn"
+    class="fixed bottom-16 right-6 z-50 w-14 h-14 bg-blue-500 hover:bg-blue-400 rounded-full flex items-center justify-center shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-110"
+    aria-label="Email"
+  >
+    <!-- 邮件图标（SVG 信封） -->
+    <svg class="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+      <path stroke-linecap="round" stroke-linejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
+    </svg>
+  </a>
 
   <!-- ====== WhatsApp 浮窗按钮 ====== -->
   <!-- 【修改】号码: site.whatsapp（在 site.json 中配置） -->
