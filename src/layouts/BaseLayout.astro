@@ -151,12 +151,13 @@ const navLinks = [
       <!-- 邮箱 -->
       <p class="text-xs text-beige-400 mb-6">{site.email}</p>
       <!-- 版权 + 经文 -->
-      <p class="text-xs text-beige-600">
-        &copy; {new Date().getFullYear()} {site.name.en}. {
-          lang === 'en'
-            ? '"Love one another as I have loved you." — John 15:12'
-            : '「你们要彼此相爱，像我爱你们一样。」— 约翰福音 15:12'
-        }
+            <p class="text-xs text-beige-600">
+        &copy; {new Date().getFullYear()} {site.name.en}
+      </p>
+      <p class="text-xs text-beige-600 mt-1">
+        {lang === 'en'
+          ? '"Love one another as I have loved you." — John 15:12'
+          : '「你们要彼此相爱，像我爱你们一样。」— 约翰福音 15:12'}
       </p>
     </div>
   </footer>
