@@ -30,7 +30,7 @@ const t = testimonies.find(tm => tm.id === id);
 if (!t) return Astro.redirect('/zh/testimonies/');
 ---
 
-<BaseLayout lang="zh" title={`${t.title.zh} — 活石`}>
+<BaseLayout lang="zh" title={`${t.title.zh} | 活石`}>
   <!-- 【主容器】米色背景 -->
   <section class="py-24 lg:py-32 px-6 bg-beige-50 min-h-screen">
     <div class="max-w-3xl mx-auto">

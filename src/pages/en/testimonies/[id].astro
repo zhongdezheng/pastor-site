@@ -29,7 +29,7 @@ const t = testimonies.find(tm => tm.id === id);
 if (!t) return Astro.redirect('/en/testimonies/');
 ---
 
-<BaseLayout lang="en" title={`${t.title.en} — Livingstone`}>
+<BaseLayout lang="en" title={`${t.title.en} | Livingstone`}>
   <!-- 📖 见证详情页主容器 -->
   <section class="py-24 lg:py-32 px-6 bg-beige-50 min-h-screen">
     <div class="max-w-3xl mx-auto">
