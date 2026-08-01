@@ -69,8 +69,10 @@ const navLinks = [
 
   <!-- 页面标题：优先使用传入 title，否则用 site.name -->
   <title>{title || site.name[lang]}</title>
-  <!-- 页面描述：优先使用传入 description，否则用 site.tagline -->
-  <meta name="description" content={description || site.name[lang]} />
+  <!-- 页面描述：优先使用传入 description，否则用 SEO 优化默认描述 -->
+  <meta name="description" content={description || (lang === 'en' ? 'Christian faith apparel — T-shirts, hoodies & more. Testimonies, Bible study, prayer wall. Shop now.' : '基督教信心服饰 — T恤、卫衣等。信心见证、圣经学习、代祷墙。立即选购。')} />
+  <!-- SEO 关键词 -->
+  <meta name="keywords" content="Christian clothing, faith apparel, testimony, Bible study, pastor, worship, Christian T-shirt, hoodie, 基督教服饰, 信心见证, 圣经学习, 牧师, 主内服饰, 代祷" />
 
   <!-- favicon，【修改】更换图标替换 /favicon.svg -->
   <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
