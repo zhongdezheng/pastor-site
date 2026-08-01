@@ -31,7 +31,7 @@ const lang = 'zh';
 if (!product) return Astro.redirect('/zh/products/');
 ---
 
-<BaseLayout lang="zh" title={product.name.zh}>
+<BaseLayout lang="zh" title={`${product.name.zh} | 基督教信心服饰 | 活石`}>
   <!-- 【数据注入】将产品数据以JSON注入页面，供内联脚本使用 -->
   <script type="application/json" id="__prodData" set:html={JSON.stringify({colors: product.colors, sizes: product.sizes, id: product.id, slug: product.id, name: product.name.zh, price: product.price, image: product.images?.[0]||''})}></script>
 

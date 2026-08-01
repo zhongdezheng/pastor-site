@@ -31,7 +31,7 @@ const lang = 'en';
 if (!product) return Astro.redirect('/en/products/');
 ---
 
-<BaseLayout lang="en" title={product.name.en}>
+<BaseLayout lang="en" title={`${product.name.en} | Christian Faith Apparel | Livingstone`}>
   <!-- 📦 注入产品数据到页面（JSON），供下方 script 读取 -->
   <script type="application/json" id="__prodData" set:html={JSON.stringify({colors: product.colors, sizes: product.sizes, id: product.id, slug: product.id, name: product.name.en, price: product.price, image: product.images?.[0]||''})}></script>
 
