@@ -72,5 +72,6 @@ if (!t) return Astro.redirect('/zh/testimonies/');
         </div>
       </nav>
     </div>
+    </div>
   </section>
 </BaseLayout>
