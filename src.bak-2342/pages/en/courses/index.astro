@@ -1,0 +1,42 @@
+---
+import BaseLayout from '../../../layouts/BaseLayout.astro';
+---
+<BaseLayout lang="en" title="Bible Study & Faith Courses | Livingstone">
+  <section class="pt-24 pb-16 px-4 sm:px-6 bg-beige-50 min-h-screen">
+    <div class="max-w-4xl mx-auto">
+      <h1 class="font-serif text-3xl font-bold text-charcoal-800 mb-3 text-center">Bible Study Courses</h1>
+      <p class="text-charcoal-500 mb-10 text-center text-sm">Deepen your faith through guided study and reflection.</p>
+      <div id="courses-grid" class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <p class="text-center text-charcoal-400 col-span-2 py-8">Loading courses...</p>
+      </div>
+    </div>
+  </section>
+</BaseLayout>
+
+<script is:inline>
+(async function() {
+  try {
+    const r = await fetch('https://admin.pastorjeffnchina.com/api/courses');
+    if (!r.ok) throw new Error('API error');
+    const courses = await r.json();
+    const active = courses.filter(c => c.status === 1);
+    const grid = document.getElementById('courses-grid');
+    if (!active.length) { grid.innerHTML = '<p class="text-center text-charcoal-400 col-span-2 py-8">No courses available yet.</p>'; return; }
+    const levelMap = { '入门': 'Beginner', '中级': 'Intermediate', '高级': 'Advanced', '全部': 'All Levels' };
+    grid.innerHTML = active.map(c =>
+      '<div class="bg-white rounded-2xl border p-6 hover:shadow-lg transition-shadow">' +
+        '<span class="text-3xl">' + (c.icon || '📖') + '</span>' +
+        '<h3 class="font-serif text-lg font-bold text-charcoal-800 mt-3">' + (c.title_en || '') + '</h3>' +
+        '<p class="text-xs text-charcoal-400 mt-1">' + (c.description_en || '') + '</p>' +
+        '<div class="flex gap-2 mt-3">' +
+          '<span class="text-[10px] bg-beige-100 px-2 py-0.5 rounded-full">' + (levelMap[c.level] || c.level || 'All Levels') + '</span>' +
+          '<span class="text-[10px] bg-beige-100 px-2 py-0.5 rounded-full">' + (c.lessons || '?') + ' Lessons</span>' +
+          '<span class="text-[10px] bg-beige-100 px-2 py-0.5 rounded-full">' + (c.is_free ? 'Free' : '$' + (c.price || '?')) + '</span>' +
+        '</div>' +
+        '<button class="mt-4 px-4 py-2 bg-charcoal-800 text-white text-xs rounded-lg hover:bg-charcoal-700" onclick="enroll(\'' + (c.title_en || '').replace(/'/g,"\\'") + '\')">Enroll via WhatsApp</button>' +
+      '</div>'
+    ).join('');
+  } catch(e) { document.getElementById('courses-grid').innerHTML = '<p class="text-center text-charcoal-400 col-span-2 py-8">Failed to load courses.</p>'; }
+})();
+function enroll(c) { window.open('https://wa.me/85297094785?text=' + encodeURIComponent('Hi! I would like to enroll in: ' + c), '_blank'); }
+</script>

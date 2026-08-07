@@ -1,0 +1,26 @@
+<!--
+============================================================
+📁 文件位置: src/pages/zh/products/index.astro
+🌐 路由: /zh/products/
+🎯 作用: 产品列表页 — 渲染 ProductShowcase 组件展示所有商品
+📝 修改指南:
+   【修改】产品数据：编辑 src/content/products.json
+   【修改】组件：ProductShowcase 位于 src/components/ProductShowcase.astro
+   【修改】标题：改 BaseLayout 的 title 属性
+   【修改】不需要额外逻辑，此页为纯组件组合
+============================================================
+-->
+---
+// ── 导入 ────────────────────────────────────────────────────
+import BaseLayout from '../../../layouts/BaseLayout.astro';         // 全局布局
+import ProductShowcase from '../../../features/products/ProductShowcase.astro'; // 产品展示组件（网格+筛选）
+---
+
+<!-- 【布局】中文产品页 — 标题含"光与恩典"品牌 -->
+<BaseLayout lang="zh" title="基督教信心服饰 | 光与恩典">
+  <!-- 【主容器】顶内边距为固定导航栏留空间 -->
+  <div class="pt-20">
+    <!-- 【产品展示组件】lang="zh" 控制中英文切换 -->
+    <ProductShowcase lang="zh" />
+  </div>
+</BaseLayout>

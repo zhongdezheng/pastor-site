@@ -1,0 +1,88 @@
+---
+/**
+ * 📍 文件: src/pages/en/testimonies/index.astro
+ * 🌐 路由: /en/testimonies/
+ * 🎯 作用: 英文见证列表页
+ *
+ * 【数据流】
+ *   页面加载 → JS fetch('admin.pastorjeffnchina.com/api/testimonies')
+ *   → 后台返回 JSON 数组 → 过滤 published=1 → 渲染为链接列表
+ *
+ * 【逻辑说明】
+ *   1. <BaseLayout> 包裹整个页面，提供 header/footer
+ *   2. <div id="testimonies-list"> 是数据容器，初始显示 "Loading..."
+ *   3. <script is:inline> 在页面加载后立即执行：
+ *      a. fetch API 获取所有见证
+ *      b. filter(p => p.published !== 0) 过滤掉未发布的
+ *      c. map() 把每条见证转成 <a> 链接 HTML
+ *      d. innerHTML 写入容器，替换 "Loading..."
+ *   4. 如果 API 失败，显示 "Failed to load"
+ *
+ * 【修改指南】
+ *   - 改列表样式：改 .map() 里的 HTML 字符串（Tailwind class）
+ *   - 改 API 地址：改 fetch('https://...') 的 URL
+ *   - 显示更多字段：在 .map() 里加新的 HTML 元素
+ *   - 改过滤条件：改 filter(p => p.published !== 0)
+ *   - 不需要 API 了？删掉整个 <script>，改回 {testimonies.map(...)}
+ */
+import BaseLayout from '../../../layouts/BaseLayout.astro';
+---
+<BaseLayout lang="en" title="Faith Testimonies | Livingstone">
+  <section class="py-24 lg:py-32 px-6 bg-beige-50 min-h-screen">
+    <h1 class="text-3xl md:text-4xl font-serif font-bold text-charcoal-900 text-center mb-2">Testimonies</h1>
+    <p class="text-charcoal-400 text-sm text-center mb-12">Stories of faith and transformation</p>
+    <!-- 数据容器：API 返回前显示 "Loading..."，返回后替换为见证列表 -->
+    <div id="testimonies-list" class="space-y-1">
+      <p class="text-center text-charcoal-400 py-8">Loading testimonies...</p>
+    </div>
+  </section>
+</BaseLayout>
+
+<!--
+  is:inline 说明：不加这个属性，Astro 构建时会剥离 <script> 标签。
+  因为这个 JS 需要在浏览器端运行（不能服务端执行），所以必须加 is:inline。
+-->
+<script is:inline>
+// ====== 见证列表：从后台 API 获取数据并渲染 ======
+
+// IIFE（立即执行函数）+ async：页面加载后立刻请求 API，不等其他资源
+(async function() {
+  try {
+    // ① 请求后台见证 API（无需登录，GET 端点公开）
+    const r = await fetch('https://admin.pastorjeffnchina.com/api/testimonies');
+    // ② 如果 HTTP 状态码不是 200 系列，抛错
+    if (!r.ok) throw new Error('API ' + r.status);
+    // ③ 解析 JSON
+    const data = await r.json();
+
+    const list = document.getElementById('testimonies-list');
+    // ④ 空数据处理
+    if (!data.length) {
+      list.innerHTML = '<p class="text-center text-charcoal-400 py-8">No testimonies yet.</p>';
+      return;
+    }
+
+    // ⑤ 过滤 + 渲染：published !== 0 表示已发布，避免显示草稿
+    list.innerHTML = data
+      .filter(t => t.published !== 0)
+      .map((t, i) =>
+        // 每条见证是一个 <a> 链接，点击跳转详情页 /en/testimonies/:id/
+        '<a href="/en/testimonies/' + t.id + '/" class="block py-4 border-b border-beige-200 hover:bg-beige-50/50 transition-colors">' +
+          '<p class="text-charcoal-800 text-sm sm:text-base text-left">' +
+            // 序号
+            '<span class="text-charcoal-500 font-medium">' + (i + 1) + '.</span> ' +
+            // 标题（优先英文，兜底通用 title 字段）
+            '<span class="font-serif font-bold">' + (t.title_en || t.title || '') + '</span>' +
+            '<span class="text-charcoal-500 mx-1">——</span>' +
+            // 日期 + 作者
+            '<span class="text-charcoal-400">' + (t.date || '') + ' · ' + (t.author || '') + '</span>' +
+          '</p></a>'
+      ).join(''); // .join('') 把数组元素拼接成 HTML 字符串
+
+  } catch(e) {
+    // ⑥ API 调用失败（网络问题、后台挂了等），显示错误提示
+    document.getElementById('testimonies-list').innerHTML =
+      '<p class="text-center text-charcoal-400 py-8">Failed to load testimonies.</p>';
+  }
+})();
+</script>

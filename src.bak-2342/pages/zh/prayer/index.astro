@@ -1,0 +1,126 @@
+<!--
+============================================================
+📁 文件位置: src/pages/zh/prayer/index.astro
+🌐 路由: /zh/prayer/
+🎯 作用: 中文代祷页 — 3D地球展示 + 代祷提交表单
+📝 修改指南:
+   【修改】表单字段：在 <form> 内增删 input/textarea
+   【修改】提交 API：改 fetch URL (admin.pastorjeffnchina.com/api/prayers)
+   【修改】提交数据结构：改 JSON.stringify 的字段
+   【修改】3D地球 iframe：src="/prayer-globe.html"，可替换为其他可视化
+   【修改】错误信息文案：改 prayer-error 的 textContent
+   【修改】成功提示文案：改 prayer-success 内的 HTML
+============================================================
+-->
+---
+// ── 导入 ────────────────────────────────────────────────────
+import BaseLayout from '../../../layouts/BaseLayout.astro'; // 全局布局
+---
+
+<!-- 【布局】中文代祷页 -->
+<BaseLayout lang="zh" title="代祷墙 | 活石">
+  <!-- 【主容器】米色渐变背景 -->
+  <section class="pt-24 pb-16 px-4 sm:px-6" style="background: linear-gradient(180deg, #fefcf5 0%, #f0ece0 100%);">
+    <div class="max-w-6xl mx-auto">
+      <!-- 【标题】页标题 -->
+      <h1 class="text-2xl sm:text-3xl font-serif font-bold text-charcoal-900 text-center mb-4">代祷</h1>
+      <!-- 【引导语】代祷页面说明 -->
+      <p class="text-center text-charcoal-600 leading-relaxed max-w-2xl mx-auto mb-10 text-sm sm:text-base">
+        主内深交，不至隔绝。无论你正在经历职场的试炼、家庭的重担，还是事工的旷野，请将你的代祷题目留下来。身处这片土地，我和同工们愿意在每一天的祭坛前为你守望，在主里一同担当你的重担。你并不孤单。
+      </p>
+
+      <!-- 【双栏布局】左侧地球 + 右侧表单 -->
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-10 items-start">
+        <!-- 【左栏】3D地球可视化（iframe嵌入） -->
+        <div class="flex justify-center">
+          <iframe src="/prayer-globe.html" class="w-full max-w-[480px] aspect-square border-0" style="background:transparent;" title="Prayer Globe"></iframe>
+        </div>
+        <!-- 【右栏】代祷提交表单 -->
+        <div class="w-full max-w-md mx-auto">
+          <form id="prayer-form" class="bg-white rounded-2xl shadow-lg p-6 md:p-8 border border-beige-200 space-y-3">
+            <!-- 【字段】姓名 — 选填 -->
+            <div>
+              <label class="block text-xs font-medium text-charcoal-500 mb-1">姓名</label>
+              <input type="text" name="name" placeholder="你的名字（选填）" class="w-full px-4 py-2.5 rounded-lg border border-beige-300 bg-beige-50 focus:outline-none focus:ring-2 focus:ring-sage-400 text-charcoal-800 text-sm">
+            </div>
+            <!-- 【字段】邮箱 — 选填 -->
+            <div>
+              <label class="block text-xs font-medium text-charcoal-500 mb-1">邮箱</label>
+              <input type="email" name="email" placeholder="你的邮箱" class="w-full px-4 py-2.5 rounded-lg border border-beige-300 bg-beige-50 focus:outline-none focus:ring-2 focus:ring-sage-400 text-charcoal-800 text-sm">
+            </div>
+            <!-- 【字段】国家 — 必填 -->
+            <div>
+              <label class="block text-xs font-medium text-charcoal-500 mb-1">你的国家 *</label>
+              <input type="text" name="country" required placeholder="例如：中国、美国、肯尼亚..." class="w-full px-4 py-2.5 rounded-lg border border-beige-300 bg-beige-50 focus:outline-none focus:ring-2 focus:ring-sage-400 text-charcoal-800 text-sm">
+            </div>
+            <!-- 【字段】代祷事项 — 必填，多行文本 -->
+            <div>
+              <label class="block text-xs font-medium text-charcoal-500 mb-1">代祷事项 *</label>
+              <textarea name="request" rows="6" required placeholder="分享你心中所想..." class="w-full px-4 py-3 rounded-lg border border-beige-300 bg-beige-50 focus:outline-none focus:ring-2 focus:ring-sage-400 text-charcoal-800 text-sm resize-none"></textarea>
+            </div>
+            <!-- 【按钮】提交 — sage绿色 -->
+            <button type="submit" class="w-full py-3 bg-sage-500 hover:bg-sage-600 text-white font-medium rounded-xl transition-colors">发送代祷</button>
+            <!-- 【错误提示】默认隐藏 -->
+            <p id="prayer-error" class="text-red-500 text-xs text-center hidden"></p>
+          </form>
+          <!-- 【成功提示】默认隐藏，提交成功后显示 -->
+          <div id="prayer-success" class="hidden mt-4 bg-sage-50 border border-sage-200 rounded-2xl p-6 text-center">
+            <p class="text-4xl mb-2">🙏</p><p class="text-sage-600 text-sm">你的代祷已收到。我们在为你祷告。</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+</BaseLayout>
+
+<!--
+============================================================
+📌 内联脚本：代祷表单提交逻辑
+   - 收集表单数据
+   - POST 到 Strapi 后端 API
+   - 成功后切换为成功提示
+   - 失败后显示错误信息
+   【修改】API地址：改 fetch URL
+   【修改】字段拼接：改 body JSON 的 content 格式
+============================================================
+-->
+<script is:inline>
+(function(){
+  var f = document.getElementById('prayer-form');    // 表单 DOM
+  if (!f) return;
+  var s = document.getElementById('prayer-success'); // 成功后显示的 div
+  var err = document.getElementById('prayer-error'); // 错误提示 p
+  var b = f.querySelector('button');                 // 提交按钮
+
+  // 【监听】表单提交事件
+  f.addEventListener('submit', async function(e) {
+    e.preventDefault();
+    var d = new FormData(f);
+    var country = (d.get('country')||'').trim();     // 国家 → 必填验证
+    var request = (d.get('request')||'').trim();     // 事项 → 必填验证
+    if (!country || !request) return;                // 【修改】必填校验逻辑
+
+    b.textContent = '发送中...';                      // 按钮loading状态
+    b.disabled = true;
+    err.classList.add('hidden');                     // 清除错误
+
+    try {
+      // 【API】提交到Strapi后端
+      var res = await fetch('https://admin.pastorjeffnchina.com/api/prayers', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({name: d.get('name')||'', email: d.get('email')||'', content: country + ': ' + request})
+      });
+      if (!res.ok) throw new Error('fail');
+      f.classList.add('hidden');   // 隐藏表单
+      s.classList.remove('hidden');// 显示成功提示
+    } catch(e) {
+      err.textContent = '发送失败，请重试。'; // 【修改】错误文案
+      err.classList.remove('hidden');
+    } finally {
+      b.textContent = '发送代祷';    // 恢复按钮文案
+      b.disabled = false;
+    }
+  });
+})();
+</script>

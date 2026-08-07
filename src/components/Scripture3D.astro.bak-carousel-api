@@ -1,0 +1,152 @@
+---
+/*
+ * ============================================================================
+ * 文件位置: src/components/Scripture3D.astro
+ * 作用: 经文横向滚动组件—CSS动画驱动，全部可见，无缝循环
+ * 修改指南:
+ *   - 【修改】卡片大小: 改下方 <style> 中的 .scr-card 的 width/height
+ *   - 【修改】滚动速度: 改 @keyframes 中的 animation 时长（当前 50s，越短越快）
+ * ============================================================================
+ */
+
+import scriptures from '../content/scriptures.json';
+interface Props { lang: 'en' | 'zh' }
+const { lang } = Astro.props;
+---
+
+<section id="scriptures" class="py-24 lg:py-32 px-4 sm:px-6 bg-gradient-to-b from-white to-beige-100 overflow-hidden">
+  <div class="max-w-7xl mx-auto">
+
+    <div class="scr-viewport relative overflow-hidden">
+      <!-- 左渐变遮罩 -->
+      <div class="absolute inset-y-0 left-0 w-12 md:w-20 z-10 pointer-events-none bg-gradient-to-r from-white/90 to-transparent"></div>
+      <!-- 右渐变遮罩 -->
+      <div class="absolute inset-y-0 right-0 w-12 md:w-20 z-10 pointer-events-none bg-gradient-to-l from-white/90 to-transparent"></div>
+
+      <!-- 滚动轨道：两遍经文实现无缝循环 -->
+      <div class="scr-track flex items-center">
+        {scriptures.concat(scriptures).map((s, i) => (
+          <div class="scr-card shrink-0 bg-white rounded-2xl shadow-lg border border-beige-200 p-8 md:p-10 flex flex-col justify-between">
+            <p class="text-base md:text-xl leading-relaxed font-serif italic text-charcoal-700 mb-5 line-clamp-6">
+              {s[lang]}
+            </p>
+            <p class="text-sm text-charcoal-400 font-medium tracking-wide border-t border-beige-200 pt-4">
+              — {lang === 'en' ? s.refEn : s.refZh}
+            </p>
+          </div>
+        ))}
+      </div>
+    </div>
+
+    <!-- Dots：全部初始灰色，JS 激活第一个 -->
+    <div class="flex justify-center gap-2 mt-8" id="scr-dots">
+      {scriptures.map((_, i) => (
+        <span class="scr-dot w-2.5 h-2.5 rounded-full cursor-pointer bg-charcoal-300 hover:bg-charcoal-400" data-sdot={i}></span>
+      ))}
+    </div>
+  </div>
+</section>
+
+<style>
+  .scr-card {
+    width: 280px;
+    height: 380px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    flex-shrink: 0;
+  }
+  @media (min-width: 768px) {
+    .scr-card {
+      width: 340px;
+      height: 440px;
+    }
+  }
+
+  .scr-track {
+    gap: 20px;
+    animation: scr-scroll 40s linear infinite;
+  }
+  @media (min-width: 768px) {
+    .scr-track { gap: 28px; animation-duration: 35s; }
+  }
+
+  @keyframes scr-scroll {
+    from { transform: translateX(0); }
+    to   { transform: translateX(-50%); }
+  }
+
+  /* 鼠标悬停暂停 */
+  .scr-viewport:hover .scr-track {
+    animation-play-state: paused;
+  }
+
+  /* Dot 激活态 */
+  .scr-dot.active {
+    background-color: rgb(86 78 71);
+    transform: scale(1.25);
+  }
+</style>
+
+<script is:inline>
+  (function(){
+    var track = document.querySelector('.scr-track');
+    var dots = document.getElementById('scr-dots');
+    if (!track || !dots) return;
+    var dotEls = dots.querySelectorAll('.scr-dot');
+    var total = dotEls.length;
+
+    // 初始化：激活第一个 dot
+    dotEls[0].classList.add('active');
+
+    // Dot 点击：暂停动画，手动跳到目标位置
+    dotEls.forEach(function(dot, i){
+      dot.addEventListener('click', function(){
+        var cardEl = track.querySelector('.scr-card');
+        if (!cardEl) return;
+        var cardW = cardEl.offsetWidth;
+        var gap = parseInt(getComputedStyle(track).gap) || 20;
+        var unit = cardW + gap;
+
+        // 暂停 CSS animation
+        track.style.animation = 'none';
+        // 设 transform 跳到目标位置（只偏移第一组距离）
+        track.style.transform = 'translateX(-' + (i * unit) + 'px)';
+        // 强制重排
+        track.offsetHeight;
+
+        // 更新 dot 状态
+        dotEls.forEach(function(d, j){ d.classList.toggle('active', j === i); });
+
+        // 3s 后恢复动画
+        clearTimeout(window.__scrResume);
+        window.__scrResume = setTimeout(function(){
+          track.style.animation = '';
+          track.style.transform = '';
+        }, 3000);
+      });
+    });
+
+    // 实时同步 dot：对比 transform 偏移量
+    var cardEl = track.querySelector('.scr-card');
+    if (!cardEl) return;
+    var activeIdx = 0;
+    var lastTx = 0;
+    function syncDot(){
+      var cardW = cardEl.offsetWidth;
+      var gap = parseInt(getComputedStyle(track).gap) || 20;
+      var unit = cardW + gap;
+      // 从 computed transform 矩阵读取 translateX
+      var m = new DOMMatrixReadOnly(getComputedStyle(track).transform);
+      var tx = -m.m41;
+      if (tx < 0) tx = 0;
+      var idx = Math.floor(((tx % (total * unit)) + (total * unit)) % (total * unit) / unit) % total;
+      if (idx !== activeIdx) {
+        activeIdx = idx;
+        dotEls.forEach(function(d, j){ d.classList.toggle('active', j === idx); });
+      }
+      requestAnimationFrame(syncDot);
+    }
+    syncDot();
+  })();
+</script>

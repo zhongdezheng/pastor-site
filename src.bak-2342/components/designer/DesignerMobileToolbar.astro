@@ -1,0 +1,75 @@
+---
+/**
+ * 📍 文件位置: src/components/designer/DesignerMobileToolbar.astro
+ * 🎯 作用: 设计器移动端底部工具栏——产品 pills、颜色/尺码/数量、文字工具、上传、操作按钮
+ * 🔧 修改指南:
+ *   - 文字内容通过 t prop 控制多语言
+ *   - 移动端字体列表更紧凑（短名称）
+ *   - 产品参数区初始隐藏，选中产品后 JS 显示（ID: product-params-mobile）
+ */
+interface Props {
+  t: {
+    product: string;
+    color: string;
+    size: string;
+    qty: string;
+    addTextPlaceholder: string;
+    reset: string;
+    center: string;
+    cart: string;
+    selectHint: string;
+    fontOptions: Array<{ value: string; label: string }>;
+  };
+}
+const { t } = Astro.props;
+---
+
+<!-- 移动端工具栏（紧凑布局） -->
+<div class="bg-white border-t border-gray-200 px-2 py-2">
+  <!-- Row 1: 产品 pills -->
+  <div class="flex items-center gap-1.5 mb-2">
+    <span class="text-[10px] font-bold text-gray-400 uppercase flex-shrink-0 w-10">{t.product}</span>
+    <div id="designer-products-mobile" class="flex gap-1 overflow-x-auto flex-1"></div>
+  </div>
+
+  <!-- Row 2: 颜色 / 尺码 / 数量（选择产品后才显示） -->
+  <div id="product-params-mobile" class="hidden flex items-center gap-1.5 mb-2 flex-wrap">
+    <span class="text-[10px] font-bold text-gray-400 uppercase flex-shrink-0">{t.color}</span>
+    <div id="color-options-mobile" class="flex gap-1 flex-shrink-0"></div>
+    <span class="text-gray-300 flex-shrink-0">|</span>
+    <span class="text-[10px] font-bold text-gray-400 uppercase flex-shrink-0">{t.size}</span>
+    <select id="size-select-mobile" class="px-2 py-1.5 bg-white border border-gray-200 rounded text-xs text-gray-700 flex-shrink-0 focus:outline-none focus:border-gray-400" style="min-width: 80px; -webkit-appearance: menulist; appearance: menulist; cursor: pointer;"></select>
+    <span class="text-gray-300 flex-shrink-0">|</span>
+    <span class="text-[10px] font-bold text-gray-400 uppercase flex-shrink-0">{t.qty}</span>
+    <button class="w-5 h-5 bg-white border border-gray-200 rounded text-xs font-bold flex-shrink-0" onclick="chgQty(-1)">−</button>
+    <span class="text-sm font-bold flex-shrink-0" id="design-qty-mobile">1</span>
+    <button class="w-5 h-5 bg-white border border-gray-200 rounded text-xs font-bold flex-shrink-0" onclick="chgQty(1)">+</button>
+  </div>
+
+  <!-- Row 3: 文字输入 / 字体 / 字号± / 颜色 / 添加按钮 / 上传 -->
+  <div class="flex gap-1 items-center mb-2">
+    <input type="text" id="text-input-mobile" placeholder={t.addTextPlaceholder} class="flex-1 min-w-0 px-2 py-2 bg-gray-50 border border-gray-200 rounded-lg text-[11px] text-gray-700 placeholder-gray-400 focus:outline-none focus:border-gray-400" />
+    <select id="font-select-mobile" class="px-1.5 py-2 bg-white border border-gray-200 rounded-lg text-[10px] text-gray-600 flex-shrink-0 max-w-[60px] focus:outline-none">
+      {t.fontOptions.map((f) => `<option value="${f.value}">${f.label}</option>`).join('\n')}
+    </select>
+    <button class="w-5 h-6 bg-white border border-gray-200 rounded text-[10px] font-bold text-gray-600 flex-shrink-0" onclick="chgFontSize(-2)">−</button>
+    <span class="text-[10px] font-bold text-gray-700 flex-shrink-0" id="font-size-display-mobile">28</span>
+    <button class="w-5 h-6 bg-white border border-gray-200 rounded text-[10px] font-bold text-gray-600 flex-shrink-0" onclick="chgFontSize(2)">+</button>
+    <input type="color" id="text-color-mobile" value="#333333" class="w-8 h-8 rounded cursor-pointer border border-gray-200 bg-white p-0.5 flex-shrink-0" />
+    <button class="px-2 py-2 bg-gray-800 text-white rounded-lg text-[10px] font-semibold flex-shrink-0" onclick="addTextFromSelect(true)">+</button>
+    <button class="w-8 h-8 bg-gray-100 border border-gray-200 rounded-lg text-xs flex items-center justify-center flex-shrink-0" onclick="document.getElementById('design-upload-mobile').click()">📁</button>
+    <input type="file" id="design-upload-mobile" accept="image/*" class="hidden" />
+  </div>
+
+  <!-- 操作栏：已选信息 + Reset / Center / Cart -->
+  <div class="flex items-center gap-2">
+    <div class="flex-1 min-w-0">
+      <p class="text-xs font-bold text-gray-800 truncate" id="info-name-mobile">{t.selectHint}</p>
+      <p class="text-[10px] text-gray-400" id="info-detail-mobile"></p>
+      <p class="text-sm font-bold text-gray-800" id="info-price-mobile"></p>
+    </div>
+    <button id="btn-reset-mobile" class="px-3 py-2 bg-white border border-gray-200 rounded-lg text-[11px] font-medium text-gray-500 hover:bg-gray-50 flex-shrink-0">{t.reset}</button>
+    <button id="btn-center-mobile" class="px-3 py-2 bg-white border border-gray-200 rounded-lg text-[11px] font-medium text-gray-500 hover:bg-gray-50 flex-shrink-0">{t.center}</button>
+    <button id="btn-cart-mobile" class="px-4 py-2.5 bg-gray-800 hover:bg-gray-700 active:bg-gray-900 text-white rounded-lg text-xs font-semibold flex-shrink-0">{t.cart}</button>
+  </div>
+</div>

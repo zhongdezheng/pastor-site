@@ -9,7 +9,21 @@
  * ============================================================================
  */
 
-import scriptures from '../content/scriptures.json';
+// ⚡ 构建时从管理后台轮播 API 获取经文，失败则回退本地 JSON
+let scripturesRaw = [];
+try {
+  const res = await fetch('http://localhost:5200/api/carousel');
+  if (res.ok) {
+    const apiData = await res.json();
+    scripturesRaw = apiData
+      .filter(e => e.status === 1)
+      .map(e => ({ en: e.content_en, zh: e.content_zh, refEn: e.title_en, refZh: e.title_zh }));
+  }
+} catch(e) {}
+if (!scripturesRaw.length) {
+  scripturesRaw = (await import('../content/scriptures.json')).default;
+}
+const scriptures = scripturesRaw;
 interface Props { lang: 'en' | 'zh' }
 const { lang } = Astro.props;
 ---

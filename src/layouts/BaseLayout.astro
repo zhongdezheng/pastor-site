@@ -15,10 +15,24 @@
  * ============================================================================
  */
 
-// 导入站点配置数据（站点名、tagline、WhatsApp 号等）
-import siteData from '../content/site.json';
-// 解构取出 site 对象
-const { site } = siteData;
+// ⚡ 构建时从管理后台 API 获取站点配置，失败则回退本地 JSON
+let site = {
+  name: { en: 'Livingstone', zh: '活石' },
+  tagline: { en: '', zh: '' },
+  whatsapp: '',
+  email: '',
+};
+try {
+  const res = await fetch('http://localhost:5200/api/site-config');
+  if (res.ok) {
+    const data = await res.json();
+    if (data.site) site = data.site;
+  }
+} catch(e) {}
+if (!site.email) {
+  const fallback = (await import('../content/site.json')).default;
+  site = fallback.site;
+}
 
 // Props 接口定义：【修改】如需新增 prop，在此添加
 interface Props {

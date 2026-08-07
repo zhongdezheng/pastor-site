@@ -13,7 +13,21 @@
 ---
 // ── 导入 ────────────────────────────────────────────────────
 import BaseLayout from '../../../layouts/BaseLayout.astro'; // 全局布局
-import visionData from '../../../content/vision.json';       // 异象内容数据（中/英）
+// ⚡ 构建时从 API 获取异象
+let visionData = { en: {}, zh: {} };
+try {
+  const res = await fetch('http://localhost:5200/api/vision');
+  if (res.ok) {
+    const api = await res.json();
+    visionData = {
+      en: { title: api.title_en || '', content: api.content_en || '' },
+      zh: { title: api.title_zh || '', content: api.content_zh || '' },
+    };
+  }
+} catch(e) {}
+if (!visionData.en.content) {
+  visionData = (await import('../../../content/vision.json')).default;
+}       // 异象内容数据（中/英）
 
 // 【数据】提取中文版异象数据
 const v = visionData.zh;

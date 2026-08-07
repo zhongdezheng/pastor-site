@@ -1,0 +1,62 @@
+[
+  {
+    "id": 1,
+    "title": {
+      "zh": "信仰根基",
+      "en": "Foundations of Faith"
+    },
+    "description": {
+      "zh": "6周的根基性学习，涵盖基督教的核心信仰。",
+      "en": "A 6-week foundational study covering the core beliefs of Christianity."
+    },
+    "icon": "📖",
+    "level": "入门",
+    "lessons": 6,
+    "is_free": true
+  },
+  {
+    "id": 2,
+    "title": {
+      "zh": "耶稣生平",
+      "en": "Life of Jesus"
+    },
+    "description": {
+      "zh": "走过福音书，发现基督的生活和教导。",
+      "en": "Walk through the Gospels and discover the life and teachings of Christ."
+    },
+    "icon": "✝️",
+    "level": "中级",
+    "lessons": 8,
+    "is_free": true
+  },
+  {
+    "id": 3,
+    "title": {
+      "zh": "祷告与属灵争战",
+      "en": "Prayer & Spiritual Warfare"
+    },
+    "description": {
+      "zh": "学习祷告的大能，如何在属灵争战中站立得稳。",
+      "en": "Learn the power of prayer and how to stand firm in spiritual warfare."
+    },
+    "icon": "🙏",
+    "level": "进阶",
+    "lessons": 10,
+    "is_free": true
+  },
+  {
+    "id": 4,
+    "title": {
+      "zh": "宣教与传福音",
+      "en": "Missions & Evangelism"
+    },
+    "description": {
+      "zh": "为完成大使命、分享福音预备你的心。",
+      "en": "Prepare your heart to fulfill the Great Commission and share the Gospel."
+    },
+    "icon": "🌍",
+    "level": "所有级别",
+    "lessons": 6,
+    "is_free": true
+  }
+]

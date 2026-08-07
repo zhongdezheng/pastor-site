@@ -1,0 +1,109 @@
+---
+/*
+ * ============================================================================
+ * 文件位置: src/components/VisionSection.astro
+ * 作用: 首页"异象摘要"组件，展示异象内容的预览段落，支持展开更多和链接到完整异象页
+ * 被谁调用: src/pages/index.astro（首页）中引入
+ * 修改指南:
+ *   - 【修改】异象内容: 编辑 src/content/vision.json 的 content 字段（用 \n\n 分段）
+ *   - 【修改】预览段落数: 修改 previewParagraphs 的 .slice(0, 4)，改数字控制默认显示几段
+ *   - 【修改】按钮文案: 编辑 labels 对象中的 en/zh 属性
+ *   - 【修改】展开按钮样式: 编辑 vision-toggle 的 class
+ *   - 【修改】完整异象按钮样式/链接: 编辑 goFull 的 a 标签
+ *   - 注意: 此组件已在项目早期做过注释，此处对齐最新注释规范
+ * ============================================================================
+ */
+
+// 导入异象数据（title + content 文本）
+import visionData from '../content/vision.json';
+
+// Props：接收语言参数
+interface Props {
+  lang: 'en' | 'zh';
+}
+const { lang } = Astro.props;
+
+// 取出当前语言版本的数据
+const v = visionData[lang];
+
+// 【修改】将异象文本按双换行（段落间空行）分割为段落数组
+// .filter 移除空段落
+const allParagraphs = v.content.split('\n\n').filter((p: string) => p.trim());
+
+// 【修改】预览显示前 4 段（修改数字可调整默认展示的段落数）
+const previewParagraphs = allParagraphs.slice(0, 4);
+
+// 剩余的段落（点击"展开更多"后显示）
+const moreParagraphs = allParagraphs.slice(4);
+
+// 【修改】多语言按钮文案
+const labels = {
+  en: { more: 'Read More ↓', less: 'Show Less ↑', goFull: 'Read Full Vision →' },
+  zh: { more: '展开更多 ↓', less: '收起 ↑', goFull: '阅读完整异象 →' },
+};
+const t = labels[lang];
+
+// 是否有更多内容可展开
+const hasMore = moreParagraphs.length > 0;
+---
+
+<!-- ====== 异象区域：米色调渐变背景 ====== -->
+<!-- 【修改】背景渐变: from #f7f3e8 to #fefcf5，修改颜色值改变氛围 -->
+<section class="py-12 lg:py-16 px-4 sm:px-6" style="background: linear-gradient(180deg, #f7f3e8 0%, #fefcf5 100%);">
+  <div class="max-w-4xl mx-auto text-center">
+
+    <!-- ====== 装饰性分隔线 + 星号 ====== -->
+    <!-- 【修改】线颜色: bg-beige-400, 星号颜色: text-beige-400 -->
+    <div class="flex items-center justify-center gap-3 mb-4">
+      <span class="block w-10 h-px bg-beige-400"></span>
+      <span class="text-beige-400 text-base">✦</span>
+      <span class="block w-10 h-px bg-beige-400"></span>
+    </div>
+
+    <!-- 异象标题 -->
+    <h2 class="text-xl sm:text-2xl lg:text-3xl font-serif font-bold text-charcoal-800 mb-6">
+      {v.title}
+    </h2>
+
+    <!-- ====== 预览段落（始终可见） ====== -->
+    <!-- 【修改】字号: text-[15px] sm:text-base, 行距: leading-relaxed -->
+    <div class="text-charcoal-600 leading-relaxed font-serif max-w-4xl mx-auto space-y-4 text-[15px] sm:text-base">
+      {previewParagraphs.map((p: string) => <p>{p}</p>)}
+    </div>
+
+    <!-- ====== 可展开的更多段落（默认隐藏） ====== -->
+    {hasMore && (
+      <div>
+        <div id="vision-more" class="hidden text-charcoal-600 leading-relaxed font-serif max-w-4xl mx-auto space-y-4 text-[15px] sm:text-base mt-4">
+          {moreParagraphs.map((p: string) => <p>{p}</p>)}
+        </div>
+        <button id="vision-toggle" class="inline-flex items-center gap-1 mt-4 px-4 py-1.5 text-sm text-sage-600 hover:text-sage-700 border border-sage-300 rounded-full transition-colors">{t.more}</button>
+      </div>
+    )}
+
+    <!-- ====== "阅读完整异象"链接按钮 ====== -->
+    <!-- 【修改】链接目标: /{lang}/vision/ -->
+    <!-- 【修改】按钮样式: bg-charcoal-800 深色背景, 圆角 full -->
+    <div class="mt-5">
+      <a href={`/${lang}/vision/`} class="inline-flex items-center gap-1 px-5 py-2 bg-charcoal-800 hover:bg-charcoal-700 text-white text-sm rounded-full transition-colors">
+        {t.goFull}
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- ====== 内联 JS：展开/收起逻辑 ====== -->
+<script is:inline>
+  (function(){
+    var btn = document.getElementById('vision-toggle');
+    var more = document.getElementById('vision-more');
+    if (!btn || !more) return; // 元素不存在则跳过
+
+    // 点击切换 hidden 类，同时更新按钮文案
+    btn.onclick = function(){
+      var hidden = more.classList.toggle('hidden');
+      // 【修改】按钮文案：隐藏时显示"展开"，显示时显示"收起"
+      btn.textContent = hidden ? 'Read More ↓' : 'Show Less ↑';
+    };
+  })();
+</script>

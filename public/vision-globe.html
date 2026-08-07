@@ -1,3 +1,50 @@
+<!--
+  =================================================================
+  文件：public/vision-globe.html
+  位置：/public/vision-globe.html
+  =================================================================
+
+  作用：3D 旋转地球仪独立页面（330 行），使用 Three.js (CDN) 渲染。
+        深色背景（radial-gradient 从深蓝到黑）+ 夜空星光粒子系统。
+        地球使用 NASA Black Marble（夜间灯光）纹理，展示全球城市灯光分布。
+        带有程序化回退纹理（当 NASA 图片加载失败时自动生成城市灯光）。
+        包含大气层 Shader 光晕、经纬网格线、道路连线等细节。
+
+  被谁调用：
+    被 src/components/VisionSection.astro 通过 <iframe> 嵌入。
+    在"愿景"页面展示夜间地球视觉效果。
+
+  技术栈：
+    - Three.js (v0.160, CDN import map via unpkg)
+    - WebGL 渲染器
+    - 自定义 ShaderMaterial（大气光晕效果）
+    - Canvas 2D 程序化纹理生成（城市灯光回退方案）
+
+  修改指南：
+    - 修改背景色：调整 bg.style.cssText 中的 radial-gradient 颜色
+    - 修改城市灯光：编辑 cities 数组（经纬度、半径、亮度）
+    - 修改星星数量：调整 starsCount 变量（当前 4000）
+    - 修改旋转速度：调整 animate() 中 earthGroup.rotation.y += 0.0006
+    - 修改地球纹理优先级：调整 nightUrls 数组中的 URL 顺序
+    - 修改大气光晕颜色：调整 fragmentShader 中的 mix() 颜色值
+    - 修改网格线透明度：调整 gridMaterial.opacity（当前 0.06）
+    - 修改地球大小：调整 SphereGeometry 第一个参数（当前 1.1）
+    - 修改环境光/方向光：调整 ambientLight 和 directionalLight 参数
+
+  城市坐标说明：
+    cities 数组格式：[经度(0-1), 纬度(0-1), 半径(px), 亮度(0-1)]
+    经度 0 = 西经 180°, 经度 1 = 东经 180°
+    纬度 0 = 北极, 纬度 1 = 南极
+    当前涵盖全球 60+ 主要城市
+
+  注意事项：
+    - 此文件独立于 Astro 构建流程，直接放在 public/ 目录
+    - Three.js 通过 CDN 加载，需网络连接
+    - NASA 纹理可能因网络问题加载失败，有程序化回退方案
+    - iframe 嵌入时注意自适应（resize 事件中取 min(width, height, 440)）
+    - 程序化回退生成 4096x2048 像素 canvas，较消耗性能但只执行一次
+  =================================================================
+-->
 <!DOCTYPE html>
 <html lang="en">
 <head>

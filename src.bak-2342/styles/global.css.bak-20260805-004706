@@ -1,0 +1,42 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@import url('https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,600;0,700;1,400;1,600&family=Inter:wght@300;400;500;600&family=Noto+Serif+SC:wght@400;600;700&family=Noto+Sans+SC:wght@300;400;500&display=swap');
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+  body {
+    @apply bg-beige-50 text-charcoal-800 font-sans antialiased;
+  }
+}
+
+@layer components {
+  .btn-primary {
+    @apply inline-flex items-center justify-center px-8 py-3 bg-sage-500 hover:bg-sage-600 text-white font-medium rounded-full transition-all duration-300;
+  }
+  .btn-outline {
+    @apply inline-flex items-center justify-center px-8 py-3 border border-charcoal-300 text-charcoal-600 hover:bg-beige-200 rounded-full transition-all duration-300;
+  }
+  .section-title {
+    @apply text-3xl md:text-4xl lg:text-5xl font-serif font-bold text-center tracking-wide;
+  }
+  .section-subtitle {
+    @apply text-charcoal-500 text-center max-w-2xl mx-auto mt-4 text-lg;
+  }
+}
+
+/* Photo carousel fade */
+.photo-fade-enter {
+  opacity: 0;
+}
+.photo-fade-active {
+  opacity: 1;
+  transition: opacity 1.2s ease-in-out;
+}
+.photo-fade-exit {
+  opacity: 0;
+  transition: opacity 0.8s ease-in-out;
+}

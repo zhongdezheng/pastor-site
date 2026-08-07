@@ -1,0 +1,216 @@
+---
+/*
+ * ============================================================================
+ * 📁 文件位置: src/pages/en/admin/index.astro
+ * 🌐 路由: /en/admin/
+ * 🎯 作用: 后台管理面板 — 三个标签页：祷告(Prayers)、订单(Orders)、内容管理(Content)
+ * 🔒 权限: 需要 Supabase Auth 登录后才可访问，未登录显示"请先登录"提示
+ * 🔧 修改指南:
+ *   【修改】标签页 → 改 tab-btn 的 data-tab 名和对应的 div id
+ *   【修改】Supabase 连接 → 改 createClient 参数
+ *   【修改】API 端点 → 改 fetch URL（目前指向 admin.pastorjeffnchina.com）
+ *   【修改】样式 → 所有 class 都加了注释
+ * ============================================================================
+ */
+import BaseLayout from '../../../layouts/BaseLayout.astro';
+---
+
+<BaseLayout lang="en" title="Admin | Pastor Jeff">
+  <!-- 
+    管理后台整体: 深色主题
+    style: 深蓝渐变背景 #1a1a2e → #16213e
+    pt-20: 顶部留白80px给导航栏
+    min-h-screen: 最低撑满屏幕
+  -->
+  <section class="pt-20 pb-12 px-4" style="background: linear-gradient(180deg, #1a1a2e 0%, #16213e 100%); min-height:100vh;">
+  <section class="pt-20 pb-12 px-4" style="background: linear-gradient(180deg, #1a1a2e 0%, #16213e 100%); min-height:100vh;">
+    <div class="max-w-7xl mx-auto">
+      <div class="flex items-center justify-between mb-6">
+        <h1 class="text-xl font-bold text-white">Pastor Admin</h1>
+        <button id="btn-logout" class="text-xs text-gray-400 hover:text-white px-3 py-1 border border-gray-600 rounded">Logout</button>
+      </div>
+
+      <div class="flex gap-2 mb-6 overflow-x-auto">
+        <button class="tab-btn active px-4 py-2 rounded-lg text-sm font-medium bg-sage-500 text-white" data-tab="prayers">Prayers</button>
+        <button class="tab-btn px-4 py-2 rounded-lg text-sm font-medium bg-white/10 text-gray-300 hover:bg-white/20" data-tab="orders">Orders</button>
+        <button class="tab-btn px-4 py-2 rounded-lg text-sm font-medium bg-white/10 text-gray-300 hover:bg-white/20" data-tab="content">Content</button>
+      </div>
+
+      <div id="tab-prayers">
+        <div class="flex gap-4 mb-4 flex-wrap">
+          <select id="prayer-filter" class="px-3 py-1.5 rounded bg-white/10 text-white border border-white/20 text-sm">
+            <option value="all">All</option>
+            <option value="false">Unprayed</option>
+            <option value="true">Prayed</option>
+          </select>
+          <button id="btn-refresh-prayers" class="px-3 py-1.5 rounded bg-sage-500 text-white text-sm">Refresh</button>
+          <span id="prayer-count" class="text-gray-400 text-sm self-center"></span>
+        </div>
+        <div id="prayer-list" class="space-y-3">
+          <p class="text-gray-400 text-sm">Loading...</p>
+        </div>
+      </div>
+
+      <div id="tab-orders" class="hidden">
+        <div class="flex gap-4 mb-4 flex-wrap">
+          <select id="order-filter" class="px-3 py-1.5 rounded bg-white/10 text-white border border-white/20 text-sm">
+            <option value="all">All Status</option>
+            <option value="pending">Pending</option>
+            <option value="confirmed">Confirmed</option>
+            <option value="shipped">Shipped</option>
+            <option value="delivered">Delivered</option>
+            <option value="cancelled">Cancelled</option>
+          </select>
+          <button id="btn-refresh-orders" class="px-3 py-1.5 rounded bg-sage-500 text-white text-sm">Refresh</button>
+          <span id="order-count" class="text-gray-400 text-sm self-center"></span>
+        </div>
+        <div id="order-list" class="space-y-3">
+          <p class="text-gray-400 text-sm">Loading...</p>
+        </div>
+      </div>
+
+      <div id="tab-content" class="hidden">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+          <select id="content-key" class="px-3 py-1.5 rounded bg-white/10 text-white border border-white/20 text-sm">
+            <option value="hero">Hero</option>
+            <option value="vision">Vision</option>
+            <option value="scriptures">Scriptures</option>
+          </select>
+          <select id="content-lang" class="px-3 py-1.5 rounded bg-white/10 text-white border border-white/20 text-sm">
+            <option value="en">English</option>
+            <option value="zh">中文</option>
+          </select>
+        </div>
+        <div class="mb-4">
+          <label class="text-gray-300 text-xs mb-1 block">Content (JSON)</label>
+          <textarea id="content-editor" rows="16" class="w-full px-4 py-3 rounded-lg bg-white/10 border border-white/20 text-white text-sm font-mono focus:outline-none focus:ring-2 focus:ring-sage-400 resize-y"></textarea>
+        </div>
+        <div class="flex gap-3">
+          <button id="btn-load-content" class="px-4 py-2 rounded-lg bg-white/10 text-white text-sm hover:bg-white/20">Load</button>
+          <button id="btn-save-content" class="px-4 py-2 rounded-lg bg-sage-500 text-white text-sm hover:bg-sage-600">Save</button>
+          <span id="content-status" class="text-sm text-gray-400 self-center"></span>
+        </div>
+      </div>
+    </div>
+  </section>
+</BaseLayout>
+
+<script is:inline>
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+
+const supabase = createClient(
+  'https://uwebpdtjkucbcyscfzmq.supabase.co',
+  'sb_publishable_TfquiTSSQip7GcF4Sodsjg_PNc_OzNl'
+);
+
+async function checkAdmin() {
+  var { data } = await supabase.auth.getSession();
+  if (!data.session) {
+    document.body.innerHTML = '<div style="color:white;text-align:center;padding:100px 20px;"><p>Please <a href="/en/auth" style="color:#a8d5ba;">sign in</a> first.</p></div>';
+    return false;
+  }
+  return true;
+}
+
+var currentTab = 'prayers';
+document.querySelectorAll('.tab-btn').forEach(function(btn) {
+  btn.addEventListener('click', function() {
+    document.querySelectorAll('.tab-btn').forEach(function(b){ b.classList.remove('active','bg-sage-500','text-white'); b.classList.add('bg-white/10','text-gray-300'); });
+    this.classList.add('active','bg-sage-500','text-white');
+    this.classList.remove('bg-white/10','text-gray-300');
+    currentTab = this.dataset.tab;
+    document.getElementById('tab-prayers').classList.add('hidden');
+    document.getElementById('tab-orders').classList.add('hidden');
+    document.getElementById('tab-content').classList.add('hidden');
+    document.getElementById('tab-' + currentTab).classList.remove('hidden');
+    if (currentTab === 'prayers') loadPrayers();
+    if (currentTab === 'orders') loadOrders();
+  });
+});
+
+document.getElementById('btn-logout')?.addEventListener('click', function(){
+  supabase.auth.signOut().then(function(){ location.href = '/en/auth'; });
+});
+
+async function loadPrayers() {
+  var res = await fetch('https://admin.pastorjeffnchina.com/api/prayers');
+  if (!res.ok) { document.getElementById('prayer-list').innerHTML = '<p class="text-gray-400 text-sm">Backend not reachable.</p>'; return; }
+  var data = await res.json();
+  var filter = document.getElementById('prayer-filter').value;
+  if (filter !== 'all') data = data.filter(function(p){ return p.replied === (filter === 'true'); });
+  var list = document.getElementById('prayer-list');
+  document.getElementById('prayer-count').textContent = data.length + ' prayers';
+  if (data.length === 0) { list.innerHTML = '<p class="text-gray-400 text-sm">No prayers yet.</p>'; return; }
+  list.innerHTML = data.map(function(p){
+    return '<div class="bg-white/5 rounded-xl p-4 border border-white/10">' +
+      '<div class="flex justify-between items-start mb-2">' +
+      '<div><span class="text-white font-medium">' + h(p.name || 'Anonymous') + '</span><span class="text-gray-400 text-xs ml-2">' + h(p.email||'') + '</span></div>' +
+      '<div class="flex gap-2 items-center">' +
+      '<span class="text-gray-500 text-xs">' + (p.created_at||'') + '</span>' +
+      '<span class="text-xs px-2 py-0.5 rounded ' + (p.replied ? 'bg-green-500/20 text-green-300' : 'bg-yellow-500/20 text-yellow-300') + '">' + (p.replied ? 'Replied' : 'Pending') + '</span>' +
+      '</div></div>' +
+      '<p class="text-gray-300 text-sm">' + h(p.content) + '</p>' +
+      '</div>';
+  }).join('');
+}
+
+async function loadOrders() {
+  var res = await fetch('https://admin.pastorjeffnchina.com/api/orders');
+  if (!res.ok) { document.getElementById('order-list').innerHTML = '<p class="text-gray-400 text-sm">Backend not reachable.</p>'; return; }
+  var data = await res.json();
+  var filter = document.getElementById('order-filter').value;
+  if (filter !== 'all') data = data.filter(function(o){ return o.status === filter; });
+  document.getElementById('order-count').textContent = data.length + ' orders';
+  var list = document.getElementById('order-list');
+  if (data.length === 0) { list.innerHTML = '<p class="text-gray-400 text-sm">No orders yet.</p>'; return; }
+  list.innerHTML = data.map(function(o){
+    return '<div class="bg-white/5 rounded-xl p-4 border border-white/10">' +
+      '<div class="flex justify-between items-start mb-2">' +
+      '<div><span class="text-white font-medium">Order #' + o.id + '</span><span class="text-gray-400 text-xs ml-2">' + h(o.customer_name||'') + '</span></div>' +
+      '<div class="flex gap-2 items-center">' +
+      '<span class="text-xs px-2 py-0.5 rounded bg-white/10 text-gray-300">' + o.status + '</span>' +
+      '<span class="text-gray-500 text-xs">' + (o.created_at||'') + '</span>' +
+      '</div></div>' +
+      '<div class="text-gray-300 text-xs">' + h(o.product_name||'') + ' x' + (o.quantity||1) + ' | $' + (o.total_price||0) + '</div>' +
+      '<select class="status-select text-xs px-2 py-1 mt-2 rounded bg-white/10 text-white border border-white/20" data-id="' + o.id + '">' +
+      ['pending','confirmed','shipped','delivered','cancelled'].map(function(s){ return '<option value="' + s + '"' + (o.status === s ? ' selected' : '') + '>' + s + '</option>'; }).join('') +
+      '</select>' +
+      '</div>';
+  }).join('');
+  document.querySelectorAll('.status-select').forEach(function(s){
+    s.addEventListener('change', async function(){
+      await fetch('https://admin.pastorjeffnchina.com/api/orders/' + this.dataset.id + '/status', {
+        method: 'PUT', headers: {'Content-Type':'application/json'}, body: JSON.stringify({status: this.value})
+      });
+    });
+  });
+}
+
+document.getElementById('btn-load-content')?.addEventListener('click', async function(){
+  var key = document.getElementById('content-key').value;
+  var lang = document.getElementById('content-lang').value;
+  document.getElementById('content-status').textContent = 'Loading...';
+  var { data } = await supabase.from('site_content').select('data').eq('key', key).eq('lang', lang).single();
+  document.getElementById('content-editor').value = data ? JSON.stringify(data.data, null, 2) : '{}';
+  document.getElementById('content-status').textContent = data ? 'Loaded' : 'No saved content yet';
+});
+
+document.getElementById('btn-save-content')?.addEventListener('click', async function(){
+  var key = document.getElementById('content-key').value;
+  var lang = document.getElementById('content-lang').value;
+  var raw = document.getElementById('content-editor').value;
+  try { JSON.parse(raw); } catch(e) { document.getElementById('content-status').textContent = 'Invalid JSON!'; return; }
+  document.getElementById('content-status').textContent = 'Saving...';
+  var { error } = await supabase.from('site_content').upsert({ key: key, lang: lang, data: JSON.parse(raw), updated_at: new Date().toISOString() }, { onConflict: 'key,lang' });
+  document.getElementById('content-status').textContent = error ? 'Error: ' + error.message : 'Saved ✓';
+});
+
+document.getElementById('prayer-filter')?.addEventListener('change', loadPrayers);
+document.getElementById('order-filter')?.addEventListener('change', loadOrders);
+document.getElementById('btn-refresh-prayers')?.addEventListener('click', loadPrayers);
+document.getElementById('btn-refresh-orders')?.addEventListener('click', loadOrders);
+
+function h(s) { return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+checkAdmin().then(function(ok){ if (ok) loadPrayers(); });
+</script>

@@ -1,0 +1,155 @@
+---
+/**
+ * 📍 文件位置: src/pages/en/products/[slug]/index.astro
+ * 🌐 路由: /en/products/:slug/（动态路由，slug = 产品 id，如 tee-180g）
+ * 🎯 作用: 英文产品详情页——展示产品图片、颜色/尺码选择、数量、加入购物车/立即购买、设计器入口
+ * 🔧 修改指南:
+ *   - 修改产品数据：编辑 content/products.json
+ *   - 修改静态路径：getStaticPaths() 自动从 products.json 生成所有产品页面
+ *   - 修改默认价格/货币：搜索 $ 符号替换为其他货币符号
+ *   - 颜色映射表：cm 对象中维护中文颜色名 → CSS 颜色的映射
+ *   - 购物车逻辑：使用 localStorage key "ps-cart"，与 cart 页共享
+ *   - 图片切换：onclick 直接操作 DOM，通过 gthumb class 标记缩略图选中状态
+ */
+
+// 【修改】引入基础布局（注意层级：../../../../ 因为 [slug] 多一层）
+import BaseLayout from '../../../../layouts/BaseLayout.astro';
+// 【修改】引入产品数据（JSON 数组，包含 id/name/price/colors/sizes/images/details）
+import products from '../../../../content/products.json';
+
+// 🗺️ getStaticPaths：为每个产品生成一条静态路由
+export function getStaticPaths() {
+  return products.map(p => ({ params: { slug: p.id } }));
+}
+// 📝 从 URL 中提取 slug 参数
+const { slug } = Astro.params;
+// 📝 根据 slug 查找对应产品
+const product = products.find(p => p.id === slug);
+// 🌐 语言标识
+const lang = 'en';
+// ⛔ 产品不存在 → 重定向到产品列表页
+if (!product) return Astro.redirect('/en/products/');
+---
+
+<BaseLayout lang="en" title={`${product.name.en} | Christian Faith Apparel | Livingstone`}>
+  <!-- 📦 注入产品数据到页面（JSON），供下方 script 读取 -->
+  <script type="application/json" id="__prodData" set:html={JSON.stringify({colors: product.colors, sizes: product.sizes, id: product.id, slug: product.id, name: product.name.en, price: product.price, image: product.images?.[0]||''})}></script>
+
+  <!-- 🎨 产品详情页主容器 -->
+  <section class="pt-24 pb-16 px-4 sm:px-6 bg-white min-h-screen">
+    <div class="max-w-5xl mx-auto">
+      <!-- ↩️ 返回产品列表链接 -->
+      <a href="/en/products/" class="inline-block text-sm text-charcoal-500 hover:text-charcoal-700 mb-6">&larr; Return</a>
+      <!-- 🔲 双栏布局：左侧图片 · 右侧详情 -->
+      <div class="flex flex-col md:flex-row gap-8">
+        <!-- 📷 左侧：产品主图 + 缩略图列表 -->
+        <div class="md:w-1/2">
+          <!-- 🖼️ 主图容器（正方形，米色背景） -->
+          <div class="aspect-square bg-beige-50 rounded-2xl flex items-center justify-center overflow-hidden">
+            {product.images && product.images.length ? (
+              <img id="main-img" src={product.images[0]} alt="" class="w-full h-full object-contain" />
+            ) : <span class="text-6xl">👕</span>}
+          </div>
+          <!-- 🖼️ 缩略图列表（多图时显示） -->
+          {product.images && product.images.length > 1 && (
+            <div class="flex gap-2 mt-3 overflow-x-auto">
+              {product.images.map((img, i) => (
+                <div class={`w-16 h-16 rounded-lg overflow-hidden flex-shrink-0 cursor-pointer border-2 transition-colors hover:border-charcoal-400 ${i === 0 ? 'border-charcoal-600' : 'border-transparent'}`} onclick={`document.getElementById('main-img').src='${img}';document.querySelectorAll('.gthumb').forEach((d,j)=>d.classList.toggle('border-charcoal-600',j===${i}))`}>
+                  <img src={img} alt="" class="w-full h-full object-cover gthumb" />
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+
+        <!-- 📋 右侧：产品信息 + 购买操作 -->
+        <div class="md:w-1/2">
+          <!-- 📌 产品英文名称 -->
+          <h1 class="font-serif text-2xl font-bold text-charcoal-800">{product.name.en}</h1>
+          <!-- 💰 价格（USD） -->
+          <p class="text-2xl font-bold text-red-500 mt-2">${product.price} USD</p>
+
+          <!-- 🎨 颜色选择器 -->
+          <div class="mt-5"><span class="text-xs font-semibold text-charcoal-500 uppercase tracking-wide">Color</span>
+            <div class="flex gap-2 mt-1.5" id="color-picker"></div></div>
+          <!-- 📏 尺码选择器 -->
+          <div class="mt-4"><span class="text-xs font-semibold text-charcoal-500 uppercase tracking-wide">Sizes</span>
+            <div class="flex flex-wrap gap-1.5 mt-1.5" id="size-picker"></div></div>
+          <!-- 🔢 数量选择器 -->
+          <div class="flex items-center gap-3 mt-4">
+            <span class="text-xs font-semibold text-charcoal-500 uppercase tracking-wide">Qty</span>
+            <button id="qty-minus" class="w-8 h-8 border border-charcoal-300 rounded-full text-sm flex items-center justify-center hover:bg-beige-50">−</button>
+            <span id="qty-val" class="w-6 text-center font-bold">1</span>
+            <button id="qty-plus" class="w-8 h-8 border border-charcoal-300 rounded-full text-sm flex items-center justify-center hover:bg-beige-50">+</button>
+          </div>
+          <!-- 🎨 跳转设计器按钮 -->
+          <button id="btn-designer" onclick="location.href='/en/designer/'" class="w-full mt-5 py-2.5 bg-[#c9a84c] hover:bg-[#b89336] text-white rounded-xl font-medium text-sm transition-colors">Custom Design</button>
+          <!-- 🛒 加入购物车按钮 -->
+          <button id="btn-add-cart" class="w-full mt-5 py-2.5 bg-charcoal-800 hover:bg-charcoal-700 text-white rounded-xl font-medium text-sm transition-colors">Add to Cart</button>
+          <!-- ⚡ 立即购买按钮（先加购物车再跳转） -->
+          <button id="btn-buy-now" class="w-full mt-2 py-2.5 bg-red-500 hover:bg-red-600 text-white rounded-xl font-medium text-sm transition-colors">Buy Now</button>
+
+          <!-- 📄 产品详情说明 -->
+          <div class="mt-6 pt-6 border-t border-beige-200">
+            <h3 class="font-serif text-lg font-bold text-charcoal-800 mb-2">Product Details</h3>
+            <div class="text-sm text-charcoal-500 leading-relaxed whitespace-pre-line">{product.details.en}</div>
+          </div>
+          <!-- 🧺 洗涤 & 护理说明 -->
+          <div class="mt-4">
+            <h3 class="font-serif text-lg font-bold text-charcoal-800 mb-2">Wash &amp; Care</h3>
+            <p class="text-sm text-charcoal-500">Hand wash or machine wash cold. Do not bleach. Do not soak for long periods. Wash liquid temperature should not exceed 45°C.</p>
+            <p class="text-sm text-charcoal-500 mt-1">Measurements taken flat. Tolerance of 2-4cm is normal.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 🛒 购物车浮动按钮（右下角固定） -->
+  <a href="/en/cart/" id="cart-floating" class="fixed bottom-24 right-6 z-50 w-14 h-14 bg-charcoal-800 hover:bg-charcoal-700 rounded-full flex items-center justify-center shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-110">
+    <!-- 🛒 购物车 SVG 图标 -->
+    <svg class="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 100 4 2 2 0 000-4z"/></svg>
+    <!-- 🔴 购物车数量角标 -->
+    <span id="cart-badge" class="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] w-5 h-5 rounded-full flex items-center justify-center font-bold hidden">0</span>
+  </a>
+
+  <!-- 🤖 产品详情交互逻辑（is:inline） -->
+  <script is:inline>
+    (function(){
+      // 📦 从注入的 JSON 加载产品数据
+      var d = JSON.parse(document.getElementById('__prodData').textContent);
+      var DATA = d, COLORS = d.colors, SIZES = d.sizes, PID = d.id, PNAME = d.name, PPRICE = d.price;
+      // 🎨 当前选中状态：默认第一个颜色 / 第一个尺码 / 数量 1
+      var selColor = COLORS[0], selSize = SIZES[0], qty = 1;
+      // 🎨 中文颜色名 → CSS 颜色映射表（用于颜色圆点的背景色）
+      var cm = {'白色':'#f0f0f0','黑色':'#222','灰色':'#999','深蓝':'#1e3a5f','米白':'#f5f0e8','粉色':'#ffb6c1','杏色':'#f5deb3','红色':'#dc2626','浅灰色':'#d1d5db'};
+
+      // 🎨 渲染颜色选择器
+      document.getElementById('color-picker').innerHTML = COLORS.map(function(c,i){ return '<div class="w-8 h-8 rounded-full border-2 cursor-pointer transition-all hover:border-charcoal-500 '+(i===0?'border-charcoal-800':'border-charcoal-300')+'" style="background:'+(cm[c]||c)+'" data-color="'+c+'"></div>'; }).join('');
+      // 📏 渲染尺码选择器
+      document.getElementById('size-picker').innerHTML = SIZES.map(function(s,i){ return '<div class="sz-btn px-3 py-1.5 border rounded-lg text-sm cursor-pointer font-medium transition-all hover:border-charcoal-500 '+(i===0?'bg-charcoal-800 text-white border-charcoal-800':'border-charcoal-300 text-charcoal-600')+'" data-size="'+s+'">'+s+'</div>'; }).join('');
+
+      // 🎨 颜色点击 → 更新选中状态
+      var cp = document.getElementById('color-picker');
+      cp.querySelectorAll('div').forEach(function(el){ el.onclick = function(){ selColor = el.getAttribute('data-color'); cp.querySelectorAll('div').forEach(function(e){ e.classList.toggle('border-charcoal-800', e.getAttribute('data-color')===selColor); }); }; });
+      
+      // 📏 尺码点击 → 更新选中状态
+      document.querySelectorAll('.sz-btn').forEach(function(el){ el.onclick = function(){ selSize = el.getAttribute('data-size'); document.querySelectorAll('.sz-btn').forEach(function(e){ e.classList.remove('bg-charcoal-800','text-white','border-charcoal-800'); e.classList.add('border-charcoal-300','text-charcoal-600'); }); el.classList.add('bg-charcoal-800','text-white','border-charcoal-800'); el.classList.remove('border-charcoal-300','text-charcoal-600'); }; });
+
+      // ➕➖ 数量加减
+      document.getElementById('qty-plus').onclick = function(){ qty++; document.getElementById('qty-val').textContent = qty; };
+      document.getElementById('qty-minus').onclick = function(){ qty = Math.max(1, qty-1); document.getElementById('qty-val').textContent = qty; };
+
+      // 🛒 加入购物车
+      document.getElementById('btn-add-cart').onclick = addToCart;
+      // ⚡ 立即购买 → 先加入购物车，再跳转到购物车页
+      document.getElementById('btn-buy-now').onclick = function(){ addToCart(); location.href = '/en/cart/'; };
+
+      // 🛒 购物车逻辑：localStorage key = "ps-cart"
+      function addToCart(){ var c = JSON.parse(localStorage.getItem('ps-cart')||'[]'), x = c.find(function(i){ return i.id===PID && i.color===selColor && i.size===selSize; }); if(x) x.quantity += qty; else c.push({id:PID,slug:PID,name:PNAME,price:PPRICE,color:selColor,size:selSize,quantity:qty,image:DATA.image}); localStorage.setItem('ps-cart',JSON.stringify(c)); updateBadge(); }
+      // 🔴 更新购物车角标数量
+      function updateBadge(){ var c = JSON.parse(localStorage.getItem('ps-cart')||'[]'), n = c.reduce(function(s,i){ return s+i.quantity; },0), b = document.getElementById('cart-badge'); if(n>0){ b.textContent = n; b.classList.remove('hidden'); } else b.classList.add('hidden'); }
+      updateBadge();
+    })();
+  </script>
+</BaseLayout>

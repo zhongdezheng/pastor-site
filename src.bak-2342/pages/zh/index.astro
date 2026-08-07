@@ -1,0 +1,35 @@
+<!--
+============================================================
+📁 文件位置: src/pages/zh/index.astro
+🌐 路由: /zh/
+🎯 作用: 中文首页 — 组合 Hero/Scripture3D/Vision/Product/Prayer 五个板块
+📝 修改指南:
+   【修改】页面标题 (title): 改 BaseLayout 的 title 属性
+   【修改】板块顺序：调整组件顺序即可重排首页
+   【修改】移除板块：注释掉对应组件行
+   【修改】每个板块的 lang="zh" 确保中文内容渲染
+============================================================
+-->
+---
+// ── 布局与组件导入 ──────────────────────────────────────────
+import BaseLayout from '../../layouts/BaseLayout.astro';   // 全局布局（头部/页脚/SEO）
+import Hero from '../../features/home/Hero.astro';             // 首屏大图+欢迎语
+import Scripture3D from '../../features/home/Scripture3D.astro'; // 3D经文轮播
+import ProductCarousel from '../../features/products/ProductCarousel.astro'; // 产品轮播
+import VisionSection from '../../features/vision/VisionSection.astro';      // 异象介绍卡片
+import PrayerHomeSection from '../../features/prayer/PrayerHomeSection.astro'; // 代祷引导入口
+---
+
+<!-- 【布局】中文首页：语言=zh，标题显示在浏览器标签 -->
+<BaseLayout lang="zh" title="光与恩典 | 一位年轻牧师的信心之旅">
+  <!-- 【板块1】首屏主视觉 — Hero 大图 + 标题 + CTA 按钮 -->
+  <Hero lang="zh" />
+  <!-- 【板块2】3D经文展示 — 经文选段在3D粒子场景中旋转 -->
+  <Scripture3D lang="zh" />
+  <!-- 【板块3】异象简介 — 牧师的异象和呼召 -->
+  <VisionSection lang="zh" />
+  <!-- 【板块4】产品轮播 — 精选商品横向滑动展示 -->
+  <ProductCarousel lang="zh" />
+  <!-- 【板块5】代祷入口 — 引导访客提交代祷请求 -->
+  <PrayerHomeSection lang="zh" />
+</BaseLayout>

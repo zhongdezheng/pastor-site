@@ -1,0 +1,25 @@
+---
+/**
+ * 📍 文件位置: src/pages/en/products/index.astro
+ * 🌐 路由: /en/products/
+ * 🎯 作用: 英文产品列表页，委托 ProductShowcase 组件渲染全部产品
+ * 🔧 修改指南:
+ *   - 页面布局很简单：仅一个 ProductShowcase 组件，主要逻辑在组件内部
+ *   - 修改产品展示方式：编辑 src/components/ProductShowcase.astro
+ *   - 修改页面标题：调整 BaseLayout 的 title 属性
+ *   - pt-20 上边距用于避开顶部导航栏
+ */
+
+// 【修改】引入基础布局
+import BaseLayout from '../../../layouts/BaseLayout.astro';
+// 【修改】引入产品展示组件（负责网格布局 + 产品卡片渲染）
+import ProductShowcase from '../../../features/products/ProductShowcase.astro';
+---
+
+<BaseLayout lang="en" title="Christian Faith Apparel | Light & Grace">
+  <!-- 🛍️ 产品列表页 · 顶部留白避开导航 bar -->
+  <div class="pt-20">
+    <!-- 🎨 ProductShowcase 组件：传入 lang="en" 显示英文产品名 -->
+    <ProductShowcase lang="en" />
+  </div>
+</BaseLayout>

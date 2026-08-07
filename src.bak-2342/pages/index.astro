@@ -1,0 +1,24 @@
+<!--
+============================================================
+📁 文件位置: src/pages/index.astro
+🌐 路由: /
+🎯 作用: 根路由重定向 — 自动跳转到中文首页 /zh/
+📝 修改指南:
+   【修改】redirect 目标：改 replace() 参数即可，例如 '/en/' 跳英文站
+   【修改】robots 策略：可改为 'index,follow' 让搜索引擎收录
+   【修改】样式/脚本勿动：visibility:hidden 防止白屏闪烁
+============================================================
+-->
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<!-- 【SEO】禁止搜索引擎索引此重定向页 -->
+<meta name="robots" content="noindex">
+<!-- 【样式】页面渲染前隐藏 → 重定向前不显示任何内容 -->
+<style>html{visibility:hidden}</style>
+<!-- 【核心】立即跳转到中文首页 -->
+<script>location.replace('/zh/')</script>
+</head>
+<body></body>
+</html>

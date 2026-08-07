@@ -1,0 +1,155 @@
+---
+/*
+ * ============================================================================
+ * 文件位置: src/components/PrayerHomeSection.astro
+ * 作用: 首页代祷区组件（简化版），左侧显示 3D 祷告地球，右侧是代祷提交表单
+ * 被谁调用: src/pages/index.astro（首页）中引入
+ * 修改指南:
+ *   - 【修改】地球页面: 编辑 /public/prayer-globe.html
+ *   - 【修改】表单提交 API: 编辑 /api/prayer 端点
+ *   - 【修改】表单文案: 编辑 labels 对象的 en/zh 属性
+ *   - 【修改】背景渐变: 编辑 section 的 style="background: linear-gradient(...)" 颜色值
+ *   - 【修改】iframe 尺寸: 编辑 max-w-[480px] 控制最大宽度
+ *   - 【修改】经文引用: 编辑 verse 字段
+ *   - 与 PrayerGlobe.astro 的区别：此组件更简洁，用于首页嵌入；PrayerGlobe 用于独立代祷页面
+ * ============================================================================
+ */
+
+// Props：接收语言参数
+interface Props { lang: 'en' | 'zh' }
+const { lang } = Astro.props;
+
+// 【修改】多语言标签字典
+const labels = {
+  en: {
+    title: 'Prayer',
+    verse: 'Galatians 6:2 — "Bear one another\'s burdens, and so fulfill the law of Christ."',
+    name: 'Name', namePlaceholder: 'Your name (optional)',
+    email: 'Email', emailPlaceholder: 'your@email.com',
+    country: 'Your Country', countryPlaceholder: 'e.g. Kenya, Nigeria, China...',
+    request: 'Prayer Request', requestPlaceholder: 'Share what\'s on your heart...',
+    submit: 'Send Prayer', submitting: 'Sending...',
+    successMsg: 'Your prayer has been received. We are praying for you.',
+  },
+  zh: {
+    title: '代祷',
+    verse: '加拉太书 6:2 —「你们各人的重担要互相担当，如此，就完全了基督的律法。」',
+    name: '姓名', namePlaceholder: '你的名字（选填）',
+    email: '邮箱', emailPlaceholder: '你的邮箱',
+    country: '你的国家', countryPlaceholder: '例如：中国、美国、肯尼亚...',
+    request: '代祷事项', requestPlaceholder: '分享你心中所想...',
+    submit: '发送代祷', submitting: '发送中...',
+    successMsg: '你的代祷已收到。我们在为你祷告。',
+  },
+};
+const t = labels[lang];
+---
+
+<!-- ====== 代祷区域：暖色渐变背景 ====== -->
+<!-- 【修改】背景渐变: from #fefcf5 to #f0ece0（暖米色到浅灰米色） -->
+<section id="prayer" class="py-16 lg:py-20 px-4 sm:px-6" style="background: linear-gradient(180deg, #fefcf5 0%, #f0ece0 100%);">
+  <div class="max-w-6xl mx-auto">
+
+    <!-- 标题 -->
+    <h2 class="text-2xl sm:text-3xl font-serif font-bold text-charcoal-900 text-center mb-3">{t.title}</h2>
+    <!-- 引用的经文 -->
+    <p class="text-center text-sm text-charcoal-500 italic leading-relaxed max-w-xl mx-auto mb-8">{t.verse}</p>
+
+    <!-- 双列布局 -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-10 items-start">
+
+      <!-- ====== 左侧：3D 祷告地球（比 PrayerGlobe 略大） ====== -->
+      <div class="flex justify-center">
+        <!-- 【修改】iframe 大小: max-w-[480px]，比 PrayerGlobe 的 440px 大 -->
+        <iframe src="/prayer-globe.html" class="w-full max-w-[480px] aspect-square border-0" style="background:transparent;" title="Prayer Globe"></iframe>
+      </div>
+
+      <!-- ====== 右侧：代祷表单（简化版，无国家字段的 datalist） ====== -->
+      <div class="w-full max-w-md mx-auto">
+        <!-- 【修改】表单样式: 白色背景 + 圆角 + 阴影 -->
+        <form id="prayer-home-form" class="bg-white rounded-2xl shadow-lg p-6 md:p-8 border border-beige-200 space-y-3">
+
+          <!-- 姓名 -->
+          <div>
+            <label class="block text-xs font-medium text-charcoal-500 mb-1">{t.name}</label>
+            <input type="text" name="name" placeholder={t.namePlaceholder} class="w-full px-4 py-2.5 rounded-lg border border-beige-300 bg-beige-50 focus:outline-none focus:ring-2 focus:ring-sage-400 text-charcoal-800 text-sm" />
+          </div>
+
+          <!-- 邮箱 -->
+          <div>
+            <label class="block text-xs font-medium text-charcoal-500 mb-1">{t.email}</label>
+            <input type="email" name="email" placeholder={t.emailPlaceholder} class="w-full px-4 py-2.5 rounded-lg border border-beige-300 bg-beige-50 focus:outline-none focus:ring-2 focus:ring-sage-400 text-charcoal-800 text-sm" />
+          </div>
+
+          <!-- 国家（必填） -->
+          <div>
+            <label class="block text-xs font-medium text-charcoal-500 mb-1">{t.country} *</label>
+            <input type="text" name="country" required placeholder={t.countryPlaceholder} class="w-full px-4 py-2.5 rounded-lg border border-beige-300 bg-beige-50 focus:outline-none focus:ring-2 focus:ring-sage-400 text-charcoal-800 text-sm" />
+          </div>
+
+          <!-- 代祷事项（必填，比 PrayerGlobe 多 2 行） -->
+          <div>
+            <label class="block text-xs font-medium text-charcoal-500 mb-1">{t.request} *</label>
+            <textarea name="request" rows="6" required placeholder={t.requestPlaceholder} class="w-full px-4 py-3 rounded-lg border border-beige-300 bg-beige-50 focus:outline-none focus:ring-2 focus:ring-sage-400 text-charcoal-800 text-sm resize-none"></textarea>
+          </div>
+
+          <!-- 提交按钮 -->
+          <button type="submit" class="w-full py-3 bg-sage-500 hover:bg-sage-600 text-white font-medium rounded-xl transition-colors text-base">{t.submit}</button>
+        </form>
+
+        <!-- 成功消息 -->
+        <div id="prayer-home-success" class="hidden mt-4 bg-sage-50 border border-sage-200 rounded-2xl p-6 text-center">
+          <p class="text-4xl mb-2">🙏</p><p class="text-sage-600 text-sm">{t.successMsg}</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ====== 内联 JS：表单提交（is:inline 保持独立运行） ====== -->
+<!-- 注意：与 PrayerGlobe 不同，此组件的 JS 更简洁，没有错误消息区域 -->
+<script is:inline>
+  (function(){
+    var form = document.getElementById('prayer-home-form');
+    if (!form) return;
+    var success = document.getElementById('prayer-home-success');
+    var btn = form.querySelector('button');
+
+    form.addEventListener('submit', async function(e){
+      e.preventDefault();
+      var fd = new FormData(form);
+      var country = (fd.get('country') || '').toString().trim();
+      var request = (fd.get('request') || '').toString().trim();
+      // 验证必填字段
+      if (!country || !request) { return; }
+
+      // 进入提交状态
+      btn.textContent = '...'; btn.disabled = true;
+
+      try {
+        // 提交到后端 API
+        var res = await fetch('/api/prayer', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            name: fd.get('name') || '',
+            email: fd.get('email') || '',
+            country: country,
+            request: request,
+            lang: '{lang}'
+          })
+        });
+        if (!res.ok) throw new Error('fail');
+        // 成功：隐藏表单，显示感谢消息
+        form.classList.add('hidden');
+        success.classList.remove('hidden');
+      } catch(e) {
+        // 失败：静默处理（重回表单状态）
+      } finally {
+        // 恢复按钮
+        btn.textContent = '{t.submit}';
+        btn.disabled = false;
+      }
+    });
+  })();
+</script>

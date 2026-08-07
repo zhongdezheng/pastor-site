@@ -1,0 +1,65 @@
+<!--
+============================================================
+📁 文件位置: src/pages/zh/contact/index.astro
+🌐 路由: /zh/contact/
+🎯 作用: 联系我们页 — WhatsApp / 邮箱 / 代祷 三个联系方式卡片
+📝 修改指南:
+   【修改】WhatsApp号码：编辑 src/content/site.json 的 site.whatsapp
+   【修改】邮箱地址：编辑 site.json 的 site.email
+   【修改】WhatsApp 消息模板：改 <a> 的 href 中 ?text= 参数
+   【修改】卡片样式：改每个 <a> 卡片的 Tailwind class
+   【修改】新增联系方式：复制一个卡片 block 修改内容
+============================================================
+-->
+---
+// ── 导入 ────────────────────────────────────────────────────
+import BaseLayout from '../../../layouts/BaseLayout.astro'; // 全局布局
+import siteData from '../../../features/site/site.json';           // 站点配置（WhatsApp/邮箱等）
+const { site } = siteData;
+---
+
+<BaseLayout lang="zh" title="联系我们 | 活石">
+  <!-- 【主容器】米色背景、全高 -->
+  <section class="py-24 lg:py-32 px-6 bg-beige-50 min-h-screen">
+    <div class="max-w-2xl mx-auto text-center">
+      <!-- 【标题】 -->
+      <h2 class="section-title text-charcoal-900">联系我们</h2>
+      <!-- 【副标题】 -->
+      <p class="section-subtitle mb-16">期待与你交流。随时联系我们。</p>
+
+      <!-- 【联系方式列表】垂直间距 -->
+      <div class="space-y-8">
+        <!-- 【卡1】WhatsApp — 绿色图标、最快联系方式 -->
+        <a href={`https://wa.me/${site.whatsapp}?text=你好！我访问了你的网站，想了解更多。`}
+           target="_blank" rel="noopener"
+           class="block bg-white rounded-2xl shadow-lg border border-beige-200 p-8 hover:shadow-xl transition-all group">
+          <div class="w-16 h-16 mx-auto mb-4 bg-green-100 rounded-full flex items-center justify-center text-3xl group-hover:scale-110 transition-transform">
+            💬
+          </div>
+          <h3 class="font-serif text-xl font-bold text-charcoal-800 mb-2">WhatsApp</h3>
+          <p class="text-charcoal-500 text-sm">最快联系我们的方式 — 直接在 WhatsApp 对话</p>
+        </a>
+
+        <!-- 【卡2】邮箱 — 直接打开邮件客户端 -->
+        <a href={`mailto:${site.email}`}
+           class="block bg-white rounded-2xl shadow-lg border border-beige-200 p-8 hover:shadow-xl transition-all group">
+          <div class="w-16 h-16 mx-auto mb-4 bg-charcoal-100 rounded-full flex items-center justify-center text-3xl group-hover:scale-110 transition-transform">
+            ✉️
+          </div>
+          <h3 class="font-serif text-xl font-bold text-charcoal-800 mb-2">邮箱</h3>
+          <p class="text-charcoal-500 text-sm">{site.email}</p>
+        </a>
+
+        <!-- 【卡3】代祷需求 — 跳转到代祷页面 -->
+        <a href="/zh/prayer/"
+           class="block bg-white rounded-2xl shadow-lg border border-beige-200 p-8 hover:shadow-xl transition-all group">
+          <div class="w-16 h-16 mx-auto mb-4 bg-charcoal-100 rounded-full flex items-center justify-center text-3xl group-hover:scale-110 transition-transform">
+            🙏
+          </div>
+          <h3 class="font-serif text-xl font-bold text-charcoal-800 mb-2">代祷需求</h3>
+          <p class="text-charcoal-500 text-sm">提交代祷需求 — 我们为每一条祷告</p>
+        </a>
+      </div>
+    </div>
+  </section>
+</BaseLayout>

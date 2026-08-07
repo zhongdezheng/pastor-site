@@ -1,51 +1,58 @@
-<!--
-============================================================
-📁 文件位置: src/pages/zh/courses/index.astro
-🌐 路由: /zh/courses/
-🎯 作用: 课程页 — 展示4门圣经学习课程卡片，通过 WhatsApp 报名
-📝 修改指南:
-   【修改】课程数据：直接在 HTML 中修改每个课程的标题/描述/标签/课时数
-   【修改】WhatsApp 号码：改 script 中的 wa.me/85297094785
-   【修改】WhatsApp 消息模板：改 encodeURIComponent 里的文本
-   【修改】新增课程：复制一个 course-card div 修改内容
-   【修改】标签颜色/样式：改 tag 的 Tailwind class
-============================================================
--->
 ---
-// ── 导入 ────────────────────────────────────────────────────
-import BaseLayout from '../../../layouts/BaseLayout.astro'; // 全局布局
+/**
+ * 📍 文件位置: src/pages/zh/courses/index.astro
+ * 🌐 路由: /zh/courses/
+ * 🎯 作用: 中文圣经学习课程列表 — 从管理后台 API 获取课程数据
+ */
+
+import BaseLayout from '../../../layouts/BaseLayout.astro';
+
+// ⚡ 构建时从管理后台 API 获取课程，失败则回退本地 JSON
+let courses = [];
+try {
+  const res = await fetch('http://localhost:5200/api/courses');
+  if (res.ok) {
+    courses = (await res.json())
+      .filter(c => c.status === 1)
+      .map(c => ({
+        id: c.id,
+        title: { en: c.title_en || '', zh: c.title_zh || '' },
+        description: { en: c.description_en || '', zh: c.description_zh || '' },
+        icon: c.icon || '📖',
+        level: c.level || '',
+        lessons: c.lessons || 0,
+        is_free: Boolean(c.is_free),
+      }));
+  }
+} catch(e) {}
+if (!courses.length) {
+  courses = (await import('../../../content/courses.json')).default;
+}
 ---
 
 <BaseLayout lang="zh" title="圣经学习与信心课程 | 活石">
-  <!-- 【主容器】米色背景、全高 -->
   <section class="pt-24 pb-16 px-4 sm:px-6 bg-beige-50 min-h-screen">
     <div class="max-w-4xl mx-auto">
-      <!-- 【页标题】 -->
       <h1 class="font-serif text-3xl font-bold text-charcoal-800 mb-3 text-center">圣经学习课程</h1>
-      <!-- 【副标题】描述 -->
       <p class="text-charcoal-500 mb-10 text-center text-sm">通过引导性的学习和反思，深化你的信仰。</p>
-      <!-- 【课程网格】2列响应式 -->
+
       <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <!-- 【课程1】信仰根基 — 入门/6课/免费 -->
-        <div class="bg-white rounded-2xl border p-6 hover:shadow-lg transition-shadow"><span class="text-3xl">📖</span><h3 class="font-serif text-lg font-bold text-charcoal-800 mt-3">信仰根基</h3><p class="text-xs text-charcoal-400 mt-1">6周的根基性学习，涵盖基督教的核心信仰。</p><div class="flex gap-2 mt-3"><span class="text-[10px] bg-beige-100 px-2 py-0.5 rounded-full">入门</span><span class="text-[10px] bg-beige-100 px-2 py-0.5 rounded-full">6课</span><span class="text-[10px] bg-beige-100 px-2 py-0.5 rounded-full">免费</span></div><button class="mt-4 px-4 py-2 bg-charcoal-800 text-white text-xs rounded-lg hover:bg-charcoal-700" onclick="enrollWhatsApp('信仰根基')">通过 WhatsApp 报名</button></div>
-        <!-- 【课程2】耶稣生平 — 中级/8课/免费 -->
-        <div class="bg-white rounded-2xl border p-6 hover:shadow-lg transition-shadow"><span class="text-3xl">✝️</span><h3 class="font-serif text-lg font-bold text-charcoal-800 mt-3">耶稣生平</h3><p class="text-xs text-charcoal-400 mt-1">走过福音书，发现基督的生活和教导。</p><div class="flex gap-2 mt-3"><span class="text-[10px] bg-beige-100 px-2 py-0.5 rounded-full">中级</span><span class="text-[10px] bg-beige-100 px-2 py-0.5 rounded-full">8课</span><span class="text-[10px] bg-beige-100 px-2 py-0.5 rounded-full">免费</span></div><button class="mt-4 px-4 py-2 bg-charcoal-800 text-white text-xs rounded-lg hover:bg-charcoal-700" onclick="enrollWhatsApp('耶稣生平')">通过 WhatsApp 报名</button></div>
-        <!-- 【课程3】祷告与属灵争战 — 进阶/10课/免费 -->
-        <div class="bg-white rounded-2xl border p-6 hover:shadow-lg transition-shadow"><span class="text-3xl">🙏</span><h3 class="font-serif text-lg font-bold text-charcoal-800 mt-3">祷告与属灵争战</h3><p class="text-xs text-charcoal-400 mt-1">学习祷告的大能，如何在属灵争战中站立得稳。</p><div class="flex gap-2 mt-3"><span class="text-[10px] bg-beige-100 px-2 py-0.5 rounded-full">进阶</span><span class="text-[10px] bg-beige-100 px-2 py-0.5 rounded-full">10课</span><span class="text-[10px] bg-beige-100 px-2 py-0.5 rounded-full">免费</span></div><button class="mt-4 px-4 py-2 bg-charcoal-800 text-white text-xs rounded-lg hover:bg-charcoal-700" onclick="enrollWhatsApp('祷告与属灵争战')">通过 WhatsApp 报名</button></div>
-        <!-- 【课程4】宣教与传福音 — 所有级别/6课/免费 -->
-        <div class="bg-white rounded-2xl border p-6 hover:shadow-lg transition-shadow"><span class="text-3xl">🌍</span><h3 class="font-serif text-lg font-bold text-charcoal-800 mt-3">宣教与传福音</h3><p class="text-xs text-charcoal-400 mt-1">为完成大使命、分享福音预备你的心。</p><div class="flex gap-2 mt-3"><span class="text-[10px] bg-beige-100 px-2 py-0.5 rounded-full">所有级别</span><span class="text-[10px] bg-beige-100 px-2 py-0.5 rounded-full">6课</span><span class="text-[10px] bg-beige-100 px-2 py-0.5 rounded-full">免费</span></div><button class="mt-4 px-4 py-2 bg-charcoal-800 text-white text-xs rounded-lg hover:bg-charcoal-700" onclick="enrollWhatsApp('宣教与传福音')">通过 WhatsApp 报名</button></div>
+        {courses.map(c => (
+          <div class="bg-white rounded-2xl border p-6 hover:shadow-lg transition-shadow">
+            <span class="text-3xl">{c.icon}</span>
+            <h3 class="font-serif text-lg font-bold text-charcoal-800 mt-3">{c.title.zh}</h3>
+            <p class="text-xs text-charcoal-400 mt-1">{c.description.zh}</p>
+            <div class="flex gap-2 mt-3">
+              <span class="text-[10px] bg-beige-100 px-2 py-0.5 rounded-full">{c.level}</span>
+              <span class="text-[10px] bg-beige-100 px-2 py-0.5 rounded-full">{c.lessons}课</span>
+              <span class="text-[10px] bg-beige-100 px-2 py-0.5 rounded-full">{c.is_free ? '免费' : '付费'}</span>
+            </div>
+            <button class="mt-4 px-4 py-2 bg-charcoal-800 text-white text-xs rounded-lg hover:bg-charcoal-700" onclick={`enrollWhatsApp('${(c.title.zh || '').replace(/'/g, "\\'")}')`}>通过 WhatsApp 报名</button>
+          </div>
+        ))}
       </div>
     </div>
   </section>
 </BaseLayout>
 
-<!--
-============================================================
-📌 内联脚本：WhatsApp 报名
-   - 在新窗口打开 WhatsApp chat
-   - 带上课程名称作为消息
-   【修改】WhatsApp号码：改 85297094785
-   【修改】消息前缀：改 '你好！我想报名：'
-============================================================
--->
-<script is:inline>function enrollWhatsApp(c){window.open('https://wa.me/85297094785?text='+encodeURIComponent('你好！我想报名：'+c),'_blank');}</script>
+<script is:inline>function enrollWhatsApp(c){window.open('https://wa.me/85297094785?text='+encodeURIComponent('你好！我想报名参加：'+c),'_blank');}</script>

@@ -1,0 +1,98 @@
+---
+/**
+ * 📍 文件位置: src/pages/zh/designer/index.astro
+ * 🌐 路由: /zh/designer/
+ * 🎯 作用: 中文定制设计器——使用 Fabric.js 在 Canvas 上对产品进行图文定制设计
+ * 🔧 修改指南:
+ *   - 与 EN 版共享同一套组件（src/components/designer/），仅传入不同语言的 t prop
+ *   - 多语言文本在此文件中通过 t prop 传入各组件
+ *   - 产品数据从 content/products.json 加载
+ */
+
+import BaseLayout from '../../../layouts/BaseLayout.astro';
+import products from '../../../features/products/products.json';
+
+import DesignerLeftPanel from '../../../components/designer/DesignerLeftPanel.astro';
+import DesignerRightPanel from '../../../components/designer/DesignerRightPanel.astro';
+import DesignerCanvas from '../../../components/designer/DesignerCanvas.astro';
+import DesignerMobileToolbar from '../../../components/designer/DesignerMobileToolbar.astro';
+import DesignerPreviewModal from '../../../components/designer/DesignerPreviewModal.astro';
+import DesignerScriptCore from '../../../components/designer/DesignerScriptCore.astro';
+import DesignerScriptProducts from '../../../components/designer/DesignerScriptProducts.astro';
+
+const t = {
+  selectProduct: '选择产品',
+  uploadImage: '上传图片',
+  clickToUpload: '点击上传',
+  text: '文本',
+  addTextPlaceholder: '输入文字...',
+  font: '字体',
+  size: '大小',
+  color: '颜色',
+  addText: '添加文字',
+  reset: '重置',
+  center: '居中',
+  fontOptions: [
+    { value: 'Arial', label: 'Arial' },
+    { value: 'Georgia', label: 'Georgia' },
+    { value: 'Impact', label: 'Impact' },
+    { value: 'Courier New', label: 'Courier New' },
+    { value: 'Times New Roman', label: 'Times New Roman' },
+    { value: 'Verdana', label: 'Verdana' },
+    { value: 'Trebuchet MS', label: 'Trebuchet MS' },
+    { value: 'Comic Sans MS', label: 'Comic Sans MS' },
+  ],
+  fontOptionsMobile: [
+    { value: 'Arial', label: 'Arial' },
+    { value: 'Georgia', label: 'Georgia' },
+    { value: 'Impact', label: 'Impact' },
+    { value: 'Courier New', label: 'Courier' },
+    { value: 'Times New Roman', label: 'Times' },
+    { value: 'Verdana', label: 'Verdana' },
+    { value: 'Trebuchet MS', label: 'Trebuc' },
+    { value: 'Comic Sans MS', label: 'Comic' },
+  ],
+  selected: '已选',
+  selectHint: '请选择产品',
+  cart: '购物车',
+  qty: '数量',
+  preview: '预览',
+  clickToEnlarge: '点击放大',
+  product: '产品',
+  addToCartAlert: '已加入购物车！',
+  selectProductAlert: '请先选择产品。',
+  noProducts: '暂无产品',
+  productNameKey: 'zh',
+};
+---
+
+<BaseLayout lang="zh" title="定制基督教服饰设计 | 活石">
+
+<script type="application/json" id="__designerProducts" set:html={JSON.stringify(products)}></script>
+
+<style is:inline>
+  footer, #cart-floating, #wa-btn { display: none !important; }
+</style>
+
+<section class="h-screen bg-gray-100 flex flex-col">
+
+  <!-- 桌面端三栏布局 -->
+  <div class="hidden md:flex flex-1 overflow-hidden">
+    <DesignerLeftPanel t={t} />
+    <DesignerCanvas canvasId="design-canvas" paddingClass="p-6" shadowClass="shadow-xl" maxWidthStyle="width: min(100%, 540px)" />
+    <DesignerRightPanel t={t} />
+  </div>
+
+  <!-- 移动端单列布局 -->
+  <div class="md:hidden flex flex-col flex-1">
+    <DesignerCanvas canvasId="design-canvas-mobile" paddingClass="p-2" shadowClass="shadow-lg" maxWidthStyle="max-width: min(92vw, 360px)" />
+    <DesignerMobileToolbar t={t} />
+  </div>
+</section>
+
+<DesignerPreviewModal />
+
+<DesignerScriptCore t={t} />
+<DesignerScriptProducts />
+
+</BaseLayout>

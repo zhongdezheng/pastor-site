@@ -1,0 +1,99 @@
+---
+/**
+ * 📍 文件位置: src/pages/en/designer/index.astro
+ * 🌐 路由: /en/designer/
+ * 🎯 作用: 英文定制设计器——使用 Fabric.js 在 Canvas 上对产品进行图文定制设计
+ * 🔧 修改指南:
+ *   - 页面由 src/components/designer/ 下的共享组件拼装而成
+ *   - 多语言文本在此文件中通过 t prop 传入各组件
+ *   - 产品数据从 content/products.json 加载
+ *   - Fabric.js 从 CDN 加载 v5.3.1
+ */
+
+import BaseLayout from '../../../layouts/BaseLayout.astro';
+import products from '../../../features/products/products.json';
+
+import DesignerLeftPanel from '../../../components/designer/DesignerLeftPanel.astro';
+import DesignerRightPanel from '../../../components/designer/DesignerRightPanel.astro';
+import DesignerCanvas from '../../../components/designer/DesignerCanvas.astro';
+import DesignerMobileToolbar from '../../../components/designer/DesignerMobileToolbar.astro';
+import DesignerPreviewModal from '../../../components/designer/DesignerPreviewModal.astro';
+import DesignerScriptCore from '../../../components/designer/DesignerScriptCore.astro';
+import DesignerScriptProducts from '../../../components/designer/DesignerScriptProducts.astro';
+
+const t = {
+  selectProduct: 'Select Product',
+  uploadImage: 'Upload Image',
+  clickToUpload: 'Click to upload',
+  text: 'Text',
+  addTextPlaceholder: 'Add text...',
+  font: 'Font',
+  size: 'Size',
+  color: 'Color',
+  addText: 'Add Text',
+  reset: 'Reset',
+  center: 'Center',
+  fontOptions: [
+    { value: 'Arial', label: 'Arial' },
+    { value: 'Georgia', label: 'Georgia' },
+    { value: 'Impact', label: 'Impact' },
+    { value: 'Courier New', label: 'Courier New' },
+    { value: 'Times New Roman', label: 'Times New Roman' },
+    { value: 'Verdana', label: 'Verdana' },
+    { value: 'Trebuchet MS', label: 'Trebuchet MS' },
+    { value: 'Comic Sans MS', label: 'Comic Sans MS' },
+  ],
+  fontOptionsMobile: [
+    { value: 'Arial', label: 'Arial' },
+    { value: 'Georgia', label: 'Georgia' },
+    { value: 'Impact', label: 'Impact' },
+    { value: 'Courier New', label: 'Courier' },
+    { value: 'Times New Roman', label: 'Times' },
+    { value: 'Verdana', label: 'Verdana' },
+    { value: 'Trebuchet MS', label: 'Trebuc' },
+    { value: 'Comic Sans MS', label: 'Comic' },
+  ],
+  selected: 'Selected',
+  selectHint: 'Select a product',
+  cart: 'Cart',
+  qty: 'Qty',
+  preview: 'Preview',
+  clickToEnlarge: 'Click to enlarge',
+  product: 'Product',
+  addToCartAlert: 'Added to cart!',
+  selectProductAlert: 'Please select a product first.',
+  noProducts: 'No products',
+  productNameKey: 'en',
+};
+---
+
+<BaseLayout lang="en" title="Custom Christian Apparel Design | Livingstone">
+
+<script type="application/json" id="__designerProducts" set:html={JSON.stringify(products)}></script>
+
+<style is:inline>
+  footer, #cart-floating, #wa-btn { display: none !important; }
+</style>
+
+<section class="h-screen bg-gray-100 flex flex-col">
+
+  <!-- 桌面端三栏布局 -->
+  <div class="hidden md:flex flex-1 overflow-hidden">
+    <DesignerLeftPanel t={t} />
+    <DesignerCanvas canvasId="design-canvas" paddingClass="p-6" shadowClass="shadow-xl" maxWidthStyle="width: min(100%, 540px)" />
+    <DesignerRightPanel t={t} />
+  </div>
+
+  <!-- 移动端单列布局 -->
+  <div class="md:hidden flex flex-col flex-1">
+    <DesignerCanvas canvasId="design-canvas-mobile" paddingClass="p-2" shadowClass="shadow-lg" maxWidthStyle="max-width: min(92vw, 360px)" />
+    <DesignerMobileToolbar t={t} />
+  </div>
+</section>
+
+<DesignerPreviewModal />
+
+<DesignerScriptCore t={t} />
+<DesignerScriptProducts />
+
+</BaseLayout>

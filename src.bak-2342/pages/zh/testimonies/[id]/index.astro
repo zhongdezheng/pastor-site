@@ -1,0 +1,48 @@
+---
+import BaseLayout from '../../../../layouts/BaseLayout.astro';
+
+export async function getStaticPaths() {
+  let testimonies = [];
+  try {
+    const res = await fetch('http://localhost:5200/api/testimonies');
+    if (res.ok) testimonies = await res.json();
+  } catch(e) {}
+  if (!testimonies.length) {
+    const data = (await import('../../../../features/testimonies/testimonies.json')).default;
+    testimonies = data;
+  }
+  return testimonies.filter(t => t.published !== 0).map(t => ({ params: { id: String(t.id) } }));
+}
+
+const { id } = Astro.params;
+---
+
+<BaseLayout lang="zh" title="见证 | 恩典之约">
+  <section class="py-24 lg:py-32 px-6 bg-beige-50 min-h-screen">
+    <div class="max-w-3xl mx-auto text-center">
+      <a href="/zh/testimonies/" class="inline-block text-sm text-charcoal-500 hover:text-charcoal-700 mb-8">&larr; 返回见证列表</a>
+      <h1 id="t-title" class="font-serif text-2xl md:text-3xl font-bold text-charcoal-900 mb-2">加载中...</h1>
+      <p id="t-meta" class="text-charcoal-400 text-sm mb-8"></p>
+      <div id="t-content" class="text-charcoal-700 leading-relaxed font-serif text-lg space-y-4 whitespace-pre-line bg-white rounded-2xl shadow-lg border border-beige-200 p-8 md:p-12 text-left">
+        <p class="text-charcoal-400">加载中...</p>
+      </div>
+    </div>
+  </section>
+</BaseLayout>
+
+<script is:inline>
+(async function() {
+  var id = window.location.pathname.split('/').filter(Boolean).pop();
+  try {
+    var r = await fetch('https://admin.pastorjeffnchina.com/api/testimonies');
+    if (!r.ok) throw new Error('API error');
+    var data = await r.json();
+    var t = data.find(function(x) { return String(x.id) === id; });
+    if (!t) { document.querySelector('h1').textContent = '未找到'; return; }
+    document.title = (t.title_zh || t.title || '见证') + ' | 恩典之约';
+    document.getElementById('t-title').textContent = t.title_zh || t.title || '';
+    document.getElementById('t-meta').innerHTML = (t.date || '') + ' &middot; ' + (t.author || '');
+    document.getElementById('t-content').textContent = t.content_zh || t.content || '';
+  } catch(e) { document.getElementById('t-content').innerHTML = '<p class="text-center text-charcoal-400">加载失败，请刷新重试。</p>'; }
+})();
+</script>

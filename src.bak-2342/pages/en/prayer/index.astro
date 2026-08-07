@@ -1,0 +1,120 @@
+---
+/**
+ * 📍 文件位置: src/pages/en/prayer/index.astro
+ * 🌐 路由: /en/prayer/
+ * 🎯 作用: 英文代祷页面——左侧展示 3D 地球动画（iframe），右侧提供代祷表单；提交后 POST 到 admin API
+ * 🔧 修改指南:
+ *   - 修改页面介绍文字：在 <p class="text-center..."> 中直接编辑
+ *   - 修改表单字段：增减 <input> / <textarea> 并在下方 script 中同步处理
+ *   - 修改 API 端点：script 中 fetch URL 的 https://admin.pastorjeffnchina.com/api/prayers
+ *   - 地球动画：iframe src="/prayer-globe.html"，需确保 public/ 下该文件存在
+ *   - 表单必填校验：script 中检查 country 和 request 非空
+ */
+
+// 【修改】引入基础布局
+import BaseLayout from '../../../layouts/BaseLayout.astro';
+---
+
+<BaseLayout lang="en" title="Prayer Wall | Livingstone">
+  <!-- 🙏 代祷页主容器 · 渐变米色背景 -->
+  <section class="pt-24 pb-16 px-4 sm:px-6" style="background: linear-gradient(180deg, #fefcf5 0%, #f0ece0 100%);">
+    <div class="max-w-6xl mx-auto">
+      <!-- 📌 页面标题 -->
+      <h1 class="text-2xl sm:text-3xl font-serif font-bold text-charcoal-900 text-center mb-4">Prayer</h1>
+      <!-- ✍️ 代祷页面说明文字 -->
+      <p class="text-center text-charcoal-600 leading-relaxed max-w-2xl mx-auto mb-10 text-sm sm:text-base">
+        No distance can sever our fellowship in Christ. Whether you are walking through marketplace trials, family burdens, or a wilderness in your ministry—please leave your prayer requests here. From this harvest field, my team and I commit to standing with you daily at the altar, bearing your burdens in the Lord. You are never alone.
+      </p>
+
+      <!-- 🔲 双栏布局：左侧地球 · 右侧表单 -->
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-10 items-start">
+        <!-- 🌍 左侧：3D 地球动画（iframe 嵌入） -->
+        <div class="flex justify-center">
+          <iframe src="/prayer-globe.html" class="w-full max-w-[480px] aspect-square border-0" style="background:transparent;" title="Prayer Globe"></iframe>
+        </div>
+
+        <!-- 📝 右侧：代祷表单 -->
+        <div class="w-full max-w-md mx-auto">
+          <!-- 📋 表单卡片 -->
+          <form id="prayer-form" class="bg-white rounded-2xl shadow-lg p-6 md:p-8 border border-beige-200 space-y-3">
+            <!-- 姓名（选填） -->
+            <div>
+              <label class="block text-xs font-medium text-charcoal-500 mb-1">Name</label>
+              <input type="text" name="name" placeholder="Your name (optional)" class="w-full px-4 py-2.5 rounded-lg border border-beige-300 bg-beige-50 focus:outline-none focus:ring-2 focus:ring-sage-400 text-charcoal-800 text-sm">
+            </div>
+            <!-- 邮箱 -->
+            <div>
+              <label class="block text-xs font-medium text-charcoal-500 mb-1">Email</label>
+              <input type="email" name="email" placeholder="Your email" class="w-full px-4 py-2.5 rounded-lg border border-beige-300 bg-beige-50 focus:outline-none focus:ring-2 focus:ring-sage-400 text-charcoal-800 text-sm">
+            </div>
+            <!-- 国家（必填） -->
+            <div>
+              <label class="block text-xs font-medium text-charcoal-500 mb-1">Your Country *</label>
+              <input type="text" name="country" required placeholder="e.g. Kenya, Nigeria..." class="w-full px-4 py-2.5 rounded-lg border border-beige-300 bg-beige-50 focus:outline-none focus:ring-2 focus:ring-sage-400 text-charcoal-800 text-sm">
+            </div>
+            <!-- 代祷事项（必填） -->
+            <div>
+              <label class="block text-xs font-medium text-charcoal-500 mb-1">Prayer Request *</label>
+              <textarea name="request" rows="6" required placeholder="Share what's on your heart..." class="w-full px-4 py-3 rounded-lg border border-beige-300 bg-beige-50 focus:outline-none focus:ring-2 focus:ring-sage-400 text-charcoal-800 text-sm resize-none"></textarea>
+            </div>
+            <!-- 提交按钮 -->
+            <button type="submit" class="w-full py-3 bg-sage-500 hover:bg-sage-600 text-white font-medium rounded-xl transition-colors">Send Prayer</button>
+            <!-- 错误提示（初始隐藏） -->
+            <p id="prayer-error" class="text-red-500 text-xs text-center hidden"></p>
+          </form>
+          <!-- ✅ 成功提示（初始隐藏） -->
+          <div id="prayer-success" class="hidden mt-4 bg-sage-50 border border-sage-200 rounded-2xl p-6 text-center">
+            <p class="text-4xl mb-2">🙏</p><p class="text-sage-600 text-sm">Your prayer has been received. We are praying for you.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+</BaseLayout>
+
+<!-- 🤖 代祷表单提交逻辑（is:inline 确保脚本在 SSR 中保留） -->
+<script is:inline>
+(function(){
+  // 获取 DOM 元素引用
+  var f = document.getElementById('prayer-form');       // 表单
+  if (!f) return;
+  var s = document.getElementById('prayer-success');     // 成功提示容器
+  var err = document.getElementById('prayer-error');     // 错误提示容器
+  var b = f.querySelector('button');                     // 提交按钮
+
+  // 📤 表单提交事件
+  f.addEventListener('submit', async function(e) {
+    e.preventDefault();
+    var d = new FormData(f);
+    var country = (d.get('country')||'').trim();
+    var request = (d.get('request')||'').trim();
+    // ⚠️ 必填校验：国家和代祷事项不能为空
+    if (!country || !request) return;
+
+    b.textContent = 'Sending...';
+    b.disabled = true;
+    err.classList.add('hidden');
+
+    try {
+      // 🔗 POST 到后台 API，content 字段拼接「国家: 代祷事项」
+      var res = await fetch('https://admin.pastorjeffnchina.com/api/prayers', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({name: d.get('name')||'', email: d.get('email')||'', content: country + ': ' + request})
+      });
+      if (!res.ok) throw new Error('fail');
+      // ✅ 提交成功 → 隐藏表单 → 展示成功页面
+      f.classList.add('hidden');
+      s.classList.remove('hidden');
+    } catch(e) {
+      // ❌ 提交失败 → 显示错误提示
+      err.textContent = 'Something went wrong. Please try again.';
+      err.classList.remove('hidden');
+    } finally {
+      // 恢复按钮状态
+      b.textContent = 'Send Prayer';
+      b.disabled = false;
+    }
+  });
+})();
+</script>

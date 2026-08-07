@@ -1,0 +1,18 @@
+---
+/**
+ * 📍 文件位置: src/components/designer/DesignerPreviewModal.astro
+ * 🎯 作用: 设计器预览放大模态框——全屏黑色遮罩，点击关闭
+ * 🔧 修改指南:
+ *   - 模态框 ID: preview-modal
+ *   - 图片 ID: preview-modal-img
+ *   - JS 函数: openPreview() / closePreview()
+ */
+---
+
+<!-- 预览放大模态框 -->
+<div id="preview-modal" class="fixed inset-0 z-50 bg-black/80 hidden flex items-center justify-center p-6" onclick="closePreview()">
+  <div class="relative max-w-[90vw] max-h-[90vh]" onclick="event.stopPropagation()">
+    <img id="preview-modal-img" class="max-w-full max-h-[85vh] object-contain rounded-xl shadow-2xl" src="" alt="Preview" />
+    <button class="absolute -top-3 -right-3 w-9 h-9 bg-white rounded-full shadow-lg flex items-center justify-center text-base font-bold text-gray-600 hover:bg-gray-100 transition-colors" onclick="closePreview()">✕</button>
+  </div>
+</div>

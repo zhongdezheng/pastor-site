@@ -1,0 +1,209 @@
+<!--
+============================================================
+📁 文件位置: src/pages/zh/cart/index.astro
+🌐 路由: /zh/cart/
+🎯 作用: 购物车页 — 显示已添加商品、修改数量/删除、PayPal支付
+📝 修改指南:
+   【修改】支付方式：改 PayPal SDK 配置或替换为其他支付
+   【修改】API 端点：改 fetch URL (admin.pastorjeffnchina.com/api/paypal/*)
+   【修改】空购物车文案：改 "购物车是空的" 字符串
+   【修改】支付按钮样式：改 paypal.Buttons({style}) 配置
+   【修改】货币：改 SDK URL 的 currency=USD
+   【修改】产品名解析逻辑：改 getProductName() 函数
+   【修改】成功/错误提示文案：改对应的 textContent
+============================================================
+-->
+---
+// ── 导入 ────────────────────────────────────────────────────
+import BaseLayout from '../../../layouts/BaseLayout.astro'; // 全局布局
+import products from '../../../features/products/products.json';      // 产品数据（用于展示产品名和图片）
+---
+
+<BaseLayout lang="zh" title="购物车 | 活石">
+  <section class="pt-24 pb-16 px-4 sm:px-6 bg-white min-h-screen">
+    <div class="max-w-3xl mx-auto">
+      <!-- 【返回链接】动态指向最后浏览的产品 -->
+      <a href="/zh/products/" id="cart-back-link" class="text-sm text-charcoal-500 hover:text-charcoal-700 mb-6 inline-block">&larr; 返回产品</a>
+      <!-- 【标题】 -->
+      <h1 class="font-serif text-2xl font-bold text-charcoal-800 mb-8">购物车</h1>
+      <!-- 【数据注入】产品数据供JS脚本使用 -->
+      <script type="application/json" id="__cartProducts" set:html={JSON.stringify(products)}></script>
+      <!-- 【购物车列表】动态渲染（JS填充） -->
+      <div id="cart-items"><p class="text-charcoal-400 text-center py-12">购物车是空的</p></div>
+      <!-- 【汇总区域】初始隐藏 — 有商品时才显示 -->
+      <div id="cart-footer" class="hidden mt-6 pt-6 border-t border-beige-200">
+        <div class="flex justify-between text-lg font-bold text-charcoal-800 mb-4"><span>总计</span><span id="cart-total">$0</span></div>
+
+        <!-- 【PayPal支付】PayPal按钮容器 + 信用卡/借记卡/Apple Pay -->
+        <div id="paypal-button-container" class="mb-3"></div>
+        <!-- 【错误提示】 -->
+        <p id="payment-error" class="text-red-500 text-xs text-center hidden mt-2"></p>
+        <!-- 【成功提示】 -->
+        <p id="payment-success" class="hidden mt-2 text-center text-green-600 text-sm"></p>
+      </div>
+    </div>
+  </section>
+</BaseLayout>
+
+<!--
+============================================================
+📌 内联脚本：购物车全部逻辑
+   【购物车 CRUD】渲染 / 修改数量 / 删除
+   【PayPal】SDK 加载 / 按钮渲染 / 创建订单 / 捕获支付
+   【数据源】localStorage('ps-cart') + products.json
+   【修改】localStorage key：改 'ps-cart'
+   【修改】API base URL：改所有 https://admin.pastorjeffnchina.com/api/...
+============================================================
+-->
+<script is:inline>
+  // ── DOM 引用 ──────────────────────────────────────────────
+  var paypalContainer=document.getElementById('paypal-button-container'),paypalError=document.getElementById('payment-error'),paypalSuccess=document.getElementById('payment-success'),cartItems=document.getElementById('cart-items'),cartFooter=document.getElementById('cart-footer'),cartTotal=document.getElementById('cart-total'),backLink=document.getElementById('cart-back-link');
+  var PRODUCTS=JSON.parse(document.getElementById('__cartProducts').textContent);
+
+  // ── 购物车操作 ───────────────────────────────────────────
+  function getCart(){return JSON.parse(localStorage.getItem('ps-cart')||'[]');}
+  function saveCart(c){localStorage.setItem('ps-cart',JSON.stringify(c));}
+
+  // 【辅助】根据购物车项解析产品名称（兼容中英文 + 旧数据）
+  function getProductName(i){
+    var p=PRODUCTS.find(function(x){return x.id===i.id;});
+    if(p&&p.name) return typeof p.name==='string' ? p.name : (p.name.zh||'');
+    var n=i.name;
+    if(typeof n==='string') return n;
+    if(n&&n.zh) return n.zh;
+    return '产品'; // 【修改】未知产品时的默认名
+  }
+  // 【辅助】获取产品首图
+  function getProductImage(i){
+    var p=PRODUCTS.find(function(x){return x.id===i.id;});
+    if(p&&p.images&&p.images.length) return p.images[0];
+    if(i.image) return i.image;
+    return '';
+  }
+  // 【辅助】获取产品slug
+  function getProductSlug(i){
+    return i.slug||i.id||'';
+  }
+
+  // ── 渲染购物车列表 ───────────────────────────────────────
+  function render(){
+    var c=getCart();
+    // 空购物车 → 显示空状态
+    if(!c.length){cartItems.innerHTML='<p class="text-charcoal-400 text-center py-12">购物车是空的</p>';cartFooter.classList.add('hidden');backLink.href='/zh/products/';return;}
+    cartFooter.classList.remove('hidden');
+    // 计算总价
+    var t=c.reduce(function(s,i){return s+i.price*i.quantity;},0);cartTotal.textContent='$'+t.toFixed(2);
+    // 返回链接指向最后一个商品
+    var last=c[c.length-1];backLink.href='/zh/products/'+(last.slug||last.id||'tee-180g')+'/';
+
+    // 【渲染】每件商品一行
+    cartItems.innerHTML=c.map(function(i,idx){
+      var src=getProductImage(i);
+      var imgHtml=src ? '<img src="'+src+'" style="width:100%;height:100%;object-fit:cover" onerror="this.parentElement.innerHTML=\'&#x1F455;\'">' : '&#x1F455;';
+      var name=getProductName(i);
+      var slug=getProductSlug(i);
+      return '<div class="flex gap-4 items-center bg-beige-50 rounded-xl p-4 mb-3">'
+        +'<div class="w-16 h-16 rounded-lg overflow-hidden flex-shrink-0 bg-beige-200 flex items-center justify-center">'+imgHtml+'</div>'
+        +'<div class="flex-1 min-w-0">'
+        +'<a href="/zh/products/'+slug+'/" class="text-sm font-bold text-charcoal-800 truncate hover:text-red-500">'+name+'</a>'
+        +'<p class="text-xs text-charcoal-400">颜色: '+(i.color||'白色')+' | 尺码: '+(i.size||'M')+'</p>'
+        +'<div class="flex items-center gap-2 mt-2">'
+        +'<button class="w-7 h-7 border border-charcoal-300 rounded-lg text-sm flex items-center justify-center hover:bg-beige-100" onclick="changeQty('+idx+',-1)">−</button>'
+        +'<span class="text-sm font-bold w-6 text-center">'+i.quantity+'</span>'
+        +'<button class="w-7 h-7 border border-charcoal-300 rounded-lg text-sm flex items-center justify-center hover:bg-beige-100" onclick="changeQty('+idx+',1)">+</button>'
+        +'</div></div><div class="text-right">'
+        +'<p class="text-sm font-bold text-charcoal-800">$'+(i.price*i.quantity).toFixed(2)+'</p>'
+        +'<button class="text-xs text-red-400 hover:text-red-600 mt-1" onclick="removeItem('+idx+')">删除</button></div></div>';
+    }).join('');
+    initPayPal(); // 渲染完成后初始化PayPal
+  }
+
+  // 【修改数量】全局函数，供 onclick 调用
+  window.changeQty=function(idx,d){var c=getCart();c[idx].quantity=Math.max(1,c[idx].quantity+d);saveCart(c);render();};
+  // 【删除商品】全局函数
+  window.removeItem=function(idx){var c=getCart();c.splice(idx,1);saveCart(c);render();};
+
+  // ── PayPal 支付 ──────────────────────────────────────────
+  var paypalLoaded=false, paypalButtons=false;
+
+  function initPayPal(){
+    if(paypalButtons) return; // 已渲染，不重复
+    var c=getCart();
+    if(!c.length) return;
+
+    // 加载中提示
+    paypalContainer.innerHTML='<p class="text-charcoal-400 text-sm text-center py-4">正在加载支付方式...</p>';
+
+    // 【API】获取PayPal配置（clientId + 模式）
+    fetch('https://admin.pastorjeffnchina.com/api/paypal/config')
+    .then(function(r){return r.json();})
+    .then(function(cfg){
+      if(!cfg.enabled || !cfg.clientId){
+        paypalContainer.innerHTML='<p class="text-charcoal-400 text-sm text-center py-2">支付暂时不可用</p>';
+        return;
+      }
+      loadPayPalSDK(cfg.clientId, cfg.mode);
+    }).catch(function(){
+      paypalContainer.innerHTML='<p class="text-charcoal-400 text-sm text-center py-2">支付暂时不可用</p>';
+    });
+  }
+
+  // 【加载】PayPal JS SDK
+  function loadPayPalSDK(clientId, mode){
+    if(paypalLoaded){ renderButtons(); return; }
+    paypalLoaded=true;
+    var s=document.createElement('script');
+    // 【修改】货币：currency=USD
+    s.src='https://www.paypal.com/sdk/js?client-id='+clientId+'&currency=USD&intent=capture&disable-funding=credit&components=buttons';
+    if(mode==='sandbox') s.src+='&buyer-country=US'; // 沙箱模式加国家参数
+    s.onload=renderButtons;
+    s.onerror=function(){ paypalContainer.innerHTML='<p class="text-red-500 text-sm text-center py-2">支付加载失败，请刷新页面重试。</p>'; };
+    document.head.appendChild(s);
+  }
+
+  // 【渲染】PayPal按钮
+  function renderButtons(){
+    var c=getCart();
+    if(!c.length) return;
+    paypalContainer.innerHTML='';
+    paypalButtons=true;
+    paypal.Buttons({
+      style: { layout:'vertical', color:'gold', shape:'rect', label:'paypal' }, // 【修改】按钮样式
+      // 【创建订单】POST 到后端
+      createOrder: function(data,actions){
+        var cart=getCart();
+        return fetch('https://admin.pastorjeffnchina.com/api/paypal/create-order',{
+          method:'POST',headers:{'Content-Type':'application/json'},
+          body:JSON.stringify({items:cart.map(function(i){return {name:i.name||'Product',price:i.price,quantity:i.quantity,slug:i.slug||i.id};})})
+        }).then(function(r){return r.json();}).then(function(data){
+          if(data.error){ paypalError.textContent='支付错误: '+data.error; paypalError.classList.remove('hidden'); throw new Error(data.error); }
+          return data.id; // PayPal Order ID
+        });
+      },
+      // 【支付成功】捕获订单
+      onApprove: function(data,actions){
+        paypalContainer.innerHTML='<p class="text-charcoal-400 text-sm text-center py-4">正在处理支付...</p>';
+        var cart=getCart();
+        return fetch('https://admin.pastorjeffnchina.com/api/paypal/capture-order',{
+          method:'POST',headers:{'Content-Type':'application/json'},
+          body:JSON.stringify({orderID:data.orderID, items:cart.map(function(i){return {name:i.name||'Product',price:i.price,quantity:i.quantity,slug:i.slug||i.id,color:i.color,size:i.size};})})
+        }).then(function(r){return r.json();}).then(function(result){
+          if(result.error){ paypalError.textContent='支付失败，请重试。'; paypalError.classList.remove('hidden'); return; }
+          localStorage.removeItem('ps-cart'); // 清空购物车
+          paypalSuccess.innerHTML='<div class="bg-green-50 border border-green-200 rounded-xl p-4"><p class="text-lg mb-1">🎉 支付成功！</p><p class="text-sm">感谢您的购买，上帝祝福您！</p></div>';
+          paypalSuccess.classList.remove('hidden');
+          render(); // 重新渲染（显示空购物车）
+        }).catch(function(e){
+          paypalError.textContent='支付失败，请重试。';
+          paypalError.classList.remove('hidden');
+        });
+      },
+      // 【支付错误】
+      onError: function(err){
+        paypalError.textContent='支付出错，请稍后重试。';
+        paypalError.classList.remove('hidden');
+      }
+    }).render('#paypal-button-container');
+  }
+  render(); // 初次渲染
+</script>

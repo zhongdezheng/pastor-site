@@ -1,0 +1,46 @@
+<!--
+============================================================
+📁 文件位置: src/pages/zh/vision/index.astro
+🌐 路由: /zh/vision/
+🎯 作用: 中文异象页 — 展示牧师的异象宣言全文
+📝 修改指南:
+   【修改】内容文本：编辑 src/content/vision.json 的 zh.content 字段
+   【修改】标题：编辑 vision.json 的 zh.title 字段
+   【修改】页面样式：改 section/p/h1 的 Tailwind class
+   【修改】段落分割逻辑：改 .split('\n\n') 分隔符
+============================================================
+-->
+---
+// ── 导入 ────────────────────────────────────────────────────
+import BaseLayout from '../../../layouts/BaseLayout.astro'; // 全局布局
+import visionData from '../../../content/vision.json';       // 异象内容数据（中/英）
+
+// 【数据】提取中文版异象数据
+const v = visionData.zh;
+// 【段落】用双换行分隔段落，过滤空行
+const paragraphs = v.content.split('\n\n').filter(p => p.trim());
+---
+
+<!-- 【布局】中文异象页 — 标题含"活石"品牌后缀 -->
+<BaseLayout lang="zh" title={`${v.title} | 活石`}>
+  <!-- 【主容器】全高、上内边距、米色背景 -->
+  <section class="py-24 lg:py-32 px-6 bg-beige-50 min-h-screen">
+    <div class="max-w-3xl mx-auto">
+      <!-- 【装饰】标题上方装饰线 + 星号 -->
+      <div class="flex items-center justify-center gap-3 mb-6">
+        <span class="block w-12 h-px bg-beige-400"></span>
+        <span class="text-beige-400 text-lg">✦</span>
+        <span class="block w-12 h-px bg-beige-400"></span>
+      </div>
+      <!-- 【主标题】衬线字体、加粗、居中 -->
+      <h1 class="text-2xl md:text-3xl font-serif font-bold text-charcoal-900 text-center mb-10">{v.title}</h1>
+      <!-- 【文章卡片】白色圆角卡片、阴影、边框 -->
+      <article class="bg-white rounded-2xl shadow-lg border border-beige-200 p-8 md:p-12">
+        <!-- 【段落区域】衬线字体、大号、段落间距 -->
+        <div class="text-charcoal-700 leading-relaxed font-serif text-lg space-y-6">
+          {paragraphs.map(p => <p>{p}</p>)}
+        </div>
+      </article>
+    </div>
+  </section>
+</BaseLayout>

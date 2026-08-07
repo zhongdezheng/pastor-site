@@ -1,0 +1,73 @@
+---
+/**
+ * 📍 文件位置: src/components/designer/DesignerRightPanel.astro
+ * 🎯 作用: 设计器桌面端右侧面板——已选产品信息、购物车按钮、参数选择（颜色/尺码/数量）、预览缩略图
+ * 🔧 修改指南:
+ *   - 文字内容通过 t prop 控制多语言
+ *   - 产品参数区初始隐藏，选中产品后 JS 显示（ID: product-params）
+ *   - 预览缩略图点击打开全屏预览模态框
+ */
+interface Props {
+  t: {
+    selected: string;
+    selectHint: string;
+    color: string;
+    size: string;
+    qty: string;
+    cart: string;
+    preview: string;
+    clickToEnlarge: string;
+  };
+}
+const { t } = Astro.props;
+---
+
+<!-- 右侧面板：24% 宽度 · 已选产品信息 + 购物车 + 参数 + 预览 -->
+<div class="w-[24%] min-w-[260px] max-w-[340px] bg-white border-l border-gray-200 overflow-y-auto flex flex-col gap-2 p-3">
+  
+  <!-- 已选产品信息 + 购物车按钮 -->
+  <div class="bg-gray-50 rounded-xl p-3">
+    <h3 class="text-xs font-bold text-gray-500 uppercase tracking-wider mb-1.5">{t.selected}</h3>
+    <p class="text-sm font-bold text-gray-800" id="info-name">{t.selectHint}</p>
+    <p class="text-xs text-gray-400 mt-0.5" id="info-detail"></p>
+    <div class="flex items-center justify-between mt-1">
+      <p class="text-xl font-bold text-gray-800" id="info-price"></p>
+      <button id="btn-cart" class="px-3 py-1.5 bg-gray-800 hover:bg-gray-700 active:bg-gray-900 text-white rounded-lg text-xs font-semibold transition-all">{t.cart}</button>
+    </div>
+  </div>
+
+  <!-- 参数选择：颜色 / 尺码 / 数量（选择产品后才显示） -->
+  <div class="bg-gray-50 rounded-xl p-3 hidden" id="product-params">
+    <div class="space-y-3">
+      <!-- 颜色 swatches -->
+      <div>
+        <label class="text-xs font-bold text-gray-500 uppercase tracking-wider">{t.color}</label>
+        <div class="flex flex-wrap gap-2 mt-1.5" id="color-options"></div>
+      </div>
+      <!-- 尺码选择 -->
+      <div>
+        <label class="text-xs font-bold text-gray-500 uppercase tracking-wider">{t.size}</label>
+        <div class="flex flex-wrap gap-1.5 mt-1.5" id="size-options"></div>
+      </div>
+      <!-- 数量加减 -->
+      <div class="flex items-center justify-between">
+        <label class="text-xs font-bold text-gray-500 uppercase tracking-wider">{t.qty}</label>
+        <div class="flex items-center gap-0">
+          <button class="w-8 h-8 rounded-l-lg bg-white border border-gray-200 text-gray-600 hover:bg-gray-50 text-sm font-bold leading-none" onclick="chgQty(-1)">−</button>
+          <span class="w-10 h-8 flex items-center justify-center bg-white border-y border-gray-200 text-sm font-bold text-gray-700" id="design-qty">1</span>
+          <button class="w-8 h-8 rounded-r-lg bg-white border border-gray-200 text-gray-600 hover:bg-gray-50 text-sm font-bold leading-none" onclick="chgQty(1)">+</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 设计预览缩略图（点击放大） -->
+  <div class="bg-gray-50 rounded-xl p-3 flex flex-col">
+    <h3 class="text-xs font-bold text-gray-500 uppercase tracking-wider mb-1.5">{t.preview}</h3>
+    <div id="preview-thumb" class="bg-white rounded-xl flex items-center justify-center overflow-hidden cursor-pointer border border-gray-100 hover:border-gray-300 transition-colors" style="height:308px;" onclick="openPreview()">
+      <span class="text-4xl opacity-10">👕</span>
+    </div>
+    <p class="text-[10px] text-gray-400 mt-1.5 text-center">{t.clickToEnlarge}</p>
+  </div>
+
+</div>

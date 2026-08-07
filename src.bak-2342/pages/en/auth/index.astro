@@ -1,0 +1,188 @@
+---
+/*
+ * ============================================================================
+ * 📁 文件位置: src/pages/en/auth/index.astro
+ * 🌐 路由: /en/auth/
+ * 🎯 作用: 英文登录/注册页面 — Supabase Auth 集成，支持 Email+密码的登录和注册
+ * 🔧 修改指南:
+ *   【修改】页面标题 → 改 BaseLayout 的 title="Sign In | Livingstone"
+ *   【修改】表单文案 → 改 HTML 中的英文字符串
+ *   【修改】Supabase 连接 → 改 supabase 的 createClient 参数（URL 和 Anon Key）
+ *   【修改】样式 → 改下方 HTML class
+ *   ⚠️ 中英两个 auth 页面需要同步修改
+ * ============================================================================
+ */
+import BaseLayout from '../../../layouts/BaseLayout.astro';
+---
+
+<!-- ====== 页面模板 ====== -->
+<!-- lang="en" → 确保导航栏、页脚用英文 -->
+<BaseLayout lang="en" title="Sign In | Livingstone">
+  <!-- 
+    pt-24: 顶部内边距 96px（给固定导航栏留空间）
+    pb-16: 底部内边距 64px
+    min-h-screen: 最小高度撑满屏幕
+    style: 渐变背景 浅米→淡灰米
+  -->
+  <section class="pt-24 pb-16 px-4 sm:px-6 min-h-screen" style="background: linear-gradient(180deg, #fefcf5 0%, #f0ece0 100%);">
+    <!-- max-w-md: 表单最大宽度 448px，居中 -->
+    <div class="max-w-md mx-auto">
+      <!-- 
+        标题: text-2xl(24px) font-serif(衬线) font-bold(加粗) text-charcoal-900(近黑) text-center(居中) mb-2(下边距8px)
+      -->
+      <h1 class="text-2xl font-serif font-bold text-charcoal-900 text-center mb-2">Sign In</h1>
+      <!-- 
+        副标题: text-center(居中) text-charcoal-500(中灰) text-sm(14px) mb-8(下边距32px)
+        【修改】改副标题文字直接改下面英文
+      -->
+      <p class="text-center text-charcoal-500 text-sm mb-8">Track your orders and prayer requests</p>
+
+      <!--
+        表单卡片
+        bg-white(白底) rounded-2xl(大圆角16px) shadow-lg(大阴影) p-6 md:p-8(内边距) border border-beige-200(米色边框)
+        space-y-4: 子元素间距 16px
+      -->
+      <div id="auth-form" class="bg-white rounded-2xl shadow-lg p-6 md:p-8 border border-beige-200 space-y-4">
+
+        <!-- ====== 登录模式 ====== -->
+        <div id="auth-mode-login">
+          <!-- Email 输入框 -->
+          <div>
+            <label class="block text-xs font-medium text-charcoal-500 mb-1">Email</label>
+            <!-- 
+              px-4 py-2.5: 内边距，bg-beige-50: 浅米背景，border-beige-300: 边框，focus:ring-2: 聚焦绿光环
+              【修改】placeholder 文字改 "you@example.com"
+            -->
+            <input type="email" id="auth-email" placeholder="you@example.com" class="w-full px-4 py-2.5 rounded-lg border border-beige-300 bg-beige-50 focus:outline-none focus:ring-2 focus:ring-sage-400 text-charcoal-800 text-sm">
+          </div>
+          <!-- Password 输入框 -->
+          <div>
+            <label class="block text-xs font-medium text-charcoal-500 mb-1">Password</label>
+            <input type="password" id="auth-password" placeholder="••••••" class="w-full px-4 py-2.5 rounded-lg border border-beige-300 bg-beige-50 focus:outline-none focus:ring-2 focus:ring-sage-400 text-charcoal-800 text-sm">
+          </div>
+          <!-- 
+            登录按钮: w-full(全宽) py-3(上下12px) bg-sage-500 hover:bg-sage-600(绿→深绿悬停)
+            text-white(白字) rounded-xl(圆角12px) transition-colors(平滑变色)
+          -->
+          <button id="btn-login" class="w-full py-3 bg-sage-500 hover:bg-sage-600 text-white font-medium rounded-xl transition-colors">Sign In</button>
+          <!-- 切换到注册模式的链接 -->
+          <p class="text-center text-xs text-charcoal-400 mt-3">
+            Don't have an account? <a href="#" id="show-register" class="text-sage-600 underline">Register</a>
+          </p>
+        </div>
+
+        <!-- ====== 注册模式（初始隐藏） ====== -->
+        <!-- class="hidden" → display:none，点击Register后JS显示 -->
+        <div id="auth-mode-register" class="hidden">
+          <div>
+            <label class="block text-xs font-medium text-charcoal-500 mb-1">Full Name</label>
+            <input type="text" id="reg-name" placeholder="John Doe" class="w-full px-4 py-2.5 rounded-lg border border-beige-300 bg-beige-50 focus:outline-none focus:ring-2 focus:ring-sage-400 text-charcoal-800 text-sm">
+          </div>
+          <div>
+            <label class="block text-xs font-medium text-charcoal-500 mb-1">Email</label>
+            <input type="email" id="reg-email" placeholder="you@example.com" class="w-full px-4 py-2.5 rounded-lg border border-beige-300 bg-beige-50 focus:outline-none focus:ring-2 focus:ring-sage-400 text-charcoal-800 text-sm">
+          </div>
+          <div>
+            <label class="block text-xs font-medium text-charcoal-500 mb-1">Password</label>
+            <input type="password" id="reg-password" placeholder="At least 6 characters" class="w-full px-4 py-2.5 rounded-lg border border-beige-300 bg-beige-50 focus:outline-none focus:ring-2 focus:ring-sage-400 text-charcoal-800 text-sm">
+          </div>
+          <button id="btn-register" class="w-full py-3 bg-sage-500 hover:bg-sage-600 text-white font-medium rounded-xl transition-colors">Create Account</button>
+          <p class="text-center text-xs text-charcoal-400 mt-3">
+            Already have an account? <a href="#" id="show-login" class="text-sage-600 underline">Sign In</a>
+          </p>
+        </div>
+
+        <!-- 错误/成功消息（初始隐藏） -->
+        <p id="auth-error" class="text-red-500 text-xs text-center hidden"></p>
+        <p id="auth-success" class="text-sage-600 text-xs text-center hidden"></p>
+      </div>
+
+      <!-- ====== 已登录状态（初始隐藏） ====== -->
+      <div id="auth-logged-in" class="hidden bg-white rounded-2xl shadow-lg p-6 md:p-8 border border-beige-200 text-center">
+        <p class="text-4xl mb-3">✅</p>
+        <p class="text-charcoal-700 text-sm mb-4">You are signed in. <a href="/en/account" class="text-sage-600 underline">Go to My Account</a></p>
+        <button id="btn-logout" class="text-charcoal-400 text-xs underline hover:text-charcoal-600">Sign Out</button>
+      </div>
+    </div>
+  </section>
+</BaseLayout>
+
+<!-- ============================================================
+     JavaScript — Supabase Auth 逻辑
+     is:inline 必须加（Astro SSR 会剥离普通 script）
+============================================================ -->
+<script is:inline>
+/*
+ * ============================================================
+ * 认证逻辑:
+ * 1. 创建 Supabase 客户端
+ * 2. 切换 登录/注册 模式
+ * 3. 登录 → supabase.auth.signInWithPassword
+ * 4. 注册 → supabase.auth.signUp（含 full_name）
+ * 5. 退出 → supabase.auth.signOut
+ * 6. 已登录状态检查 → supabase.auth.getSession
+ * ============================================================
+ */
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+
+// Supabase 连接配置
+// 【修改】URL 或 Key 变动时改这里
+const supabase = createClient(
+  'https://uwebpdtjkucbcyscfzmq.supabase.co',
+  'sb_publishable_TfquiTSSQip7GcF4Sodsjg_PNc_OzNl'
+);
+
+(function(){
+  // 获取 DOM 元素
+  var form = document.getElementById('auth-form');
+  var loggedIn = document.getElementById('auth-logged-in');
+  var errorEl = document.getElementById('auth-error');
+  var successEl = document.getElementById('auth-success');
+  var loginDiv = document.getElementById('auth-mode-login');
+  var regDiv = document.getElementById('auth-mode-register');
+
+  // 切换 登录↔注册 视图
+  document.getElementById('show-register')?.addEventListener('click', function(e){ e.preventDefault(); loginDiv.classList.add('hidden'); regDiv.classList.remove('hidden'); errorEl.classList.add('hidden'); });
+  document.getElementById('show-login')?.addEventListener('click', function(e){ e.preventDefault(); regDiv.classList.add('hidden'); loginDiv.classList.remove('hidden'); errorEl.classList.add('hidden'); });
+
+  // 检查是否已登录 — 已登录则显示欢迎界面
+  supabase.auth.getSession().then(function(r){
+    if (r.data.session) { form.classList.add('hidden'); loggedIn.classList.remove('hidden'); }
+  });
+
+  // 登录处理
+  document.getElementById('btn-login')?.addEventListener('click', async function(){
+    var email = document.getElementById('auth-email').value.trim();
+    var password = document.getElementById('auth-password').value;
+    if (!email || !password) { errorEl.textContent = 'Please fill in all fields.'; errorEl.classList.remove('hidden'); return; }
+    errorEl.classList.add('hidden');
+    var { error } = await supabase.auth.signInWithPassword({ email: email, password: password });
+    if (error) { errorEl.textContent = error.message; errorEl.classList.remove('hidden'); return; }
+    form.classList.add('hidden'); loggedIn.classList.remove('hidden');
+  });
+
+  // 注册处理 — password.length >= 6 校验
+  document.getElementById('btn-register')?.addEventListener('click', async function(){
+    var name = document.getElementById('reg-name').value.trim();
+    var email = document.getElementById('reg-email').value.trim();
+    var password = document.getElementById('reg-password').value;
+    if (!name || !email || !password) { errorEl.textContent = 'Please fill in all fields.'; errorEl.classList.remove('hidden'); return; }
+    if (password.length < 6) { errorEl.textContent = 'Password must be at least 6 characters.'; errorEl.classList.remove('hidden'); return; }
+    errorEl.classList.add('hidden');
+    var { error } = await supabase.auth.signUp({ email: email, password: password, options: { data: { full_name: name } } });
+    if (error) { errorEl.textContent = error.message; errorEl.classList.remove('hidden'); return; }
+    successEl.textContent = 'Account created! Check your email to confirm.';
+    successEl.classList.remove('hidden');
+    regDiv.classList.add('hidden'); loginDiv.classList.remove('hidden');
+  });
+
+  // 退出处理
+  document.getElementById('btn-logout')?.addEventListener('click', async function(){
+    await supabase.auth.signOut();
+    loggedIn.classList.add('hidden'); form.classList.remove('hidden');
+  });
+
+  // Enter 键提交登录
+  document.getElementById('auth-password')?.addEventListener('keydown', function(e){ if (e.key === 'Enter') document.getElementById('btn-login').click(); });
+})();
+</script>

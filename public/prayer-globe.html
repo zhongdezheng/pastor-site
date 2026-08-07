@@ -1,3 +1,39 @@
+<!--
+  =================================================================
+  文件：public/prayer-globe.html
+  位置：/public/prayer-globe.html
+  =================================================================
+
+  作用：3D 旋转地球仪独立页面（84 行），使用 Three.js (CDN) 渲染。
+        蓝色大理石纹理地球 + 半透明蓝色大气层光晕。
+        背景透明（alpha: true），适合嵌入其他页面。
+
+  被谁调用：
+    被 src/components/PrayerHomeSection.astro 通过 <iframe> 嵌入。
+    在首页的"代祷"区域展示交互式 3D 地球。
+
+  技术栈：
+    - Three.js (v0.160, CDN import map)
+    - WebGL 渲染器（带透明背景）
+
+  修改指南：
+    - 修改地球纹理：更改 earthTex 加载的图片 URL
+      当前：https://unpkg.com/three-globe/example/img/earth-blue-marble.jpg
+    - 修改地球大小：调整 SphereGeometry 第一个参数（当前 1.8）
+    - 修改大气光晕颜色：调整 atmMat.color（当前 0x4488ff 蓝色）
+    - 修改大气透明度：调整 atmMat.opacity（当前 0.08）
+    - 修改旋转速度：调整 animate() 中的 tRy+=0.003 增量
+    - 修改背景色：当前为透明（alpha: true, scene.background=null），若需深色背景改为 scene.background = new THREE.Color(0x000010)
+    - 修改光照：调整 AmbientLight/DirectionalLight 的颜色和强度
+    - 交互：支持鼠标拖拽旋转和触摸拖拽旋转
+
+  注意事项：
+    - 此文件独立于 Astro 构建流程，直接放在 public/ 目录
+    - 三.js 通过 CDN 加载，需网络连接
+    - iframe 嵌入时注意宽高自适应（当前使用 body.clientWidth/Height）
+    - 修改后刷新浏览器即可看到效果（无需重新构建）
+  =================================================================
+-->
 <!DOCTYPE html>
 <html lang="en">
 <head>

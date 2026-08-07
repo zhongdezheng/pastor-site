@@ -1,0 +1,39 @@
+---
+import BaseLayout from '../../../layouts/BaseLayout.astro';
+---
+<BaseLayout lang="zh" title="全球异象 | 恩典之约">
+  <section class="py-24 lg:py-32 px-6 bg-beige-50 min-h-screen">
+    <div class="max-w-3xl mx-auto">
+      <div class="flex items-center justify-center gap-3 mb-6">
+        <span class="block w-12 h-px bg-beige-400"></span>
+        <span class="text-beige-400 text-lg">✦</span>
+        <span class="block w-12 h-px bg-beige-400"></span>
+      </div>
+      <h1 id="vision-title" class="text-2xl md:text-3xl font-serif font-bold text-charcoal-900 text-center mb-10">全球异象</h1>
+      <article class="bg-white rounded-2xl shadow-lg border border-beige-200 p-8 md:p-12">
+        <div id="vision-content" class="text-charcoal-700 leading-relaxed font-serif text-lg space-y-6">
+          <p class="text-center text-charcoal-400">加载中...</p>
+        </div>
+      </article>
+    </div>
+  </section>
+</BaseLayout>
+
+<script is:inline>
+(async function() {
+  try {
+    const r = await fetch('https://admin.pastorjeffnchina.com/api/vision');
+    if (!r.ok) throw new Error('API ' + r.status);
+    const data = await r.json();
+    if (data.title_zh) document.getElementById('vision-title').textContent = data.title_zh;
+    const paragraphs = (data.content_zh || '').split('\n\n').filter(p => p.trim());
+    if (paragraphs.length) {
+      document.getElementById('vision-content').innerHTML = paragraphs.map(p => '<p>' + p + '</p>').join('');
+    } else {
+      document.getElementById('vision-content').innerHTML = '<p class="text-center text-charcoal-400">异象内容即将更新。</p>';
+    }
+  } catch(e) {
+    document.getElementById('vision-content').innerHTML = '<p class="text-center text-charcoal-400">加载失败，请刷新重试。</p>';
+  }
+})();
+</script>

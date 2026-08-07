@@ -15,10 +15,48 @@
 ---
 // ── 导入 ────────────────────────────────────────────────────
 import BaseLayout from '../../../layouts/BaseLayout.astro';   // 全局布局
-import testimonies from '../../../content/testimonies.json';  // 见证数据
+// ⚡ 构建时从 API 获取，供模板渲染
+let testimonies = [];
+try {
+  const res = await fetch('http://localhost:5200/api/testimonies');
+  if (res.ok) {
+    testimonies = (await res.json())
+      .filter(t => t.published !== 0)
+      .map(t => ({
+        id: t.id,
+        title: { en: t.title_en || t.title || "", zh: t.title_zh || t.title || "" },
+        date: t.date || "",
+        author: { en: t.author || "", zh: t.author || "" },
+        excerpt: { en: t.excerpt_en || "", zh: t.excerpt_zh || "" },
+        content: { en: t.content_en || t.content || "", zh: t.content_zh || t.content || "" },
+      }));
+  }
+} catch(e) {}
+if (!testimonies.length) {
+  testimonies = (await import('../../../content/testimonies.json')).default;
+}  // 见证数据
 
 // 【静态路径】为每篇见证预生成页面（SSG）
-export function getStaticPaths() {
+export async function getStaticPaths() {
+  let testimonies = [];
+  try {
+    const res = await fetch('http://localhost:5200/api/testimonies');
+    if (res.ok) {
+      testimonies = (await res.json())
+        .filter(t => t.published !== 0)
+        .map(t => ({
+          id: t.id,
+          title: { en: t.title_en || t.title || "", zh: t.title_zh || t.title || "" },
+          date: t.date || "",
+          author: { en: t.author || "", zh: t.author || "" },
+          excerpt: { en: t.excerpt_en || "", zh: t.excerpt_zh || "" },
+          content: { en: t.content_en || t.content || "", zh: t.content_zh || t.content || "" },
+        }));
+    }
+  } catch(e) {}
+  if (!testimonies.length) {
+    testimonies = (await import('../../../content/testimonies.json')).default;
+  }
   return testimonies.map(t => ({ params: { id: String(t.id) } }));
 }
 

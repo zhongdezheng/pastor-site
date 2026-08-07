@@ -1,0 +1,212 @@
+---
+/**
+ * 📍 文件位置: src/components/designer/DesignerScriptProducts.astro
+ * 🎯 作用: 设计器产品逻辑（Part 2）——产品加载、颜色/尺码渲染、购物车、图片上传
+ * 🔧 修改指南:
+ *   - 依赖 DesignerScriptCore.astro 必须先加载（通过 window.__state 等全局通信）
+ *   - 产品数据从 #__designerProducts JSON 元素读取
+ *   - 多语言文本通过 window.__dt 读取
+ *   - 图片映射在 reloadColor() 中修改产品路径
+ *   - 购物车 localStorage key: ps-cart
+ */
+---
+
+<!-- 设计器逻辑 Part 2：产品加载、颜色/尺码、购物车、上传 -->
+<script is:inline>
+(function() {
+  var dT = window.__dt || {};
+  var state = window.__state;
+  var LANG_KEY = window.__getLangKey ? window.__getLangKey() : 'en';
+  var addBaseImage = window.__addBaseImage;
+  var updatePreview = window.__updatePreview;
+  var updateDetail = window.__updateDetail;
+  var clearGuidelines = window.__clearGuidelines;
+
+  // 暴露给 Part 1 的回调
+  window.__initProducts = loadProducts;
+
+  // 产品加载：解析 JSON，渲染列表
+  function loadProducts() {
+    var el = document.getElementById('__designerProducts'); if (!el) return;
+    var raw = el.textContent || el.innerText || '';
+    var prods; try { prods = JSON.parse(raw); } catch(e) { console.error('Parse error:', e); return; }
+    if (!prods || !prods.length) return;
+
+    // 按 id 合并重复产品
+    var map = {};
+    prods.forEach(function(p) {
+      if (!map[p.id]) map[p.id] = { id: p.id, name: p.name, price: p.price, colors: Array.isArray(p.colors)?p.colors:[], sizes: Array.isArray(p.sizes)?p.sizes:[], allImages: Array.isArray(p.images)?p.images:[], stock: p.stock||0 };
+    });
+
+    // 桌面端产品列表
+    var items = document.getElementById('designer-products');
+    if (items) {
+      var first = true, html = '';
+      Object.values(map).forEach(function(g) {
+        var dn = (g.name && g.name[LANG_KEY]) || g.id;
+        var thumb = g.allImages[0] || '';
+        html += '<div class="product-item bg-white rounded-xl p-2 flex items-center gap-3 cursor-pointer border-2 transition-all ' +
+          (first?'border-gray-700 shadow-sm':'border-transparent hover:border-gray-300 hover:shadow-sm') +
+          '" data-id="'+g.id+'">'+
+          (thumb?'<img src="'+thumb+'" class="w-12 h-12 rounded-lg object-cover bg-gray-100 flex-shrink-0" onerror="this.style.display=\'none\'" alt="" />':'<div class="w-12 h-12 rounded-lg bg-gray-100 flex items-center justify-center text-xl flex-shrink-0">👕</div>')+
+          '<div class="min-w-0 flex-1"><p class="text-xs font-bold text-gray-800 truncate">'+dn+'</p><p class="text-xs text-green-600 font-semibold mt-0.5">$'+g.price+'</p></div></div>';
+        if (first) first = false;
+      });
+      items.innerHTML = html || '<p class="text-xs text-gray-400 italic">'+ (dT.noProducts||'No products') +'</p>';
+      bindProdClicks(items, map);
+    }
+
+    // 移动端产品 pills
+    var pills = document.getElementById('designer-products-mobile');
+    if (pills) {
+      var first = true, mhtml = '';
+      Object.values(map).forEach(function(g) {
+        var dn = (g.name && g.name[LANG_KEY]) || g.id;
+        mhtml += '<button class="prod-pill flex-shrink-0 px-3 py-1.5 rounded-full text-xs font-medium border-2 transition-all ' +
+          (first?'bg-gray-700 text-white border-gray-700':'bg-white text-gray-600 border-gray-300')+'" data-id="'+g.id+'">'+dn+'</button>';
+        if (first) first = false;
+      });
+      pills.innerHTML = mhtml || '<span class="text-xs text-gray-400 italic">'+ (dT.noProducts||'No products') +'</span>';
+      bindPillClicks(pills, map);
+    }
+
+    var keys = Object.keys(map);
+    if (keys.length > 0) selectProduct(keys[0], map);
+  }
+
+  function bindProdClicks(container, map) {
+    container.querySelectorAll('.product-item').forEach(function(el) {
+      el.addEventListener('click', function() {
+        container.querySelectorAll('.product-item').forEach(function(e){e.classList.remove('border-gray-700','shadow-sm');e.classList.add('border-transparent');});
+        el.classList.add('border-gray-700','shadow-sm');el.classList.remove('border-transparent');
+        selectProduct(el.dataset.id, map);
+      });
+    });
+  }
+  function bindPillClicks(container, map) {
+    container.querySelectorAll('.prod-pill').forEach(function(el) {
+      el.addEventListener('click', function() {
+        container.querySelectorAll('.prod-pill').forEach(function(e){e.classList.remove('bg-gray-700','text-white','border-gray-700');e.classList.add('bg-white','text-gray-600','border-gray-300');});
+        el.classList.add('bg-gray-700','text-white','border-gray-700');el.classList.remove('bg-white','text-gray-600','border-gray-300');
+        selectProduct(el.dataset.id, map);
+      });
+    });
+  }
+
+  // 选中产品
+  function selectProduct(id, map) {
+    var g = map[id]; if (!g) return;
+    state.currentProduct = g; state.currentColor = g.colors[0]||''; state.currentSize = g.sizes[0]||'';
+    var pp = document.getElementById('product-params'); if (pp) pp.classList.remove('hidden');
+    var ppm = document.getElementById('product-params-mobile'); if (ppm) ppm.classList.remove('hidden');
+    var dn = (g.name && g.name[LANG_KEY]) || g.id;
+    document.getElementById('info-name').textContent = dn;
+    document.getElementById('info-price').textContent = '$'+g.price;
+    var inm = document.getElementById('info-name-mobile'); if (inm) inm.textContent = dn;
+    var ipm = document.getElementById('info-price-mobile'); if (ipm) ipm.textContent = '$'+g.price;
+    updateDetail();
+    var cm = {'白色':'#f0f0f0','黑色':'#222','杏色':'#f5deb3','粉色':'#ffb6c1'};
+    renderSwatches(g.colors||[], cm);
+    renderSizes(g.sizes||[]);
+    reloadColor();
+  }
+
+  // 颜色 swatches
+  function renderSwatches(colors, colorMap) {
+    var sel = state.currentColor;
+    var h = colors.map(function(c){var bg=colorMap[c]||c;return '<div class="w-7 h-7 rounded-full cursor-pointer border-2 '+(c===sel?'border-gray-700 ring-2 ring-gray-400 ring-offset-1':'border-gray-300 hover:border-gray-500')+'" style="background:'+bg+'" title="'+c+'" data-c="'+c+'"></div>';}).join('');
+    document.getElementById('color-options').innerHTML = h;
+    var co = document.getElementById('color-options-mobile'); if (co) co.innerHTML = h;
+    document.querySelectorAll('#color-options > div, #color-options-mobile > div').forEach(function(el){el.addEventListener('click',function(){state.currentColor=el.dataset.c;updateDetail();reloadColor();renderSwatches(colors,colorMap);});});
+  }
+
+  // 尺码
+  function renderSizes(sizes) {
+    var sel = state.currentSize;
+    var h = sizes.map(function(s){return '<div class="px-2.5 py-1 border rounded-full text-xs cursor-pointer transition-all '+(s===sel?'bg-gray-700 text-white border-gray-700':'bg-white text-gray-600 border-gray-300 hover:border-gray-500')+'" data-s="'+s+'">'+s+'</div>';}).join('');
+    document.getElementById('size-options').innerHTML = h;
+    var sm = document.getElementById('size-select-mobile');
+    if (sm) { sm.innerHTML = sizes.map(function(s){return '<option value="'+s+'"'+(s===sel?' selected':'')+'>'+s+'</option>';}).join(''); sm.onchange=function(){state.currentSize=this.value;updateDetail();}; sm.style.pointerEvents='auto'; }
+    document.querySelectorAll('#size-options > div').forEach(function(el){el.addEventListener('click',function(){state.currentSize=el.dataset.s;updateDetail();renderSizes(sizes);});});
+  }
+
+  // 颜色→图片映射
+  function reloadColor() {
+    if (!state.currentProduct) return;
+    var name = (state.currentProduct.name && state.currentProduct.name.en) || '';
+    var zh = (state.currentProduct.name && state.currentProduct.name.zh) || '';
+    var isKids = name.toLowerCase().includes('children')||name.toLowerCase().includes('kid')||zh.includes('儿童');
+    var c = state.currentColor || '白色', baseSrc;
+    if (isKids) {
+      if (c==='杏色'||c==='粉色') baseSrc='/images/products/kids-tee/pink.jpeg';
+      else if (c==='黑色') baseSrc='/images/products/kids-tee/black.jpeg';
+      else baseSrc='/images/products/kids-tee/white.jpeg';
+    } else {
+      if (c==='黑色') baseSrc='/images/products/180g-tee/black.jpeg';
+      else baseSrc='/images/products/180g-tee/white.jpeg';
+    }
+    if (addBaseImage) addBaseImage(baseSrc);
+  }
+
+  // 图片上传
+  var uz = document.getElementById('upload-zone');
+  if (uz) uz.addEventListener('click', function(){document.getElementById('design-upload').click();});
+  var ui = document.getElementById('design-upload');
+  if (ui) ui.addEventListener('change', function(e){var f=e.target.files[0];if(!f)return;var r=new FileReader();r.onload=function(ev){var s=ev.target.result;state.galleryImages.push(s);renderGallery();window.addDesignImage(s);};r.readAsDataURL(f);ui.value='';});
+  var um = document.getElementById('design-upload-mobile');
+  if (um) um.addEventListener('change', function(e){var f=e.target.files[0];if(!f)return;var r=new FileReader();r.onload=function(ev){var s=ev.target.result;state.galleryImages.push(s);window.addDesignImage(s);};r.readAsDataURL(f);um.value='';});
+
+  function renderGallery() {
+    var gal = document.getElementById('image-gallery'); if (!gal) return;
+    gal.innerHTML = state.galleryImages.map(function(src,i){
+      return '<div class="aspect-square bg-gray-100 rounded-lg overflow-hidden border border-gray-200 hover:border-gray-500 transition-colors relative group">'+
+        '<img src="'+src+'" class="w-full h-full object-cover cursor-pointer" alt="" onclick="addDesignImage(\''+src.replace(/'/g,"\\'").replace(/"/g,'&quot;')+'\')" />'+
+        '<button class="absolute -top-1.5 -right-1.5 w-5 h-5 bg-red-500 text-white rounded-full text-[10px] leading-none flex items-center justify-center shadow-md opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-600" onclick="event.stopPropagation();removeGalleryImage('+i+')">✕</button></div>';
+    }).join('');
+  }
+  window.removeGalleryImage = function(i){var r=state.galleryImages.splice(i,1);if(r[0]&&r[0].startsWith('blob:'))URL.revokeObjectURL(r[0]);renderGallery();};
+
+  // 按钮操作
+  document.getElementById('btn-reset').addEventListener('click', doReset);
+  document.getElementById('btn-center').addEventListener('click', doCenter);
+  document.getElementById('btn-cart').addEventListener('click', doAddCart);
+  ['btn-reset-mobile','btn-center-mobile','btn-cart-mobile'].forEach(function(id){
+    var el = document.getElementById(id);
+    if (el) {
+      if (id.includes('reset')) el.addEventListener('click', doReset);
+      else if (id.includes('center')) el.addEventListener('click', doCenter);
+      else if (id.includes('cart')) el.addEventListener('click', doAddCart);
+    }
+  });
+
+  function doReset() {
+    var canvas = window.__getCanvas ? window.__getCanvas() : null;
+    if (!canvas) return;
+    var baseImg = window.__getBaseImg ? window.__getBaseImg() : null;
+    var objs = canvas.getObjects();
+    for (var i=objs.length-1;i>=0;i--) { if (objs[i]!==baseImg) canvas.remove(objs[i]); }
+    if (clearGuidelines) clearGuidelines();
+    canvas.requestRenderAll();
+    if (updatePreview) updatePreview();
+  }
+  function doCenter() {
+    var canvas = window.__getCanvas ? window.__getCanvas() : null;
+    if (!canvas) return;
+    var baseImg = window.__getBaseImg ? window.__getBaseImg() : null;
+    var cw=canvas.width/2,ch=canvas.height/2,moved=false;
+    var objs=canvas.getObjects();
+    for (var i=0;i<objs.length;i++){var o=objs[i];if(o===baseImg)continue;var cp=o.getCenterPoint();var dx=cw-cp.x,dy=ch-cp.y;if(Math.abs(dx)>1||Math.abs(dy)>1){o.set({left:o.left+dx,top:o.top+dy});o.setCoords();moved=true;}}
+    if(moved){canvas.requestRenderAll();if(updatePreview)updatePreview();}
+  }
+  function doAddCart() {
+    if(!state.currentProduct){alert(dT.selectProductAlert||'Please select a product first.');return;}
+    var preview='';
+    var canvas=window.__getCanvas?window.__getCanvas():null;
+    if(canvas)preview=canvas.toDataURL({format:'png',multiplier:0.5});
+    var item={id:'custom-'+Date.now(),name:(state.currentProduct.name&&state.currentProduct.name.en)||state.currentProduct.id,nameZh:(state.currentProduct.name&&state.currentProduct.name.zh)||'',color:state.currentColor,size:state.currentSize,quantity:state.qty,price:state.currentProduct.price,preview:preview};
+    var cart=[];try{cart=JSON.parse(localStorage.getItem('ps-cart')||'[]');}catch(e){cart=[];}
+    cart.push(item);localStorage.setItem('ps-cart',JSON.stringify(cart));
+    alert(dT.addToCartAlert||'Added to cart!');
+  }
+})();
+</script>

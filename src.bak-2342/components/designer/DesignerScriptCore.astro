@@ -1,0 +1,165 @@
+---
+/**
+ * 📍 文件位置: src/components/designer/DesignerScriptCore.astro
+ * 🎯 作用: 设计器核心 JS（Part 1）—— Fabric.js 加载、Canvas 初始化、辅助线、图片/文字操作、预览、全局函数
+ * 🔧 修改指南:
+ *   - Canvas 配置在此修改（背景色、角点样式等）
+ *   - 吸附阈值 SNAP_THRESHOLD 可调整
+ *   - 字号范围 Math.max(8, Math.min(200, ...)) 
+ *   - 产品数据从 #__designerProducts 读取
+ *   - 多语言文本从 #__designerTexts 读取
+ */
+---
+
+<script type="application/json" id="__designerTexts" set:html={JSON.stringify(Astro.props.t)}></script>
+
+<!-- Fabric.js 库：Canvas 操作核心，从 CDN 加载 -->
+<script is:inline src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/5.3.1/fabric.min.js"></script>
+
+<!-- 设计器核心逻辑 Part 1：Canvas 初始化、图片/文字操作、预览 -->
+<script is:inline>
+(function() {
+  // 读取多语言文本
+  var dT = {}; try { var elT = document.getElementById('__designerTexts'); if (elT) dT = JSON.parse(elT.textContent||elT.innerText||'{}'); } catch(e) {}
+  window.__dt = dT;
+  var LANG_KEY = dT.productNameKey || 'en';
+
+  // 预加载产品基础图片
+  ['/images/products/180g-tee/black.jpeg','/images/products/180g-tee/white.jpeg','/images/products/kids-tee/black.jpeg','/images/products/kids-tee/white.jpeg','/images/products/kids-tee/pink.jpeg'].forEach(function(u){new Image().src=u});
+
+  // 全局状态对象
+  window.__state = { currentProduct: null, currentColor: '', currentSize: '', qty: 1, galleryImages: [], fontSize: 28 };
+  var state = window.__state;
+  var canvas = null, baseImg = null, isMobile = false;
+  var snapGuidelines = null, SNAP_THRESHOLD = 15;
+
+  window.__getCanvas = function() { return canvas; };
+  window.__getBaseImg = function() { return baseImg; };
+  window.__getIsMobile = function() { return isMobile; };
+  window.__getLangKey = function() { return LANG_KEY; };
+  window.__clearGuidelines = clearGuidelines;
+  window.__updatePreview = updatePreview;
+  window.__updateDetail = function() {
+    var txt = (state.currentColor||'?') + ' / ' + (state.currentSize||'?') + ' × ' + state.qty;
+    var dd = document.getElementById('info-detail'); if (dd) dd.textContent = txt;
+    var dm = document.getElementById('info-detail-mobile'); if (dm) dm.textContent = txt;
+  };
+
+  function getCanvasId() { return isMobile ? 'design-canvas-mobile' : 'design-canvas'; }
+
+  // 初始化 Fabric Canvas
+  function initCanvas() {
+    isMobile = window.innerWidth < 768;
+    var el = document.getElementById(getCanvasId()); if (!el) return;
+    var wrap = el.parentElement, size = wrap.clientWidth;
+    el.width = size; el.height = size;
+    canvas = new fabric.Canvas(getCanvasId(), {
+      width: size, height: size, backgroundColor: '#f8f6f0', selection: true,
+      preserveObjectStacking: true, selectionColor: 'rgba(91,109,97,0.15)', selectionBorderColor: '#5B6D61',
+      selectionLineWidth: 1, cornerColor: '#5B6D61', cornerSize: 8, cornerStyle: 'circle',
+      transparentCorners: false, cornerStrokeColor: '#5B6D61',
+    });
+    canvas.on('object:moving', function(e){drawGuidelines(e.target);});
+    canvas.on('object:modified', function(){clearGuidelines();updatePreview();});
+    canvas.on('before:selection:cleared', clearGuidelines);
+    canvas.on('selection:cleared', clearGuidelines);
+
+    // 红色删除控件
+    fabric.Object.prototype.controls.deleteControl = new fabric.Control({
+      x:0.5,y:-0.5,offsetY:-12,offsetX:12,sizeX:24,sizeY:24,cursorStyle:'pointer',
+      actionHandler: function(evt,t){canvas.remove(t.target);canvas.requestRenderAll();clearGuidelines();updatePreview();return true;},
+      mouseUpHandler: function(evt,t){canvas.remove(t.target);canvas.requestRenderAll();clearGuidelines();updatePreview();return true;},
+      render: function(ctx,left,top,so,fo){
+        var s=14;ctx.save();ctx.translate(left,top);ctx.beginPath();ctx.arc(0,0,s,0,Math.PI*2);
+        ctx.fillStyle='#ef4444';ctx.fill();ctx.closePath();ctx.strokeStyle='#fff';ctx.lineWidth=1.5;ctx.stroke();
+        ctx.fillStyle='#fff';ctx.font='bold 12px sans-serif';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText('✕',0,1);ctx.restore();
+      }
+    });
+    // 键盘删除
+    document.addEventListener('keydown', function(e){
+      if((e.key==='Delete'||e.key==='Backspace')&&canvas){var a=canvas.getActiveObject();if(a&&a!==baseImg){canvas.remove(a);canvas.requestRenderAll();clearGuidelines();updatePreview();e.preventDefault();}}
+    });
+    // 字体/颜色实时更新
+    function onFontColorChange(){
+      if(!canvas)return;var o=canvas.getActiveObject();
+      if(o&&o.type==='i-text'){var f=document.getElementById('font-select'),c=document.getElementById('text-color');if(f)o.set('fontFamily',f.value);if(c)o.set('fill',c.value);canvas.requestRenderAll();updatePreview();}
+    }
+    ['font-select','text-color','font-select-mobile','text-color-mobile'].forEach(function(id){
+      var el=document.getElementById(id); if(el) el.addEventListener(id.indexOf('color')>-1?'input':'change',onFontColorChange);
+    });
+    if(window.__initProducts) window.__initProducts();
+  }
+
+  // 居中辅助线
+  function drawGuidelines(obj){
+    clearGuidelines();if(!obj||obj===baseImg)return;
+    var cw=canvas.width,ch=canvas.height,cx=cw/2,cy=ch/2,cp=obj.getCenterPoint(),dx=0,dy=0;snapGuidelines=[];
+    if(Math.abs(cp.x-cx)<=SNAP_THRESHOLD){snapGuidelines.push(new fabric.Line([cx,0,cx,ch],{stroke:'#a0a0a0',strokeWidth:1.5,strokeDashArray:[6,4],selectable:false,evented:false,excludeFromExport:true}));dx=cx-cp.x;}
+    if(Math.abs(cp.y-cy)<=SNAP_THRESHOLD){snapGuidelines.push(new fabric.Line([0,cy,cw,cy],{stroke:'#a0a0a0',strokeWidth:1.5,strokeDashArray:[6,4],selectable:false,evented:false,excludeFromExport:true}));dy=cy-cp.y;}
+    if(dx!==0||dy!==0){obj.set({left:obj.left+dx,top:obj.top+dy});obj.setCoords();}
+    snapGuidelines.forEach(function(g){canvas.add(g);g.moveTo(999);});canvas.requestRenderAll();
+  }
+  function clearGuidelines(){if(snapGuidelines){snapGuidelines.forEach(function(g){canvas.remove(g);});snapGuidelines=null;canvas.requestRenderAll();}}
+
+  // 基础图片（产品基底）
+  window.__addBaseImage = function(src){
+    if(!canvas)return;if(baseImg){canvas.remove(baseImg);baseImg=null;}
+    fabric.Image.fromURL(src,function(img){
+      var cw=canvas.width,ch=canvas.height,s=Math.max(cw/img.width,ch/img.height);
+      img.set({left:(cw-img.width*s)/2,top:(ch-img.height*s)/2,scaleX:s,scaleY:s,selectable:false,evented:false,excludeFromExport:false});
+      canvas.add(img);canvas.moveTo(img,0);baseImg=img;canvas.requestRenderAll();updatePreview();
+    },{crossOrigin:'anonymous'});
+  };
+
+  // 添加用户上传图片
+  function addDesignImage(src){
+    if(!canvas)return;
+    fabric.Image.fromURL(src,function(img){
+      var s=Math.min(canvas.width,canvas.height)*0.3/Math.max(img.width,img.height);
+      img.set({left:canvas.width/2,top:canvas.height*0.35,scaleX:s,scaleY:s,originX:'center',originY:'center',cornerColor:'#5B6D61',cornerSize:8,cornerStyle:'circle',transparentCorners:false});
+      canvas.add(img);canvas.setActiveObject(img);canvas.requestRenderAll();updatePreview();
+    },{crossOrigin:'anonymous'});
+  }
+
+  // 添加文字
+  function addTextFromSelect(fromMobile){
+    var sel=document.getElementById(fromMobile?'font-select-mobile':'font-select'),font=sel?sel.value:'Arial';
+    var ce=document.getElementById(fromMobile?'text-color-mobile':'text-color'),fill=ce?ce.value:'#333333';
+    var ie=isMobile?document.getElementById('text-input-mobile'):document.getElementById('text-input');
+    addTextObj(font,(ie?ie.value.trim():'')||'Your text',fill);
+  }
+  function addTextObj(font,txt,fill){
+    if(!canvas)return;if(!fill){var ce=document.getElementById('text-color');fill=ce?ce.value:'#333333';}
+    var t=new fabric.IText(txt,{left:canvas.width/2,top:canvas.height*0.3,originX:'center',fontFamily:font,fontSize:state.fontSize,fill:fill,cornerColor:'#5B6D61',cornerSize:8,cornerStyle:'circle',transparentCorners:false});
+    canvas.add(t);canvas.setActiveObject(t);canvas.requestRenderAll();updatePreview();
+  }
+
+  // 预览
+  function updatePreview(){
+    if(!canvas)return;var d=canvas.toDataURL({format:'png',multiplier:0.5});
+    var thumb=document.getElementById('preview-thumb');if(thumb)thumb.innerHTML='<img src="'+d+'" class="w-full h-full object-contain" alt="Preview" />';
+  }
+  function openPreview(){if(!canvas)return;document.getElementById('preview-modal-img').src=canvas.toDataURL({format:'png',multiplier:1.5});document.getElementById('preview-modal').classList.remove('hidden');}
+  function closePreview(){document.getElementById('preview-modal').classList.add('hidden');}
+
+  // 全局暴露
+  window.chgQty=function(d){state.qty=Math.max(1,state.qty+d);document.getElementById('design-qty').textContent=state.qty;var m=document.getElementById('design-qty-mobile');if(m)m.textContent=state.qty;window.__updateDetail();};
+  window.chgFontSize=function(d){state.fontSize=Math.max(8,Math.min(200,state.fontSize+d));document.getElementById('font-size-display').textContent=state.fontSize;var fm=document.getElementById('font-size-display-mobile');if(fm)fm.textContent=state.fontSize;if(canvas){var a=canvas.getActiveObject();if(a&&a.type==='i-text'){a.set('fontSize',state.fontSize);canvas.requestRenderAll();updatePreview();}}};
+  window.addTextFromSelect=addTextFromSelect;
+  window.addDesignImage=addDesignImage;
+  window.openPreview=openPreview;
+  window.closePreview=closePreview;
+
+  // 等待 Fabric.js 加载
+  var cc=0;
+  function waitForFabric(){cc++;if(typeof fabric!=='undefined'&&fabric.Canvas){initCanvas();}else if(cc<50){setTimeout(waitForFabric,100);}else{console.error('Fabric.js load failed');}}
+  waitForFabric();
+
+  // 窗口缩放
+  window.addEventListener('resize',function(){
+    var n=window.innerWidth<768;
+    if(n!==isMobile){isMobile=n;if(canvas){canvas.dispose();canvas=null;baseImg=null;}initCanvas();return;}
+    if(canvas){var el=document.getElementById(getCanvasId());if(!el)return;var s=el.parentElement.clientWidth;canvas.setDimensions({width:s,height:s});clearGuidelines();canvas.requestRenderAll();updatePreview();}
+  });
+})();
+</script>

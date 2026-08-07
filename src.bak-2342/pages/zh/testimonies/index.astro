@@ -1,0 +1,33 @@
+---
+import BaseLayout from '../../../layouts/BaseLayout.astro';
+---
+<BaseLayout lang="zh" title="信心见证 | 恩典之约">
+  <section class="py-24 lg:py-32 px-6 bg-beige-50 min-h-screen">
+    <h1 class="text-3xl md:text-4xl font-serif font-bold text-charcoal-900 text-center mb-2">信心见证</h1>
+    <p class="text-charcoal-400 text-sm text-center mb-12">信心与生命转化的故事</p>
+    <div id="testimonies-list" class="space-y-1">
+      <p class="text-center text-charcoal-400 py-8">加载中...</p>
+    </div>
+  </section>
+</BaseLayout>
+
+<script is:inline>
+(async function() {
+  try {
+    const r = await fetch('https://admin.pastorjeffnchina.com/api/testimonies');
+    if (!r.ok) throw new Error('API ' + r.status);
+    const data = await r.json();
+    const list = document.getElementById('testimonies-list');
+    if (!data.length) { list.innerHTML = '<p class="text-center text-charcoal-400 py-8">暂无见证。</p>'; return; }
+    list.innerHTML = data.filter(t => t.published !== 0).map((t, i) =>
+      '<a href="/zh/testimonies/' + t.id + '/" class="block py-4 border-b border-beige-200 hover:bg-beige-50/50 transition-colors">' +
+        '<p class="text-charcoal-800 text-sm sm:text-base text-left">' +
+          '<span class="text-charcoal-500 font-medium">' + (i + 1) + '.</span> ' +
+          '<span class="font-serif font-bold">' + (t.title_zh || t.title || '') + '</span>' +
+          '<span class="text-charcoal-500 mx-1">——</span>' +
+          '<span class="text-charcoal-400">' + (t.date || '') + ' · ' + (t.author || '') + '</span>' +
+        '</p></a>'
+    ).join('');
+  } catch(e) { document.getElementById('testimonies-list').innerHTML = '<p class="text-center text-charcoal-400 py-8">加载失败，请刷新重试。</p>'; }
+})();
+</script>

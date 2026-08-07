@@ -1,3 +1,18 @@
+/*
+ * ============================================================================
+ * 文件位置: tailwind.config.mjs
+ * 作用: Tailwind CSS 主题配置，定义品牌色板（beige/charcoal/sage）和字体族
+ * 被谁调用: @astrojs/tailwind 集成自动加载 → astro.config.mjs 中引用
+ * 修改指南:
+ *   - 【修改】品牌色: 编辑 beige/charcoal/sage 色阶数组
+ *   - 【修改】字体: 编辑 fontFamily 对象，新字体需在 global.css 中补充 @import
+ *   - 【新增】自定义断点: 在 theme.extend.screens 添加
+ *   - 【新增】自定义间距/圆角: 在 theme.extend 下添加对应的 Tailwind 键
+ *   - 【注意】beige 是浅米色背景系、charcoal 是深灰文字系、sage 是鼠尾草绿 CTA 系
+ *   - 【注意】content 数组控制 PurgeCSS 扫描范围，新增文件类型时需添加
+ * ============================================================================
+ */
+
 /** @type {import('tailwindcss').Config} */
 export default {
   content: ['./src/**/*.{astro,html,js,jsx,md,mdx,svelte,ts,tsx,vue}'],

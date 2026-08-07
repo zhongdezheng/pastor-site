@@ -19,7 +19,60 @@
  */
 
 // 导入所有产品数据
-import products from '../content/products.json';
+// ⚡ 构建时从管理后台 API 获取产品，失败则回退本地 JSON
+let products = [];
+try {
+  const res = await fetch('http://localhost:5200/api/products');
+  if (res.ok) {
+    const apiData = await res.json();
+    products = apiData
+      .filter(p => p.status === 1 && p.deleted === 0)
+      .map(p => {
+        const parseArr = (s) => { try { return JSON.parse(s || '[]'); } catch(e) { return []; } };
+        return {
+          id: String(p.id),
+          category: p.category_id === 1 ? 'apparel' : 'accessories',
+          name: { en: p.name_en || '', zh: p.name_zh || '' },
+          price: p.price || 0,
+          currency: 'USD',
+          colors: parseArr(p.colors),
+          sizes: parseArr(p.sizes),
+          weight: p.material || '',
+          material: { en: p.material || '', zh: p.material || '' },
+          description: { en: p.description_en || '', zh: p.description_zh || '' },
+          details: { en: p.description_en || '', zh: p.description_zh || '' },
+          images: parseArr(p.images),
+          stock: 999,
+        };
+      });
+  }
+} catch(e) {}
+// 从本地 JSON 补充 API 中缺失的图片（按名称+颜色匹配）
+try {
+  const colorMap = { white:'白色', black:'黑色', red:'红色', blue:'蓝色', green:'绿色',
+    yellow:'黄色', pink:'粉色', grey:'浅灰色', gray:'浅灰色', purple:'紫色', orange:'橙色', brown:'棕色' };
+  const getColor = (name) => { for (const [en, zh] of Object.entries(colorMap)) { if (name.toLowerCase().includes(en)) return zh; } return null; };
+  const fallback = (await import('../content/products.json')).default;
+  products = products.map(p => {
+    if (!p.images || !p.images.length) {
+      const fb = fallback.find((x) => {
+        const xn = (x.name.en || '').toLowerCase().replace(/['-]/g, '').replace(/\s+/g, '');
+        const pn = (p.name.en || '').toLowerCase().replace(/['-]/g, '').replace(/\s+/g, '');
+        return xn && pn && (pn.includes(xn) || xn.includes(pn));
+      });
+      if (fb?.images?.length) {
+        const color = getColor(p.name.en || '');
+        if (color) p.images = fb.images.filter(img => img.includes(color));
+        if (!p.images.length) p.images = fb.images;
+      }
+    }
+    return p;
+  });
+} catch(e) {}
+
+if (!products.length) {
+  products = (await import('../content/products.json')).default;
+}
 
 // Props：接收语言参数
 interface Props { lang: 'en' | 'zh' }

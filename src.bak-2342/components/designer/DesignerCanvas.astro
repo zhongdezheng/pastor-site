@@ -1,0 +1,23 @@
+---
+/**
+ * 📍 文件位置: src/components/designer/DesignerCanvas.astro
+ * 🎯 作用: 设计器画布 wrapper（通用的 canvas 容器样式）
+ * 🔧 修改指南:
+ *   - props: canvasId (canvas 元素 ID), paddingClass (p-6/p-2), shadowClass, maxWidthStyle
+ *   - 桌面端: <DesignerCanvas canvasId="design-canvas" paddingClass="p-6" shadowClass="shadow-xl" maxWidthStyle="width: min(100%, 540px)" />
+ *   - 移动端: <DesignerCanvas canvasId="design-canvas-mobile" paddingClass="p-2" shadowClass="shadow-lg" maxWidthStyle="max-width: min(92vw, 360px)" />
+ */
+interface Props {
+  canvasId: string;
+  paddingClass: string;
+  shadowClass: string;
+  maxWidthStyle: string;
+}
+const { canvasId, paddingClass, shadowClass, maxWidthStyle } = Astro.props;
+---
+
+<div class={`flex-1 bg-gray-200 flex items-center justify-center ${paddingClass}`}>
+  <div class={`relative bg-white rounded-2xl ${shadowClass} overflow-hidden w-full`} style={`${maxWidthStyle}; aspect-ratio: 1/1;`}>
+    <canvas id={canvasId}></canvas>
+  </div>
+</div>

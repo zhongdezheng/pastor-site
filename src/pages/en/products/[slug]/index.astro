@@ -15,10 +15,89 @@
 // 【修改】引入基础布局（注意层级：../../../../ 因为 [slug] 多一层）
 import BaseLayout from '../../../../layouts/BaseLayout.astro';
 // 【修改】引入产品数据（JSON 数组，包含 id/name/price/colors/sizes/images/details）
-import products from '../../../../content/products.json';
+// ⚡ 构建时从管理后台 API 获取产品，失败则回退本地 JSON
+let products = [];
+const parseArr = (s) => { try { return JSON.parse(s || '[]'); } catch(e) { return []; } };
+try {
+  const res = await fetch('http://localhost:5200/api/products');
+  if (res.ok) {
+    products = (await res.json())
+      .filter(p => p.status === 1 && p.deleted === 0)
+      .map(p => ({
+        id: String(p.id),
+        category: p.category_id === 1 ? 'apparel' : 'accessories',
+        name: { en: p.name_en || '', zh: p.name_zh || '' },
+        price: p.price || 0,
+        currency: 'USD',
+        colors: parseArr(p.colors),
+        sizes: parseArr(p.sizes),
+        weight: p.material || '',
+        material: { en: p.material || '', zh: p.material || '' },
+        description: { en: p.description_en || '', zh: p.description_zh || '' },
+        details: { en: p.description_en || '', zh: p.description_zh || '' },
+        images: parseArr(p.images),
+        stock: 999,
+      }));
+  }
+} catch(e) {}
+if (!products.length) {
+  products = (await import('../../../../content/products.json')).default;
+}
+// 补充 API 中缺失的产品图片（按名称匹配）
+try {
+  const colorMap = { white:'白色', black:'黑色', red:'红色', blue:'蓝色', green:'绿色',
+    yellow:'黄色', pink:'粉色', grey:'浅灰色', gray:'浅灰色', purple:'紫色', orange:'橙色', brown:'棕色' };
+  const getColor = (name) => { for (const [en, zh] of Object.entries(colorMap)) { if (name.toLowerCase().includes(en)) return zh; } return null; };
+  const fbAll = (await import('../../../../content/products.json')).default;
+  products = products.map(p => {
+    if (!p.images || !p.images.length) {
+      const fb = fbAll.find(x =>
+        (x.name?.en || '').toLowerCase().replace(/['-]/g, '').replace(/\s+/g, '').includes((p.name.en || '').toLowerCase().replace(/['-]/g, '').replace(/\s+/g, '').slice(0, 15)) ||
+        (p.name.en || '').toLowerCase().replace(/['-]/g, '').replace(/\s+/g, '').includes((x.name?.en || '').toLowerCase().replace(/['-]/g, '').replace(/\s+/g, '').slice(0, 15))
+      );
+      if (fb?.images?.length) {
+        const color = getColor(p.name.en || '');
+        if (color) p.images = fb.images.filter(img => img.includes(color));
+        if (!p.images.length) p.images = fb.images;
+      }
+    }
+    return p;
+  });
+} catch(e) {}
 
-// 🗺️ getStaticPaths：为每个产品生成一条静态路由
-export function getStaticPaths() {
+// 🗺️ getStaticPaths：构建时从 API 获取产品生成路由
+export async function getStaticPaths() {
+  let products = [];
+  const parseArr = (s) => { try { return JSON.parse(s || '[]'); } catch(e) { return []; } };
+  try {
+    const res = await fetch('http://localhost:5200/api/products');
+    if (res.ok) {
+      products = (await res.json())
+        .filter(p => p.status === 1 && p.deleted === 0)
+        .map(p => ({
+          id: String(p.id),
+          name: { en: p.name_en || '', zh: p.name_zh || '' },
+          images: parseArr(p.images),
+        }));
+    }
+  } catch(e) {}
+  if (!products.length) {
+    products = (await import('../../../../content/products.json')).default;
+  }
+  // 补充 API 缺失的图片（按名称匹配）
+  try {
+    const fbAll = (await import('../../../../content/products.json')).default;
+    products = products.map(p => {
+      if (!p.images || !p.images.length) {
+        const fb = fbAll.find(x =>
+          (x.name?.en || '').toLowerCase().includes((p.name.en || '').toLowerCase().slice(0, 15)) ||
+          (p.name.en || '').toLowerCase().includes((x.name?.en || '').toLowerCase().slice(0, 15))
+        );
+        if (fb?.images?.length) p.images = fb.images;
+      }
+      return p;
+    });
+  } catch(e) {}
   return products.map(p => ({ params: { slug: p.id } }));
 }
 // 📝 从 URL 中提取 slug 参数

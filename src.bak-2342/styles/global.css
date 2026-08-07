@@ -1,0 +1,59 @@
+/*
+ * ============================================================================
+ * 文件位置: src/styles/global.css
+ * 作用: 全局样式文件 — Tailwind 指令 + Google Fonts 引入 + 公共组件类（按钮/标题）+ 图片轮播过渡动画
+ * 被谁调用: BaseLayout.astro 中通过 <link rel="stylesheet"> 或 import 引入，作用于全站
+ * 修改指南:
+ *   - 【修改】Google Fonts: 更换字体在 @import url()，注意同步修改 tailwind.config.mjs 的 fontFamily
+ *   - 【修改】主按钮样式: 编辑 .btn-primary 的 @apply 属性（颜色/圆角/padding）
+ *   - 【修改】副按钮样式: 编辑 .btn-outline
+ *   - 【修改】标题样式: 编辑 .section-title / .section-subtitle
+ *   - 【修改】轮播过渡速度: 编辑 .photo-fade-active 的 transition 时长（当前 1.2s）
+ *   - 【新增】全局动画: 在 @layer components 末尾添加新 @keyframes 和对应类
+ *   - 【注意】.btn-primary 用 sage-500 绿色系，保持与品牌色一致
+ *   - 【注意】改 Fonts 后需确认 CDN 可访问（大陆用户可能加载慢）
+ * ============================================================================
+ */
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@import url('https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,600;0,700;1,400;1,600&family=Inter:wght@300;400;500;600&family=Noto+Serif+SC:wght@400;600;700&family=Noto+Sans+SC:wght@300;400;500&display=swap');
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+  body {
+    @apply bg-beige-50 text-charcoal-800 font-sans antialiased;
+  }
+}
+
+@layer components {
+  .btn-primary {
+    @apply inline-flex items-center justify-center px-8 py-3 bg-sage-500 hover:bg-sage-600 text-white font-medium rounded-full transition-all duration-300;
+  }
+  .btn-outline {
+    @apply inline-flex items-center justify-center px-8 py-3 border border-charcoal-300 text-charcoal-600 hover:bg-beige-200 rounded-full transition-all duration-300;
+  }
+  .section-title {
+    @apply text-3xl md:text-4xl lg:text-5xl font-serif font-bold text-center tracking-wide;
+  }
+  .section-subtitle {
+    @apply text-charcoal-500 text-center max-w-2xl mx-auto mt-4 text-lg;
+  }
+}
+
+/* Photo carousel fade */
+.photo-fade-enter {
+  opacity: 0;
+}
+.photo-fade-active {
+  opacity: 1;
+  transition: opacity 1.2s ease-in-out;
+}
+.photo-fade-exit {
+  opacity: 0;
+  transition: opacity 0.8s ease-in-out;
+}

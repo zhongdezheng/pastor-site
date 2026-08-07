@@ -1,0 +1,87 @@
+---
+/**
+ * 📍 文件位置: src/components/designer/DesignerLeftPanel.astro
+ * 🎯 作用: 设计器桌面端左侧面板——产品选择器、图片上传区、文字工具、操作按钮
+ * 🔧 修改指南:
+ *   - 文字内容通过 t prop 控制多语言
+ *   - 产品列表由 JS 动态渲染（ID: designer-products）
+ *   - 上传区域触发隐藏的 file input（ID: design-upload）
+ */
+interface Props {
+  t: {
+    selectProduct: string;
+    uploadImage: string;
+    clickToUpload: string;
+    text: string;
+    addTextPlaceholder: string;
+    font: string;
+    size: string;
+    color: string;
+    addText: string;
+    reset: string;
+    center: string;
+    fontOptions: Array<{ value: string; label: string }>;
+  };
+}
+const { t } = Astro.props;
+---
+
+<!-- 左侧面板：24% 宽度 · 产品选择 + 上传图片 + 文字工具 + 操作按钮 -->
+<div class="w-[24%] min-w-[260px] max-w-[340px] bg-white border-r border-gray-200 overflow-y-auto flex flex-col gap-2 p-3">
+  
+  <!-- 产品选择器 -->
+  <div class="bg-gray-50 rounded-xl p-3">
+    <h3 class="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">{t.selectProduct}</h3>
+    <div id="designer-products" class="space-y-1.5"></div>
+  </div>
+
+  <!-- 上传图片区域 -->
+  <div class="bg-gray-50 rounded-xl p-3">
+    <h3 class="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">{t.uploadImage}</h3>
+    <div id="upload-zone" class="border-2 border-dashed border-gray-300 rounded-xl p-5 text-center cursor-pointer hover:border-gray-400 hover:bg-gray-100/50 transition-all">
+      <div class="w-10 h-10 mx-auto mb-1.5 rounded-full bg-gray-100 flex items-center justify-center text-xl">📁</div>
+      <p class="text-xs text-gray-400 font-medium">{t.clickToUpload}</p>
+      <input type="file" id="design-upload" accept="image/*" class="hidden" />
+    </div>
+    <!-- 已上传图片缩略图列表 -->
+    <div id="image-gallery" class="grid grid-cols-4 gap-1.5 mt-2"></div>
+  </div>
+
+  <!-- 文字工具 -->
+  <div class="bg-gray-50 rounded-xl p-3">
+    <h3 class="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">{t.text}</h3>
+    <!-- 文字输入框 -->
+    <input type="text" id="text-input" placeholder={t.addTextPlaceholder} class="w-full px-3 py-2 bg-white border border-gray-200 rounded-lg text-sm text-gray-700 placeholder-gray-300 focus:outline-none focus:border-gray-400 focus:ring-1 focus:ring-gray-200 transition-all mb-2" />
+    <div class="flex gap-2 mb-2">
+      <!-- 字体选择 -->
+      <div class="relative flex-1">
+        <label class="text-xs font-bold text-gray-500 uppercase tracking-wider block mb-1.5">{t.font}</label>
+        <select id="font-select" class="w-full px-3 py-2 bg-white border border-gray-200 rounded-lg text-sm text-gray-700 appearance-none cursor-pointer focus:outline-none focus:border-gray-400 focus:ring-1 focus:ring-gray-200 transition-all">
+          {t.fontOptions.map((f) => `<option value="${f.value}">${f.label}</option>`).join('\n')}
+        </select>
+      </div>
+      <!-- 字号调整 -->
+      <div class="flex flex-col items-center">
+        <label class="text-xs font-bold text-gray-500 uppercase tracking-wider block mb-1.5">{t.size}</label>
+        <div class="flex items-center gap-0">
+          <button class="w-7 h-7 rounded-l bg-white border border-gray-200 text-xs font-bold text-gray-600 hover:bg-gray-50" onclick="chgFontSize(-2)">−</button>
+          <span class="w-8 h-7 flex items-center justify-center bg-white border-y border-gray-200 text-xs font-bold text-gray-700" id="font-size-display">28</span>
+          <button class="w-7 h-7 rounded-r bg-white border border-gray-200 text-xs font-bold text-gray-600 hover:bg-gray-50" onclick="chgFontSize(2)">+</button>
+        </div>
+      </div>
+      <!-- 文字颜色选择 -->
+      <div class="flex flex-col items-center">
+        <label class="text-xs font-bold text-gray-500 uppercase tracking-wider block mb-1.5">{t.color}</label>
+        <input type="color" id="text-color" value="#333333" class="w-8 h-8 rounded cursor-pointer border-0 bg-transparent p-0" />
+      </div>
+    </div>
+    <!-- 添加文字按钮 -->
+    <button class="w-full py-2.5 bg-gray-800 hover:bg-gray-700 active:bg-gray-900 text-white rounded-lg text-sm font-medium transition-all" onclick="addTextFromSelect()">{t.addText}</button>
+  </div>
+
+  <!-- Reset / Center 操作按钮 -->
+  <div class="flex gap-2">
+    <button id="btn-reset" class="flex-1 py-2.5 bg-white border border-gray-200 rounded-lg text-sm font-medium text-gray-500 hover:bg-gray-50 hover:border-gray-300 active:bg-gray-100 transition-all">{t.reset}</button>
+    <button id="btn-center" class="flex-1 py-2.5 bg-white border border-gray-200 rounded-lg text-sm font-medium text-gray-500 hover:bg-gray-50 hover:border-gray-300 active:bg-gray-100 transition-all">{t.center}</button>
+  </div>
+</div>

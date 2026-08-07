@@ -14,7 +14,26 @@
 // 【修改】引入基础布局
 import BaseLayout from '../../../layouts/BaseLayout.astro';
 // 【修改】引入见证数据（JSON 数组，每项含 id/title/author/date/content）
-import testimonies from '../../../content/testimonies.json';
+// ⚡ 构建时从管理后台 API 获取见证，失败则回退本地 JSON
+let testimonies = [];
+try {
+  const res = await fetch('http://localhost:5200/api/testimonies');
+  if (res.ok) {
+    testimonies = (await res.json())
+      .filter(t => t.published !== 0)
+      .map(t => ({
+        id: t.id,
+        title: { en: t.title_en || t.title || "", zh: t.title_zh || t.title || "" },
+        date: t.date || "",
+        author: { en: t.author || "", zh: t.author || "" },
+        excerpt: { en: t.excerpt_en || "", zh: t.excerpt_zh || "" },
+        content: { en: t.content_en || t.content || "", zh: t.content_zh || t.content || "" },
+      }));
+  }
+} catch(e) {}
+if (!testimonies.length) {
+  testimonies = (await import('../../../content/testimonies.json')).default;
+}
 ---
 
 <BaseLayout lang="en" title="Faith Testimonies | Livingstone">

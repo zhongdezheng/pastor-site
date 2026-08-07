@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>pastor-site 代码修改指南</title>
+<style>
+:root { --bg:#fdfbf7; --card:#fff; --text:#2c2a29; --muted:#888; --accent:#5b6d61; --border:#e0e0e0; --header:#3f2e1e; }
+* { margin:0; padding:0; box-sizing:border-box; }
+body { font-family:-apple-system,"Noto Sans SC","PingFang SC",sans-serif; background:var(--bg); color:var(--text); line-height:1.8; max-width:900px; margin:0 auto; padding:40px 20px; }
+.cover { text-align:center; padding:80px 0 60px; border-bottom:3px solid var(--accent); margin-bottom:40px; }
+.cover h1 { font-size:2.4em; color:var(--header); margin-bottom:10px; }
+.cover .sub { font-size:1.1em; color:var(--muted); margin-bottom:8px; }
+.cover .meta { font-size:.9em; color:var(--muted); }
+h2 { font-size:1.6em; color:var(--header); border-bottom:2px solid var(--border); padding-bottom:8px; margin:50px 0 20px; }
+h3 { font-size:1.2em; color:var(--accent); margin:30px 0 12px; }
+code, .path { font-family:"SF Mono","Cascadia Code","Courier New",monospace; background:#f0f0f0; padding:2px 6px; border-radius:4px; font-size:.9em; }
+pre { background:#2c2a29; color:#e8d8bc; padding:16px 20px; border-radius:8px; overflow-x:auto; font-size:.85em; line-height:1.6; margin:12px 0; }
+table { width:100%; border-collapse:collapse; margin:16px 0; }
+th { background:#e8e6e3; text-align:left; padding:10px 14px; font-weight:600; }
+td { padding:10px 14px; border-bottom:1px solid var(--border); }
+.card { background:var(--card); border:1px solid var(--border); border-radius:8px; padding:20px; margin:16px 0; }
+.card h4 { color:var(--accent); margin-bottom:8px; }
+.tip { background:#f4f6f4; border-left:4px solid var(--accent); padding:12px 16px; border-radius:0 6px 6px 0; margin:12px 0; }
+.tip::before { content:"💡 "; }
+.warn { background:#fff8f0; border-left:4px solid #e94560; padding:12px 16px; border-radius:0 6px 6px 0; margin:12px 0; }
+.warn::before { content:"⚠️ "; }
+.toc { background:var(--card); border:1px solid var(--border); border-radius:8px; padding:24px; margin:20px 0; }
+.toc a { color:var(--accent); text-decoration:none; }
+.toc a:hover { text-decoration:underline; }
+.footer { text-align:center; color:var(--muted); margin-top:60px; padding-top:20px; border-top:1px solid var(--border); font-size:.9em; }
+</style>
+</head>
+<body>
+
+<div class="cover">
+<h1>pastor-site 代码修改指南</h1>
+<div class="sub">pastorjeffnchina.com 网站维护手册</div>
+<div class="meta">2026-08-05 · v1.0</div>
+</div>
+
+<div class="toc">
+<strong>📑 目录</strong><br>
+<a href="#ch1">第一章 · 项目概览</a> &nbsp;|&nbsp;
+<a href="#ch2">第二章 · 文件结构</a> &nbsp;|&nbsp;
+<a href="#ch3">第三章 · 修改指南</a> &nbsp;|&nbsp;
+<a href="#ch4">第四章 · 速查表</a> &nbsp;|&nbsp;
+<a href="#ch5">第五章 · 注意事项</a> &nbsp;|&nbsp;
+<a href="#appendix">附录</a>
+</div>
+
+<h2 id="ch1">第一章 · 项目概览</h2>
+
+<div class="card">
+<h4>技术栈</h4>
+<p><strong>Astro 5</strong> + <strong>Tailwind CSS 3</strong> + <strong>Cloudflare Pages</strong></p>
+<p>项目位置：<code>~/Desktop/pastor-site/</code></p>
+</div>
+
+<div class="card">
+<h4>常用命令</h4>
+<pre>npm run dev      # 本地开发服务器（localhost:4321）
+npm run build    # 构建生产版本
+npm run preview  # 预览构建结果</pre>
+</div>
+
+<div class="card">
+<h4>部署方式</h4>
+<p>GitHub 仓库 → Cloudflare Pages 自动部署（push main 分支即触发）</p>
+</div>
+
+<h2 id="ch2">第二章 · 文件结构</h2>
+
+<pre>
+pastor-site/
+├── astro.config.mjs          — Astro 构建配置（output/i18n/Tailwind）
+├── tailwind.config.mjs       — 品牌色板（beige/charcoal/sage）
+├── package.json              — 依赖管理
+├── functions/api/
+│   └── prayer.js             — 代祷接口（Cloudflare Function）
+└── src/
+    ├── components/           — 8 个公共组件
+    ├── layouts/              — 全局布局 BaseLayout
+    ├── pages/                — en/zh 双语页面（各 13 页）
+    ├── content/              — 8 个 JSON 数据文件 + 教程
+    ├── data/                 — 国家坐标数据
+    ├── lib/supabase.ts       — Supabase 客户端
+    ├── stores/cart.ts        — 购物车状态管理
+    └── styles/global.css     — 全局样式</pre>
+
+<h2 id="ch3">第三章 · 修改指南</h2>
+
+<h3>3.1 修改网站文字内容</h3>
+<div class="card">
+<h4>网站名</h4>
+<p>文件：<code>src/content/site.json</code> → <code>site.name.zh</code> / <code>site.name.en</code></p>
+</div>
+<div class="card">
+<h4>牧师介绍 + 经文</h4>
+<p>文件：<code>src/content/hero.json</code> → <code>en.name</code> / <code>zh.name</code> / <code>.title</code> / <code>.preview</code> / <code>.verse</code></p>
+</div>
+<div class="card">
+<h4>经文轮播</h4>
+<p>文件：<code>src/content/scriptures.json</code> → 数组中每项的 <code>.en</code> / <code>.zh</code></p>
+</div>
+<div class="card">
+<h4>异象内容</h4>
+<p>文件：<code>src/content/vision.json</code> → <code>.zh.content</code> / <code>.en.content</code></p>
+</div>
+
+<h3>3.2 修改联系信息</h3>
+<div class="card">
+<h4>WhatsApp 号 / 邮箱</h4>
+<p>文件：<code>src/content/site.json</code> → <code>site.whatsapp</code> / <code>site.email</code></p>
+</div>
+
+<h3>3.3 修改产品/商品</h3>
+<p>数据 → <code>src/content/products.json</code>（含价格、颜色、尺码、图片路径）</p>
+<p>图片 → <code>public/images/products/</code> 目录</p>
+
+<h3>3.4 修改样式/品牌色</h3>
+<p>主色调 → <code>tailwind.config.mjs</code>：beige（浅米背景）、charcoal（深灰文字）、sage（鼠尾草绿 CTA）</p>
+<p>按钮 → <code>src/styles/global.css</code>：<code>.btn-primary</code> / <code>.btn-outline</code></p>
+
+<h3>3.5 修改导航/布局</h3>
+<p>导航栏 + 页脚 + 购物车浮窗 → 全部在 <code>src/layouts/BaseLayout.astro</code></p>
+
+<h3>3.6 新增语言</h3>
+<ol>
+<li><code>astro.config.mjs</code> → i18n.locales 加新语言代码</li>
+<li><code>src/content/</code> 所有 JSON 加新语言键</li>
+<li><code>src/pages/[新语言]/</code> 创建页面目录</li>
+<li>重新构建</li>
+</ol>
+
+<h2 id="ch4">第四章 · 常见修改速查表</h2>
+
+<table>
+<tr><th>想改什么</th><th>在哪里改</th><th>教程文件</th></tr>
+<tr><td>网站名</td><td>site.json → site.name</td><td>site-教程.md</td></tr>
+<tr><td>WhatsApp 号</td><td>site.json → site.whatsapp</td><td>site-教程.md</td></tr>
+<tr><td>牧师姓名/经文</td><td>hero.json</td><td>hero-教程.md</td></tr>
+<tr><td>异象内容</td><td>vision.json</td><td>vision-教程.md</td></tr>
+<tr><td>经文卡片</td><td>scriptures.json</td><td>scriptures-教程.md</td></tr>
+<tr><td>见证文章</td><td>testimonies.json</td><td>testimonies-教程.md</td></tr>
+<tr><td>商品数据</td><td>products.json</td><td>products-教程.md</td></tr>
+<tr><td>课程列表</td><td>courses.json</td><td>courses-教程.md</td></tr>
+<tr><td>品牌色</td><td>tailwind.config.mjs</td><td>文件头注释</td></tr>
+<tr><td>字体</td><td>global.css + tailwind.config</td><td>文件头注释</td></tr>
+<tr><td>导航栏/页脚</td><td>BaseLayout.astro</td><td>文件头注释</td></tr>
+<tr><td>代祷表单接口</td><td>functions/api/prayer.js</td><td>文件头注释</td></tr>
+</table>
+
+<h2 id="ch5">第五章 · 注意事项</h2>
+
+<div class="warn">JSON 文件不支持注释，教程写在配套的 <code>-教程.md</code> 文件中</div>
+<div class="warn"><code>.astro</code> 文件的 JSX 表达式内不能用 <code>&lt;!-- --&gt;</code> 注释，会编译报错</div>
+<div class="tip">修改 Astro 文件后需 <code>npm run build</code> 重新构建才能上线</div>
+<div class="tip">管理后台是独立项目（<code>~/Desktop/products/admin/</code>），不在 pastor-site 目录内</div>
+<div class="tip">敏感信息（API Key、密码）走环境变量，不写代码文件</div>
+
+<h2 id="appendix">附录 · 全部教程文件清单</h2>
+
+<h3>代码文件（45 个，全部有文件头注释）</h3>
+<p>34 个 <code>.astro</code> + 3 个 <code>.ts</code> + 2 个 <code>.mjs</code> + 2 个 <code>.js</code> + 1 个 <code>.css</code> + 3 个配置</p>
+
+<h3>JSON 配套教程（10 个 .md 文件）</h3>
+<table>
+<tr><th>JSON</th><th>教程</th></tr>
+<tr><td>site.json</td><td>src/content/site-教程.md</td></tr>
+<tr><td>hero.json</td><td>src/content/hero-教程.md</td></tr>
+<tr><td>vision.json</td><td>src/content/vision-教程.md</td></tr>
+<tr><td>scriptures.json</td><td>src/content/scriptures-教程.md</td></tr>
+<tr><td>testimonies.json</td><td>src/content/testimonies-教程.md</td></tr>
+<tr><td>products.json</td><td>src/content/products-教程.md</td></tr>
+<tr><td>courses.json</td><td>src/content/courses-教程.md</td></tr>
+<tr><td>prayer-settings.json</td><td>src/content/prayer-settings-教程.md</td></tr>
+<tr><td>countries.json</td><td>src/data/countries-教程.md</td></tr>
+<tr><td>package.json</td><td>package-教程.md</td></tr>
+</table>
+
+<div class="footer">
+pastor-site 代码修改指南 · 2026-08-05 · v1.0<br>
+全部 52 个文件已标注，覆盖 100%
+</div>
+
+</body>
+</html>

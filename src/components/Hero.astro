@@ -15,7 +15,15 @@
  */
 
 // 导入首页大图数据（名称、头衔、经文等）
-import heroData from '../content/hero.json';
+// ⚡ 构建时先从管理后台 API 获取，失败则回退到本地 JSON
+let heroData = { en: {}, zh: {} };
+try {
+  const res = await fetch('http://localhost:5200/api/hero');
+  if (res.ok) heroData = await res.json();
+} catch(e) {}
+if (!heroData.en || !heroData.en.name) {
+  heroData = (await import('../content/hero.json')).default;
+}
 
 // Props：接收 lang 来决定显示英文还是中文
 interface Props { lang: 'en' | 'zh' }

@@ -15,7 +15,21 @@
  */
 
 // 导入异象数据（title + content 文本）
-import visionData from '../content/vision.json';
+// ⚡ 构建时从管理后台 API 获取异象，失败则回退本地 JSON
+let visionData = { en: {}, zh: {} };
+try {
+  const res = await fetch('http://localhost:5200/api/vision');
+  if (res.ok) {
+    const api = await res.json();
+    visionData = {
+      en: { title: api.title_en || '', content: api.content_en || '' },
+      zh: { title: api.title_zh || '', content: api.content_zh || '' },
+    };
+  }
+} catch(e) {}
+if (!visionData.en.content) {
+  visionData = (await import('../content/vision.json')).default;
+}
 
 // Props：接收语言参数
 interface Props {

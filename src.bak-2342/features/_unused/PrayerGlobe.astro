@@ -1,0 +1,203 @@
+---
+/*
+ * ============================================================================
+ * 文件位置: src/components/PrayerGlobe.astro
+ * 作用: 祷告地球组件，左侧通过 iframe 嵌入 3D 地球可视化，右侧是代祷提交表单
+ * 被谁调用: 可能被首页 index.astro 或其他页面引入
+ * 修改指南:
+ *   - 【修改】地球页面: 编辑 /public/prayer-globe.html（iframe 目标）
+ *   - 【修改】表单提交 API: 编辑 /api/prayer 端点（后端处理代祷数据）
+ *   - 【修改】表单文案: 编辑 labels 对象的 en/zh 属性
+ *   - 【修改】表单样式: 编辑 form 标签内的 class（边框/圆角/背景色）
+ *   - 【修改】国家列表: 编辑 src/data/countries.json
+ *   - 【修改】iframe 容器尺寸: 编辑 iframe 的 max-w-[440px] 和 aspect-square
+ *   - 注意: 地球 3D 效果在 prayer-globe.html 中独立实现，通过 iframe 隔离
+ * ============================================================================
+ */
+
+// 导入国家列表（用于 datalist 自动补全）
+import countries from '../data/countries.json';
+
+// Props：接收语言参数
+interface Props { lang: 'en' | 'zh' }
+const { lang } = Astro.props;
+
+// 【修改】多语言标签字典：所有 UI 文案在此定义
+const labels = {
+  en: {
+    title: 'Prayer Requests',
+    subtitle: 'Your prayers light up the world. Every dot represents a heart crying out to God.',
+    name: 'Name', namePlaceholder: 'Your name (optional)',
+    email: 'Email', emailPlaceholder: 'your@email.com',
+    country: 'Your Country', countryPlaceholder: 'e.g. Kenya, Nigeria, China...',
+    request: 'Prayer Request', requestPlaceholder: 'Share what\'s on your heart...',
+    submit: 'Send Prayer', submitting: 'Sending...',
+    successTitle: 'Thank You', successMsg: 'Your prayer has been received. A light now shines for your nation.',
+    errorMsg: 'Something went wrong. Please try again.',
+    required: 'Please fill in your country and prayer request.',
+  },
+  zh: {
+    title: '代祷需求',
+    subtitle: '你的祷告点亮世界。每一个光点代表一颗呼求上帝的心。',
+    name: '姓名', namePlaceholder: '你的名字（选填）',
+    email: '邮箱', emailPlaceholder: '你的邮箱',
+    country: '你的国家', countryPlaceholder: '例如：中国、美国、肯尼亚...',
+    request: '代祷事项', requestPlaceholder: '分享你心中所想...',
+    submit: '发送代祷', submitting: '发送中...',
+    successTitle: '感谢你', successMsg: '你的代祷已收到。一束光正为你的国家亮起。',
+    errorMsg: '提交失败，请重试。',
+    required: '请填写国家和代祷事项。',
+  },
+};
+const t = labels[lang];
+---
+
+<!-- ====== 祷告区域：米色柔背景 ====== -->
+<!-- 【修改】背景: bg-beige-50, 间距: py-24 lg:py-32 -->
+<section id="prayer" class="py-24 lg:py-32 px-4 sm:px-6 bg-beige-50 overflow-hidden">
+  <div class="max-w-5xl mx-auto">
+
+    <!-- 标题 -->
+    <h2 class="section-title text-charcoal-900">{t.title}</h2>
+    <!-- 副标题 -->
+    <p class="section-subtitle mb-8">{t.subtitle}</p>
+
+    <!-- 双列布局：左地球 + 右表单 -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-10 items-center">
+
+      <!-- ====== 左侧：3D 地球（通过 iframe 加载独立页面） ====== -->
+      <!-- iframe 绕过 Astro 构建问题，保持 3D 脚本独立运行 -->
+      <div class="relative flex justify-center">
+        <!-- 【修改】iframe 源: /prayer-globe.html -->
+        <!-- 【修改】容器宽度: max-w-[440px] -->
+        <!-- 【修改】宽高比: aspect-square（保持正方形） -->
+        <iframe
+          src="/prayer-globe.html"
+          class="w-full aspect-square max-w-[440px] border-0"
+          style="background: transparent;"
+          title="Prayer Globe"
+        ></iframe>
+        <!-- 地球下方计数文字 -->
+        <p id="prayer-counter" class="absolute bottom-0 left-1/2 -translate-x-1/2 text-xs text-charcoal-400 font-medium tracking-wide">
+          &#x2728; {lang === 'en' ? 'Prayers around the world' : '世界各地的祷告'}
+        </p>
+      </div>
+
+      <!-- ====== 右侧：代祷表单 ====== -->
+      <div class="max-w-md mx-auto w-full">
+        <!-- 【修改】表单样式: 白色背景 + 圆角 + 阴影 + 边框 -->
+        <form id="prayer-form" class="bg-white rounded-2xl shadow-lg p-6 md:p-8 space-y-5 border border-beige-200">
+
+          <!-- 姓名字段（可选） -->
+          <!-- 【修改】focus 样式: focus:ring-2 focus:ring-sage-400（sage 色聚焦环） -->
+          <div>
+            <label class="block text-sm font-medium text-charcoal-600 mb-1.5">{t.name}</label>
+            <input type="text" name="name" placeholder={t.namePlaceholder} class="w-full px-4 py-2.5 rounded-xl border border-beige-300 bg-beige-50 focus:outline-none focus:ring-2 focus:ring-sage-400 focus:border-transparent transition-all text-charcoal-800 text-sm" />
+          </div>
+
+          <!-- 邮箱字段（可选） -->
+          <div>
+            <label class="block text-sm font-medium text-charcoal-600 mb-1.5">{t.email}</label>
+            <input type="email" name="email" placeholder={t.emailPlaceholder} class="w-full px-4 py-2.5 rounded-xl border border-beige-300 bg-beige-50 focus:outline-none focus:ring-2 focus:ring-sage-400 focus:border-transparent transition-all text-charcoal-800 text-sm" />
+          </div>
+
+          <!-- 国家字段（必填 *） -->
+          <!-- autocomplete="off" + datalist 提供国家名自动补全 -->
+          <div>
+            <label class="block text-sm font-medium text-charcoal-600 mb-1.5">{t.country} *</label>
+            <input type="text" name="country" required placeholder={t.countryPlaceholder} autocomplete="off" list="country-list" class="w-full px-4 py-2.5 rounded-xl border border-beige-300 bg-beige-50 focus:outline-none focus:ring-2 focus:ring-sage-400 focus:border-transparent transition-all text-charcoal-800 text-sm" />
+            <!-- datalist: 从 countries.json 读取所有国家名作为建议选项 -->
+            <datalist id="country-list">
+              {Object.keys(countries).map(c => <option value={c} />)}
+            </datalist>
+          </div>
+
+          <!-- 代祷事项（必填 *） -->
+          <!-- 【修改】行数: rows="4"，改用 textarea 高度 -->
+          <div>
+            <label class="block text-sm font-medium text-charcoal-600 mb-1.5">{t.request} *</label>
+            <textarea name="request" rows="4" required placeholder={t.requestPlaceholder} class="w-full px-4 py-2.5 rounded-xl border border-beige-300 bg-beige-50 focus:outline-none focus:ring-2 focus:ring-sage-400 focus:border-transparent transition-all text-charcoal-800 text-sm resize-none"></textarea>
+          </div>
+
+          <!-- 提交按钮 -->
+          <!-- 【修改】颜色: bg-sage-500 hover:bg-sage-600（sage 色调） -->
+          <button type="submit" class="w-full py-3 bg-sage-500 hover:bg-sage-600 text-white font-medium rounded-xl transition-colors text-base">{t.submit}</button>
+        </form>
+
+        <!-- ====== 成功消息（默认隐藏） ====== -->
+        <div id="prayer-success" class="hidden mt-6 bg-sage-50 border border-sage-200 rounded-2xl p-6 text-center">
+          <p class="text-4xl mb-3">&#x1F31F;</p>
+          <h3 class="font-serif text-lg font-bold text-sage-800 mb-1">{t.successTitle}</h3>
+          <p class="text-sage-600 text-sm">{t.successMsg}</p>
+        </div>
+
+        <!-- ====== 错误消息（默认隐藏） ====== -->
+        <div id="prayer-error" class="hidden mt-6 bg-red-50 border border-red-200 rounded-2xl p-6 text-center">
+          <p class="text-red-600 text-sm">{t.errorMsg}</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ====== JS：代祷表单提交逻辑 ====== -->
+<!-- 注意：此 script 没有 is:inline，会被 Astro 打包处理 -->
+<script>
+  function initPrayerForm() {
+    var form = document.getElementById('prayer-form');
+    if (!form) return;
+    var success = document.getElementById('prayer-success');
+    var error = document.getElementById('prayer-error');
+    var btn = form.querySelector('button');
+
+    // 表单提交事件
+    form.addEventListener('submit', async function(e) {
+      e.preventDefault();
+      var fd = new FormData(form);
+
+      // 获取并验证必填字段
+      var country = (fd.get('country') || '').toString().trim();
+      var request = (fd.get('request') || '').toString().trim();
+      if (!country || !request) { alert('{t.required}'); return; }
+
+      // 【修改】构造提交数据：包含 name/email/country/request/lang/timestamp
+      var data = {
+        name: fd.get('name') || '',
+        email: fd.get('email') || '',
+        country: country,
+        request: request,
+        lang: '{lang}',
+        timestamp: new Date().toISOString()
+      };
+
+      // 按钮进入 loading 状态
+      btn.textContent = '{t.submitting}';
+      btn.classList.add('opacity-70', 'pointer-events-none');
+
+      try {
+        // 发送到后端 API
+        var res = await fetch('/api/prayer', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(data)
+        });
+        if (!res.ok) throw new Error('fail');
+
+        // 成功：隐藏表单，显示成功消息
+        form.classList.add('hidden');
+        success.classList.remove('hidden');
+        error.classList.add('hidden');
+      } catch (err) {
+        // 失败：显示错误消息
+        error.classList.remove('hidden');
+        success.classList.add('hidden');
+      } finally {
+        // 恢复按钮状态
+        btn.textContent = '{t.submit}';
+        btn.classList.remove('opacity-70', 'pointer-events-none');
+      }
+    });
+  }
+
+  initPrayerForm();
+</script>

@@ -1,56 +1,135 @@
-<!--
-============================================================
-📁 文件位置: src/pages/zh/products/[slug]/index.astro
-🌐 路由: /zh/products/:slug/    (动态路由)
-🎯 作用: 产品详情页 — 图片轮播/颜色尺码选择/加入购物车/立即购买
-📝 修改指南:
-   【修改】产品数据：编辑 src/content/products.json
-   【修改】详情文本：改 product.details.zh 字段
-   【修改】洗涤保养文案：直接在 <p> 标签内改
-   【修改】价格格式：改 ${product.price} USD 部分
-   【修改】颜色映射：改脚本中的 cm 对象（中文名→色值）
-   【修改】购物车存储 key：改 localStorage 'ps-cart'
-   【修改】浮动购物车图标：改 #cart-floating 的 href
-============================================================
--->
 ---
-// ── 导入 ────────────────────────────────────────────────────
-import BaseLayout from '../../../../layouts/BaseLayout.astro'; // 全局布局
-import products from '../../../../content/products.json';      // 产品数据
+/**
+ * 📍 文件位置: src/pages/zh/products/[slug]/index.astro
+ * 🌐 路由: /zh/products/:slug/（动态路由，slug = 产品 id，如 tee-180g）
+ * 🎯 作用: 英文产品详情页——展示产品图片、颜色/尺码选择、数量、加入购物车/立即购买、设计器入口
+ * 🔧 修改指南:
+ *   - 修改产品数据：编辑 content/products.json
+ *   - 修改静态路径：getStaticPaths() 自动从 products.json 生成所有产品页面
+ *   - 修改默认价格/货币：搜索 $ 符号替换为其他货币符号
+ *   - 颜色映射表：cm 对象中维护中文颜色名 → CSS 颜色的映射
+ *   - 购物车逻辑：使用 localStorage key "ps-cart"，与 cart 页共享
+ *   - 图片切换：onclick 直接操作 DOM，通过 gthumb class 标记缩略图选中状态
+ */
 
-// 【静态路径】为每个产品预生成页面（SSG）
-export function getStaticPaths() {
+// 【修改】引入基础布局（注意层级：../../../../ 因为 [slug] 多一层）
+import BaseLayout from '../../../../layouts/BaseLayout.astro';
+// 【修改】引入产品数据（JSON 数组，包含 id/name/price/colors/sizes/images/details）
+// ⚡ 构建时从管理后台 API 获取产品，失败则回退本地 JSON
+let products = [];
+const parseArr = (s) => { try { return JSON.parse(s || '[]'); } catch(e) { return []; } };
+try {
+  const res = await fetch('http://localhost:5200/api/products');
+  if (res.ok) {
+    products = (await res.json())
+      .filter(p => p.status === 1 && p.deleted === 0)
+      .map(p => ({
+        id: String(p.id),
+        category: p.category_id === 1 ? 'apparel' : 'accessories',
+        name: { en: p.name_en || '', zh: p.name_zh || '' },
+        price: p.price || 0,
+        currency: 'USD',
+        colors: parseArr(p.colors),
+        sizes: parseArr(p.sizes),
+        weight: p.material || '',
+        material: { en: p.material || '', zh: p.material || '' },
+        description: { en: p.description_en || '', zh: p.description_zh || '' },
+        details: { en: p.description_en || '', zh: p.description_zh || '' },
+        images: parseArr(p.images),
+        stock: 999,
+      }));
+  }
+} catch(e) {}
+if (!products.length) {
+  products = (await import('../../../../content/products.json')).default;
+}
+// 补充 API 中缺失的产品图片（按名称匹配）
+try {
+  const colorMap = { white:'白色', black:'黑色', red:'红色', blue:'蓝色', green:'绿色',
+    yellow:'黄色', pink:'粉色', grey:'浅灰色', gray:'浅灰色', purple:'紫色', orange:'橙色', brown:'棕色' };
+  const getColor = (name) => { for (const [en, zh] of Object.entries(colorMap)) { if (name.toLowerCase().includes(en)) return zh; } return null; };
+  const fbAll = (await import('../../../../content/products.json')).default;
+  products = products.map(p => {
+    if (!p.images || !p.images.length) {
+      const fb = fbAll.find(x =>
+        (x.name?.en || '').toLowerCase().replace(/['-]/g, '').replace(/\s+/g, '').includes((p.name.en || '').toLowerCase().replace(/['-]/g, '').replace(/\s+/g, '').slice(0, 15)) ||
+        (p.name.en || '').toLowerCase().replace(/['-]/g, '').replace(/\s+/g, '').includes((x.name?.en || '').toLowerCase().replace(/['-]/g, '').replace(/\s+/g, '').slice(0, 15))
+      );
+      if (fb?.images?.length) {
+        const color = getColor(p.name.en || '');
+        if (color) p.images = fb.images.filter(img => img.includes(color));
+        if (!p.images.length) p.images = fb.images;
+      }
+    }
+    return p;
+  });
+} catch(e) {}
+
+// 🗺️ getStaticPaths：构建时从 API 获取产品生成路由
+export async function getStaticPaths() {
+  let products = [];
+  const parseArr = (s) => { try { return JSON.parse(s || '[]'); } catch(e) { return []; } };
+  try {
+    const res = await fetch('http://localhost:5200/api/products');
+    if (res.ok) {
+      products = (await res.json())
+        .filter(p => p.status === 1 && p.deleted === 0)
+        .map(p => ({
+          id: String(p.id),
+          name: { en: p.name_en || '', zh: p.name_zh || '' },
+          images: parseArr(p.images),
+        }));
+    }
+  } catch(e) {}
+  if (!products.length) {
+    products = (await import('../../../../content/products.json')).default;
+  }
+  // 补充 API 缺失的图片（按名称匹配）
+  try {
+    const fbAll = (await import('../../../../content/products.json')).default;
+    products = products.map(p => {
+      if (!p.images || !p.images.length) {
+        const fb = fbAll.find(x =>
+          (x.name?.en || '').toLowerCase().includes((p.name.en || '').toLowerCase().slice(0, 15)) ||
+          (p.name.en || '').toLowerCase().includes((x.name?.en || '').toLowerCase().slice(0, 15))
+        );
+        if (fb?.images?.length) p.images = fb.images;
+      }
+      return p;
+    });
+  } catch(e) {}
   return products.map(p => ({ params: { slug: p.id } }));
 }
-// 【路由参数】从URL中取 slug
+// 📝 从 URL 中提取 slug 参数
 const { slug } = Astro.params;
-// 【查找产品】根据 slug 匹配产品
+// 📝 根据 slug 查找对应产品
 const product = products.find(p => p.id === slug);
+// 🌐 语言标识
 const lang = 'zh';
-// 【404处理】找不到产品则重定向到产品列表
+// ⛔ 产品不存在 → 重定向到产品列表页
 if (!product) return Astro.redirect('/zh/products/');
 ---
 
-<BaseLayout lang="zh" title={`${product.name.zh} | 基督教信心服饰 | 活石`}>
-  <!-- 【数据注入】将产品数据以JSON注入页面，供内联脚本使用 -->
+<BaseLayout lang="zh" title={`${product.name.zh} | Christian Faith Apparel | Livingstone`}>
+  <!-- 📦 注入产品数据到页面（JSON），供下方 script 读取 -->
   <script type="application/json" id="__prodData" set:html={JSON.stringify({colors: product.colors, sizes: product.sizes, id: product.id, slug: product.id, name: product.name.zh, price: product.price, image: product.images?.[0]||''})}></script>
 
-  <!-- 【主容器】白色背景、全高 -->
+  <!-- 🎨 产品详情页主容器 -->
   <section class="pt-24 pb-16 px-4 sm:px-6 bg-white min-h-screen">
     <div class="max-w-5xl mx-auto">
-      <!-- 【返回链接】回到产品列表 -->
-      <a href="/zh/products/" class="inline-block text-sm text-charcoal-500 hover:text-charcoal-700 mb-6">&larr; 返回</a>
-      <!-- 【双栏布局】左图右详情 -->
+      <!-- ↩️ 返回产品列表链接 -->
+      <a href="/zh/products/" class="inline-block text-sm text-charcoal-500 hover:text-charcoal-700 mb-6">&larr; Return</a>
+      <!-- 🔲 双栏布局：左侧图片 · 右侧详情 -->
       <div class="flex flex-col md:flex-row gap-8">
-        <!-- 【左栏】产品图片区 -->
+        <!-- 📷 左侧：产品主图 + 缩略图列表 -->
         <div class="md:w-1/2">
-          <!-- 【主图】1:1正方形，居中显示 -->
+          <!-- 🖼️ 主图容器（正方形，米色背景） -->
           <div class="aspect-square bg-beige-50 rounded-2xl flex items-center justify-center overflow-hidden">
             {product.images && product.images.length ? (
               <img id="main-img" src={product.images[0]} alt="" class="w-full h-full object-contain" />
             ) : <span class="text-6xl">👕</span>}
           </div>
-          <!-- 【缩略图轮播】多图时显示，点击切换主图 -->
+          <!-- 🖼️ 缩略图列表（多图时显示） -->
           {product.images && product.images.length > 1 && (
             <div class="flex gap-2 mt-3 overflow-x-auto">
               {product.images.map((img, i) => (
@@ -61,108 +140,93 @@ if (!product) return Astro.redirect('/zh/products/');
             </div>
           )}
         </div>
-        <!-- 【右栏】产品信息区 -->
+
+        <!-- 📋 右侧：产品信息 + 购买操作 -->
         <div class="md:w-1/2">
-          <!-- 【产品名】衬线字体、加粗 -->
+          <!-- 📌 产品英文名称 -->
           <h1 class="font-serif text-2xl font-bold text-charcoal-800">{product.name.zh}</h1>
-          <!-- 【价格】红色加粗、美元 -->
+          <!-- 💰 价格（USD） -->
           <p class="text-2xl font-bold text-red-500 mt-2">${product.price} USD</p>
 
-          <!-- 【颜色选择器】动态生成（JS填充） -->
-          <div class="mt-5"><span class="text-xs font-semibold text-charcoal-500 uppercase tracking-wide">颜色</span>
+          <!-- 🎨 颜色选择器 -->
+          <div class="mt-5"><span class="text-xs font-semibold text-charcoal-500 uppercase tracking-wide">Color</span>
             <div class="flex gap-2 mt-1.5" id="color-picker"></div></div>
-          <!-- 【尺码选择器】动态生成（JS填充） -->
-          <div class="mt-4"><span class="text-xs font-semibold text-charcoal-500 uppercase tracking-wide">尺码</span>
+          <!-- 📏 尺码选择器 -->
+          <div class="mt-4"><span class="text-xs font-semibold text-charcoal-500 uppercase tracking-wide">Sizes</span>
             <div class="flex flex-wrap gap-1.5 mt-1.5" id="size-picker"></div></div>
-          <!-- 【数量选择器】+/−按钮 -->
+          <!-- 🔢 数量选择器 -->
           <div class="flex items-center gap-3 mt-4">
-            <span class="text-xs font-semibold text-charcoal-500 uppercase tracking-wide">数量</span>
+            <span class="text-xs font-semibold text-charcoal-500 uppercase tracking-wide">Qty</span>
             <button id="qty-minus" class="w-8 h-8 border border-charcoal-300 rounded-full text-sm flex items-center justify-center hover:bg-beige-50">−</button>
             <span id="qty-val" class="w-6 text-center font-bold">1</span>
             <button id="qty-plus" class="w-8 h-8 border border-charcoal-300 rounded-full text-sm flex items-center justify-center hover:bg-beige-50">+</button>
           </div>
-          <!-- 【按钮】定制设计 → 跳转到设计器页面 -->
-          <button id="btn-designer" onclick="location.href='/zh/designer/'" class="w-full mt-5 py-2.5 bg-[#c9a84c] hover:bg-[#b89336] text-white rounded-xl font-medium text-sm transition-colors">定制设计</button>
-          <!-- 【按钮】加入购物车 → 深色 -->
-          <button id="btn-add-cart" class="w-full mt-5 py-2.5 bg-charcoal-800 hover:bg-charcoal-700 text-white rounded-xl font-medium text-sm transition-colors">加入购物车</button>
-          <!-- 【按钮】立即购买 → 红色 -->
-          <button id="btn-buy-now" class="w-full mt-2 py-2.5 bg-red-500 hover:bg-red-600 text-white rounded-xl font-medium text-sm transition-colors">立即购买</button>
+          <!-- 🎨 跳转设计器按钮 -->
+          <button id="btn-designer" onclick="location.href='/en/designer/'" class="w-full mt-5 py-2.5 bg-[#c9a84c] hover:bg-[#b89336] text-white rounded-xl font-medium text-sm transition-colors">Custom Design</button>
+          <!-- 🛒 加入购物车按钮 -->
+          <button id="btn-add-cart" class="w-full mt-5 py-2.5 bg-charcoal-800 hover:bg-charcoal-700 text-white rounded-xl font-medium text-sm transition-colors">Add to Cart</button>
+          <!-- ⚡ 立即购买按钮（先加购物车再跳转） -->
+          <button id="btn-buy-now" class="w-full mt-2 py-2.5 bg-red-500 hover:bg-red-600 text-white rounded-xl font-medium text-sm transition-colors">Buy Now</button>
 
-          <!-- 【商品详情】动态渲染产品描述 -->
+          <!-- 📄 产品详情说明 -->
           <div class="mt-6 pt-6 border-t border-beige-200">
-            <h3 class="font-serif text-lg font-bold text-charcoal-800 mb-2">商品详情</h3>
-            <div class="text-sm text-charcoal-500 leading-relaxed whitespace-pre-line">{product.details.zh}</div>
+            <h3 class="font-serif text-lg font-bold text-charcoal-800 mb-2">Product Details</h3>
+            <div class="text-sm text-charcoal-500 leading-relaxed whitespace-pre-line">{product.details.en}</div>
           </div>
-          <!-- 【洗涤保养】静态文案 — 【修改】直接改此处的 <p> 内容 -->
+          <!-- 🧺 洗涤 & 护理说明 -->
           <div class="mt-4">
-            <h3 class="font-serif text-lg font-bold text-charcoal-800 mb-2">洗涤保养</h3>
-            <p class="text-sm text-charcoal-500">可手洗或机洗。不可漂白。不要长时间浸泡。洗涤液温度不超过45°C。</p>
-            <p class="text-sm text-charcoal-500 mt-1">平铺测量，误差2-4cm属正常现象。</p>
+            <h3 class="font-serif text-lg font-bold text-charcoal-800 mb-2">Wash &amp; Care</h3>
+            <p class="text-sm text-charcoal-500">Hand wash or machine wash cold. Do not bleach. Do not soak for long periods. Wash liquid temperature should not exceed 45°C.</p>
+            <p class="text-sm text-charcoal-500 mt-1">Measurements taken flat. Tolerance of 2-4cm is normal.</p>
           </div>
         </div>
       </div>
     </div>
   </section>
 
-  <!-- 【浮动购物车按钮】固定在右下角，显示购物车数量badge -->
-  <a href="/zh/cart/" id="cart-floating" class="fixed bottom-24 right-6 z-50 w-14 h-14 bg-charcoal-800 hover:bg-charcoal-700 rounded-full flex items-center justify-center shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-110">
+  <!-- 🛒 购物车浮动按钮（右下角固定） -->
+  <a href="/en/cart/" id="cart-floating" class="fixed bottom-24 right-6 z-50 w-14 h-14 bg-charcoal-800 hover:bg-charcoal-700 rounded-full flex items-center justify-center shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-110">
+    <!-- 🛒 购物车 SVG 图标 -->
     <svg class="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 100 4 2 2 0 000-4z"/></svg>
+    <!-- 🔴 购物车数量角标 -->
     <span id="cart-badge" class="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] w-5 h-5 rounded-full flex items-center justify-center font-bold hidden">0</span>
   </a>
 
-  <!--
-  ============================================================
-  📌 内联脚本：产品详情交互逻辑
-     - 解析 __prodData 注入数据
-     - 渲染颜色圆点选择器 + 尺码按钮
-     - 数量 +/− 控制
-     - 加入购物车（localStorage）
-     - 立即购买（加入购物车后跳转）
-     - 购物车 badge 数量更新
-  【修改】颜色名→色值映射：改 cm 对象
-  【修改】购物车存储结构：改 push 的 {id, name, price, ...}
-  【修改】badge 样式阈值：改 updateBadge 逻辑
-  ============================================================
-  -->
+  <!-- 🤖 产品详情交互逻辑（is:inline） -->
   <script is:inline>
     (function(){
+      // 📦 从注入的 JSON 加载产品数据
       var d = JSON.parse(document.getElementById('__prodData').textContent);
-      // 【状态变量】
       var DATA = d, COLORS = d.colors, SIZES = d.sizes, PID = d.id, PNAME = d.name, PPRICE = d.price;
-      var selColor = COLORS[0], selSize = SIZES[0], qty = 1; // 默认选中第一个颜色/尺码
-      // 【颜色映射】中文名 → CSS色值 — 【修改】新增颜色时在此添加
+      // 🎨 当前选中状态：默认第一个颜色 / 第一个尺码 / 数量 1
+      var selColor = COLORS[0], selSize = SIZES[0], qty = 1;
+      // 🎨 中文颜色名 → CSS 颜色映射表（用于颜色圆点的背景色）
       var cm = {'白色':'#f0f0f0','黑色':'#222','灰色':'#999','深蓝':'#1e3a5f','米白':'#f5f0e8','粉色':'#ffb6c1','杏色':'#f5deb3','红色':'#dc2626','浅灰色':'#d1d5db'};
 
-      // 【渲染】颜色选择器 → 彩色圆点
+      // 🎨 渲染颜色选择器
       document.getElementById('color-picker').innerHTML = COLORS.map(function(c,i){ return '<div class="w-8 h-8 rounded-full border-2 cursor-pointer transition-all hover:border-charcoal-500 '+(i===0?'border-charcoal-800':'border-charcoal-300')+'" style="background:'+(cm[c]||c)+'" data-color="'+c+'"></div>'; }).join('');
-      // 【渲染】尺码选择器 → 标签按钮
+      // 📏 渲染尺码选择器
       document.getElementById('size-picker').innerHTML = SIZES.map(function(s,i){ return '<div class="sz-btn px-3 py-1.5 border rounded-lg text-sm cursor-pointer font-medium transition-all hover:border-charcoal-500 '+(i===0?'bg-charcoal-800 text-white border-charcoal-800':'border-charcoal-300 text-charcoal-600')+'" data-size="'+s+'">'+s+'</div>'; }).join('');
 
-      // 【交互】颜色选择 — 点击更新 selColor + 切换选中样式
+      // 🎨 颜色点击 → 更新选中状态
       var cp = document.getElementById('color-picker');
       cp.querySelectorAll('div').forEach(function(el){ el.onclick = function(){ selColor = el.getAttribute('data-color'); cp.querySelectorAll('div').forEach(function(e){ e.classList.toggle('border-charcoal-800', e.getAttribute('data-color')===selColor); }); }; });
       
-      // 【交互】尺码选择 — 点击更新 selSize + 切换选中样式
+      // 📏 尺码点击 → 更新选中状态
       document.querySelectorAll('.sz-btn').forEach(function(el){ el.onclick = function(){ selSize = el.getAttribute('data-size'); document.querySelectorAll('.sz-btn').forEach(function(e){ e.classList.remove('bg-charcoal-800','text-white','border-charcoal-800'); e.classList.add('border-charcoal-300','text-charcoal-600'); }); el.classList.add('bg-charcoal-800','text-white','border-charcoal-800'); el.classList.remove('border-charcoal-300','text-charcoal-600'); }; });
 
-      // 【数量】+/− 按钮
+      // ➕➖ 数量加减
       document.getElementById('qty-plus').onclick = function(){ qty++; document.getElementById('qty-val').textContent = qty; };
       document.getElementById('qty-minus').onclick = function(){ qty = Math.max(1, qty-1); document.getElementById('qty-val').textContent = qty; };
 
-      // 【购物车】加入购物车 + 立即购买
+      // 🛒 加入购物车
       document.getElementById('btn-add-cart').onclick = addToCart;
-      document.getElementById('btn-buy-now').onclick = function(){ addToCart(); location.href = '/zh/cart/'; };
+      // ⚡ 立即购买 → 先加入购物车，再跳转到购物车页
+      document.getElementById('btn-buy-now').onclick = function(){ addToCart(); location.href = '/en/cart/'; };
 
-      // 【核心】添加商品到 localStorage 购物车
-      function addToCart(){
-        var c = JSON.parse(localStorage.getItem('ps-cart')||'[]'),
-            x = c.find(function(i){ return i.id===PID && i.color===selColor && i.size===selSize; });
-        if(x) x.quantity += qty; // 已存在→叠加数量
-        else c.push({id:PID,slug:PID,name:PNAME,price:PPRICE,color:selColor,size:selSize,quantity:qty,image:DATA.image});
-        localStorage.setItem('ps-cart',JSON.stringify(c));
-        updateBadge();
-      }
-      // 【badge】更新浮动购物车图标上的数量
+      // 🛒 购物车逻辑：localStorage key = "ps-cart"
+      function addToCart(){ var c = JSON.parse(localStorage.getItem('ps-cart')||'[]'), x = c.find(function(i){ return i.id===PID && i.color===selColor && i.size===selSize; }); if(x) x.quantity += qty; else c.push({id:PID,slug:PID,name:PNAME,price:PPRICE,color:selColor,size:selSize,quantity:qty,image:DATA.image}); localStorage.setItem('ps-cart',JSON.stringify(c)); updateBadge(); }
+      // 🔴 更新购物车角标数量
       function updateBadge(){ var c = JSON.parse(localStorage.getItem('ps-cart')||'[]'), n = c.reduce(function(s,i){ return s+i.quantity; },0), b = document.getElementById('cart-badge'); if(n>0){ b.textContent = n; b.classList.remove('hidden'); } else b.classList.add('hidden'); }
       updateBadge();
     })();

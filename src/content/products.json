@@ -3,13 +3,48 @@
     "id": "prod-2",
     "category": "apparel",
     "name": {
-      "en": "Men's Crew Neck T-Shirt",
-      "zh": "180g男士圆领短袖T恤"
+      "en": "180g Men's Crew Neck T-Shirt — White",
+      "zh": "180g男士圆领短袖T恤 — 白色"
     },
     "price": 10.0,
     "currency": "USD",
     "colors": [
-      "白色",
+      "白色"
+    ],
+    "sizes": [
+      "S",
+      "M",
+      "L",
+      "XL",
+      "2XL",
+      "3XL"
+    ],
+    "weight": "100%棉（200gsm）",
+    "material": {
+      "en": "100%棉（200gsm）",
+      "zh": "100%棉（200gsm）"
+    },
+    "description": {
+      "en": "[Design] Area print on front\n[Material] 100% Cotton (200gsm)\n[Performance] Soft, comfortable, slight stretch\n[Scenes] Daily, home, travel, fitness\n[Target] Men\n[Wash] Hand/machine wash, ≤45°C, no bleach",
+      "zh": "【设计说明】前面区域印花\n【材质说明】100%棉（200gsm）\n【产品性能】手感柔软舒适，微弹，版型好穿又好搭，舒适又时尚，简约实用，不易缩水，耐穿，时尚潮流\n【适用场景】日常，居家，旅行，健身运动等\n【适用人群】男士\n【洗涤说明】可手洗可机洗，不要长时间浸泡，不可漂白，洗涤液温度不能超过45ºC。"
+    },
+    "images": [],
+    "stock": 200,
+    "details": {
+      "en": "[Design] Area print on front\n[Material] 100% Cotton (200gsm)\n[Performance] Soft, comfortable, slight stretch\n[Scenes] Daily, home, travel, fitness\n[Target] Men\n[Wash] Hand/machine wash, ≤45°C, no bleach",
+      "zh": "【设计说明】前面区域印花\n【材质说明】100%棉（200gsm）\n【产品性能】手感柔软舒适，微弹，版型好穿又好搭，舒适又时尚，简约实用，不易缩水，耐穿，时尚潮流\n【适用场景】日常，居家，旅行，健身运动等\n【适用人群】男士\n【洗涤说明】可手洗可机洗，不要长时间浸泡，不可漂白，洗涤液温度不能超过45ºC。"
+    }
+  },
+  {
+    "id": "prod-3",
+    "category": "apparel",
+    "name": {
+      "en": "180g Men's Crew Neck T-Shirt — Black",
+      "zh": "180g男士圆领短袖T恤 — 黑色"
+    },
+    "price": 10.0,
+    "currency": "USD",
+    "colors": [
       "黑色"
     ],
     "sizes": [
@@ -29,19 +64,7 @@
       "en": "[Design] Area print on front\n[Material] 100% Cotton (200gsm)\n[Performance] Soft, comfortable, slight stretch\n[Scenes] Daily, home, travel, fitness\n[Target] Men\n[Wash] Hand/machine wash, ≤45°C, no bleach",
       "zh": "【设计说明】前面区域印花\n【材质说明】100%棉（200gsm）\n【产品性能】手感柔软舒适，微弹，版型好穿又好搭，舒适又时尚，简约实用，不易缩水，耐穿，时尚潮流\n【适用场景】日常，居家，旅行，健身运动等\n【适用人群】男士\n【洗涤说明】可手洗可机洗，不要长时间浸泡，不可漂白，洗涤液温度不能超过45ºC。"
     },
-    "images": [
-      "/images/products/180g-tee/962802505245275392_白色_3.jpeg",
-      "/images/products/180g-tee/962802505245275392_白色_7.jpeg",
-      "/images/products/180g-tee/962802505245275392_白色_5.jpeg",
-      "/images/products/180g-tee/962802505245275392_白色_8.png",
-      "/images/products/180g-tee/962802505245275392_白色_9.png",
-      "/images/products/180g-tee/962802505245275392_黑色_4.jpeg",
-      "/images/products/180g-tee/962802505245275392_黑色_6.jpeg",
-      "/images/products/180g-tee/962802505245275392_黑色_8.png",
-      "/images/products/180g-tee/962802505245275392_黑色_4.jpeg",
-      "/images/products/180g-tee/962802505245275392_黑色_6.jpeg",
-      "/images/products/180g-tee/962802505245275392_黑色_8.png"
-    ],
+    "images": [],
     "stock": 200,
     "details": {
       "en": "[Design] Area print on front\n[Material] 100% Cotton (200gsm)\n[Performance] Soft, comfortable, slight stretch\n[Scenes] Daily, home, travel, fitness\n[Target] Men\n[Wash] Hand/machine wash, ≤45°C, no bleach",
@@ -49,7 +72,7 @@
     }
   },
   {
-    "id": "prod-4",
+    "id": "prod-5",
     "category": "apparel",
     "name": {
       "en": "180g Children's Pure Cotton Short-Sleeve T-Shirt",
@@ -104,74 +127,48 @@
     }
   },
   {
-    "id": "prod-7",
+    "id": "prod-4",
     "category": "apparel",
     "name": {
-      "en": "Mens Polyester Hooded Sweatshirt",
+      "en": "Men's Polyester Hooded Sweatshirt",
       "zh": "男士涤纶连帽卫衣"
     },
-    "price": 15.0,
+    "price": 10.0,
     "currency": "USD",
     "colors": [
-      "黑色",
       "白色",
-      "红色",
-      "浅灰色"
+      "黑色",
+      "杏色"
     ],
     "sizes": [
       "S",
       "M",
       "L",
       "XL",
-      "2XL",
-      "3XL",
-      "4Xl",
-      "5XL"
+      "XXL",
+      "XXXL",
+      "XXXXL",
+      "XXXXXL"
     ],
-    "weight": "100%涤纶",
+    "weight": "100%涤纶 (260g/m²)",
     "material": {
-      "en": "100%涤纶",
-      "zh": "100%涤纶"
+      "en": "100%涤纶 (260g/m²)",
+      "zh": "100%涤纶 (260g/m²)"
     },
     "description": {
-      "en": "test",
-      "zh": "测试"
+      "en": "Men's 260G polyester hooded sweatshirt. Loose fit with white ink heat transfer printing. All seasons. Soft, breathable, skin-friendly.",
+      "zh": "男士260g涤纶连帽卫衣。宽松版型，白墨烫画工艺，四季穿着。面料柔软透气亲肤。日常休闲、运动健身、旅游出行。"
     },
     "images": [
-      "/images/products/卫衣/Z5FVT7SN7W_黑色_1.jpg",
-      "/images/products/卫衣/Z5FVT7SN7W_黑色_2.jpg",
-      "/images/products/卫衣/Z5FVT7SN7W_黑色_3.jpg",
-      "/images/products/卫衣/Z5FVT7SN7W_黑色_4.jpg",
-      "/images/products/卫衣/Z5FVT7SN7W_黑色_5.jpg",
-      "/images/products/卫衣/Z5FVT7SN7W_黑色_6.jpg",
-      "/images/products/卫衣/Z5FVT7SN7W_黑色_8.jpg",
-      "/images/products/卫衣/Z5FVT7SN7W_白色_10.jpg",
-      "/images/products/卫衣/Z5FVT7SN7W_白色_11.jpg",
-      "/images/products/卫衣/Z5FVT7SN7W_白色_12.jpg",
-      "/images/products/卫衣/Z5FVT7SN7W_白色_13.jpg",
-      "/images/products/卫衣/Z5FVT7SN7W_白色_14.jpg",
-      "/images/products/卫衣/Z5FVT7SN7W_白色_16.jpg",
-      "/images/products/卫衣/Z5FVT7SN7W_白色_9.jpg",
-      "/images/products/卫衣/Z5FVT7SN7W_红色_17.jpg",
-      "/images/products/卫衣/Z5FVT7SN7W_红色_18.jpg",
-      "/images/products/卫衣/Z5FVT7SN7W_红色_19.jpg",
-      "/images/products/卫衣/Z5FVT7SN7W_红色_20.jpg",
-      "/images/products/卫衣/Z5FVT7SN7W_红色_21.jpg",
-      "/images/products/卫衣/Z5FVT7SN7W_红色_22.jpg",
-      "/images/products/卫衣/Z5FVT7SN7W_红色_24.jpg",
-      "/images/products/卫衣/Z5FVT7SN7W_浅灰色_25.jpg",
-      "/images/products/卫衣/Z5FVT7SN7W_浅灰色_26.jpg",
-      "/images/products/卫衣/Z5FVT7SN7W_浅灰色_27.jpg",
-      "/images/products/卫衣/Z5FVT7SN7W_浅灰色_28.jpg",
-      "/images/products/卫衣/Z5FVT7SN7W_浅灰色_29.jpg",
-      "/images/products/卫衣/Z5FVT7SN7W_浅灰色_30.jpg",
-      "/images/products/卫衣/Z5FVT7SN7W_浅灰色_32.jpg",
-      "/images/products/卫衣/Z5FVT7SN7W_尺寸表.jpg"
+      "/images/products/卫衣/U8009_01_main.jpg",
+      "/images/products/卫衣/U8009_02_colors_sizes.jpg",
+      "/images/products/卫衣/U8009_03_details.jpg",
+      "/images/products/卫衣/U8009_04_top.jpg"
     ],
     "stock": 200,
     "details": {
-      "en": "test",
-      "zh": "测试"
+      "en": "Men's 260G polyester hooded sweatshirt. Loose fit with white ink heat transfer printing. All seasons. Soft, breathable, skin-friendly.",
+      "zh": "男士260g涤纶连帽卫衣。宽松版型，白墨烫画工艺，四季穿着。面料柔软透气亲肤。日常休闲、运动健身、旅游出行。"
     }
   }
 ]

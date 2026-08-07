@@ -1,0 +1,226 @@
+---
+/*
+ * ============================================================================
+ * 文件位置: src/components/ProductCarousel.astro
+ * 作用: 产品轮播/展示组件，以网格形式展示产品卡片，支持分类筛选、颜色/尺码选择、数量调整、加入购物车
+ * 被谁调用: 可能被首页 index.astro 或其他页面引入
+ * 修改指南:
+ *   - 【修改】产品数据: 编辑 src/content/products.json
+ *   - 【修改】分类名称: 编辑 labels 对象中的 en/zh 和 cat-btn 的 data-cat 值
+ *   - 【修改】颜色映射: 编辑 JS 中 colorMap 对象，添加新颜色
+ *   - 【修改】购物车存储: localStorage key = 'ps-cart'，修改需同步所有组件
+ *   - 【修改】WhatsApp 号: 编辑 JS 中 WHATSAPP 变量
+ *   - 【修改】分类按钮样式: 编辑 carousel-cat-btn 的 class（激活/非激活态）
+ *   - 【修改】产品卡片 hover 效果: 编辑 product-card-item 的 hover:shadow-2xl/hover:-translate-y-4
+ *   - 注意: 颜色选择、尺码选择、数量调整的状态不在服务端保存，刷新会丢失
+ * ============================================================================
+ */
+
+// 导入所有产品数据
+import products from '../content/products.json';
+
+// Props：接收语言参数
+interface Props { lang: 'en' | 'zh' }
+const { lang } = Astro.props;
+
+// 【修改】多语言标签（分类 + 产品卡片 UI 文案）
+const labels = {
+  en: { sizes: 'Sizes', weight: 'Weight', stock: 'In Stock', outOfStock: 'Out of Stock', addToCart: 'Cart', all: 'All', clothing: 'Clothing', jewelry: 'Jewelry' },
+  zh: { sizes: '尺码', weight: '克重', stock: '库存', outOfStock: '已售罄', addToCart: '购物车', all: '全部', clothing: '服装', jewelry: '首饰' },
+};
+const t = labels[lang];
+---
+
+<!-- ====== 产品区域 ====== -->
+<section id="products" class="py-24 lg:py-32 px-4 sm:px-6 bg-white">
+  <div class="max-w-5xl mx-auto">
+
+    <!-- ====== 分类筛选按钮（Pills） ====== -->
+    <!-- 【修改】按钮样式: rounded-full（胶囊形）, 激活: bg-charcoal-800 text-white -->
+    <!-- 【修改】data-cat: 'all' | 'apparel' | 'accessories'，需与 products.json 中 category 字段一致 -->
+    <div class="flex gap-3 mb-8">
+      <!-- "全部"按钮（默认激活） -->
+      <button class="carousel-cat-btn px-5 py-2 rounded-full text-sm font-medium transition-colors bg-charcoal-800 text-white" data-cat="all">{t.all}</button>
+      <!-- "服装"按钮 -->
+      <button class="carousel-cat-btn px-5 py-2 rounded-full text-sm font-medium transition-colors border border-charcoal-300 text-charcoal-500 hover:border-charcoal-500" data-cat="apparel">{t.clothing}</button>
+      <!-- "首饰"按钮 -->
+      <button class="carousel-cat-btn px-5 py-2 rounded-full text-sm font-medium transition-colors border border-charcoal-300 text-charcoal-500 hover:border-charcoal-500" data-cat="accessories">{t.jewelry}</button>
+    </div>
+
+    <!-- ====== 产品网格 ====== -->
+    <!-- 【修改】列数: grid-cols-2 sm:3 lg:4 -->
+    <div id="product-grid" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+      {products.map(p => (
+        <a href={`/${lang}/products/${p.id}/`} class="product-card-item block bg-white rounded-xl border border-beige-200 overflow-hidden cursor-pointer hover:shadow-2xl transition-all duration-500 hover:-translate-y-4 hover:scale-[1.02]" data-category={p.category} data-id={p.id}>
+
+          <div class="aspect-square bg-beige-100 flex items-center justify-center relative">
+            {p.images && p.images[0] ? (
+              <img src={p.images[0]} alt="" class="w-full h-full object-cover" loading="lazy" />
+            ) : (
+              <span class="text-3xl">👕</span>
+            )}
+            {p.stock === 0 && <div class="absolute inset-0 bg-black/20 flex items-center justify-center"><span class="bg-red-500 text-white text-xs px-2 py-0.5 rounded">{t.outOfStock}</span></div>}
+          </div>
+
+          <div class="p-4 flex flex-col gap-1.5">
+            <h3 class="font-serif font-bold text-xs text-charcoal-800 leading-tight line-clamp-2 flex-shrink-0">{p.name[lang]}</h3>
+
+            <div class="flex items-center gap-2 flex-shrink-0">
+              <span class="font-bold text-sm text-charcoal-700">${p.price}</span>
+              <div class="flex items-center gap-1">
+                <button class="carousel-qty-btn w-6 h-6 sm:w-5 sm:h-5 border border-charcoal-300 rounded-full flex items-center justify-center text-xs sm:text-[10px] text-charcoal-500 hover:bg-charcoal-100 leading-none" data-id={p.id} data-action="minus">−</button>
+                <span class="carousel-qty-val text-xs text-charcoal-700 font-medium min-w-[16px] text-center" data-id={p.id}>1</span>
+                <button class="carousel-qty-btn w-6 h-6 sm:w-5 sm:h-5 border border-charcoal-300 rounded-full flex items-center justify-center text-xs sm:text-[10px] text-charcoal-500 hover:bg-charcoal-100 leading-none" data-id={p.id} data-action="plus">+</button>
+              </div>
+            </div>
+
+            <div class="flex flex-wrap gap-1 flex-shrink-0" data-id={p.id} style="min-height:20px">
+              {p.sizes.map((s, i) => <span class="carousel-sz-opt text-[9px] border rounded px-1 py-0 whitespace-nowrap cursor-pointer transition-colors" style=`border-color:${i===0?'#333':'#d1d5db'};color:${i===0?'#1f2937':'#6b7280'}` data-id={p.id} data-size={s}>{s}</span>)}
+            </div>
+
+            <div class="flex items-center gap-1.5 flex-wrap" data-id={p.id}>
+              <div class="flex gap-1.5">
+              {p.colors.map((c, i) => {
+                // 【修改】颜色映射表：中文颜色名 → 十六进制色值，添加新颜色在此扩展
+                const colorMap = { '白色': '#f0f0f0', '黑色': '#222', '灰色': '#999', '深蓝': '#1e3a5f', '米白': '#f5f0e8', '粉色': '#ffb6c1', '杏色': '#f5deb3', '红色': '#dc2626', '浅灰色': '#d1d5db' };
+                const bg = colorMap[c] || c;
+                return <span class="carousel-color-dot inline-block w-5 h-5 sm:w-4 sm:h-4 rounded-full cursor-pointer border-2 transition-colors" style={`background:${bg};border-color:${i===0?'#333':'#d1d5db'}`} data-id={p.id} data-color={c} title={c}></span>;
+              })}
+              </div>
+            <button class="carousel-add-cart-btn py-1 px-3 ml-auto bg-charcoal-800 hover:bg-charcoal-700 text-white rounded-lg text-[10px] font-medium transition-colors flex-shrink-0" data-id={p.id}>{t.addToCart}</button>
+            </div>
+          </div>
+        </a>
+      ))}
+    </div>
+  </div>
+</section>
+
+<!-- ====== JSON 数据注入（供下面内联 JS 读取） ====== -->
+<script type="application/json" id="__carouselLabels" set:html={JSON.stringify(labels[lang])}></script>
+<script type="application/json" id="__carouselProducts" set:html={JSON.stringify(products)}></script>
+
+<!-- ====== 内联 JS：产品交互逻辑 ====== -->
+<script is:inline>
+  (function() {
+    // 从注入的 JSON 中读取标签和产品数据
+    var LABELS = JSON.parse(document.getElementById('__carouselLabels').textContent);
+    var PRODUCTS = JSON.parse(document.getElementById('__carouselProducts').textContent);
+    var WHATSAPP = '85297094785'; // 【修改】WhatsApp 号（用于"立即下单"跳转）
+    var activeCat = 'all';        // 当前激活的分类
+
+    // 从 localStorage 加载购物车数据
+    var cartItems = [];
+    try { var s = localStorage.getItem('ps-cart'); if (s) cartItems = JSON.parse(s); } catch(e) {}
+
+    // 更新分类按钮文案（多语言）
+    document.querySelectorAll('.carousel-cat-btn').forEach(function(b){
+      if (b.dataset.cat === 'all') b.textContent = LABELS.all;
+      if (b.dataset.cat === 'apparel') b.textContent = LABELS.clothing;
+      if (b.dataset.cat === 'accessories') b.textContent = LABELS.jewelry;
+    });
+
+    // ====== 分类筛选逻辑 ======
+    document.querySelectorAll('.carousel-cat-btn').forEach(function(btn) {
+      btn.onclick = function() {
+        activeCat = btn.dataset.cat;
+        // 更新按钮样式：激活态 = 深色背景 + 白色文字
+        document.querySelectorAll('.carousel-cat-btn').forEach(function(b) {
+          b.classList.toggle('bg-charcoal-800', b.dataset.cat === activeCat);
+          b.classList.toggle('text-white', b.dataset.cat === activeCat);
+        });
+        // 显示/隐藏对应分类的产品卡片
+        document.querySelectorAll('#product-grid > .product-card-item').forEach(function(card) {
+          card.style.display = (activeCat === 'all' || card.dataset.category === activeCat) ? '' : 'none';
+        });
+      };
+    });
+
+    // 保存购物车到 localStorage
+    function saveCart() { localStorage.setItem('ps-cart', JSON.stringify(cartItems)); }
+
+    // ====== 数量按钮 ======
+    document.querySelectorAll('.carousel-qty-btn').forEach(function(btn) {
+      btn.addEventListener('click', function(e) {
+        e.stopPropagation();  // 阻止冒泡到卡片链接
+        e.preventDefault();
+        var id = btn.dataset.id;
+        var action = btn.dataset.action;
+        var valEl = document.querySelector('.carousel-qty-val[data-id="' + id + '"]');
+        if (!valEl) return;
+        var val = parseInt(valEl.textContent) || 1;
+        if (action === 'plus') val++;
+        else if (action === 'minus') val = Math.max(1, val - 1); // 最少为 1
+        valEl.textContent = val;
+      });
+    });
+
+    // ====== 颜色选择 ======
+    document.querySelectorAll('.carousel-color-dot').forEach(function(dot) {
+      dot.addEventListener('click', function(e) {
+        e.stopPropagation();
+        e.preventDefault();
+        var pid = dot.dataset.id;
+        var color = dot.dataset.color;
+        // 同一产品的所有颜色圆点：选中高亮，其他变灰
+        document.querySelectorAll('.carousel-color-dot[data-id="' + pid + '"]').forEach(function(d) {
+          d.style.borderColor = d.dataset.color === color ? '#333' : '#d1d5db';
+        });
+      });
+    });
+
+    // ====== 尺码选择 ======
+    document.querySelectorAll('.carousel-sz-opt').forEach(function(el) {
+      el.addEventListener('click', function(e) {
+        e.stopPropagation();
+        e.preventDefault();
+        var pid = el.dataset.id;
+        var size = el.dataset.size;
+        // 同一产品的所有尺码标签：选中变深色，其他变浅色
+        document.querySelectorAll('.carousel-sz-opt[data-id="' + pid + '"]').forEach(function(s) {
+          s.style.borderColor = s.dataset.size === size ? '#333' : '#d1d5db';
+          s.style.color = s.dataset.size === size ? '#1f2937' : '#6b7280';
+        });
+      });
+    });
+
+    // ====== 加入购物车按钮 ======
+    document.querySelectorAll('.carousel-add-cart-btn').forEach(function(btn) {
+      btn.addEventListener('click', function(e) {
+        e.stopPropagation();
+        e.preventDefault();
+        var id = btn.dataset.id;
+        var prod = PRODUCTS.find(function(p) { return p.id === id; });
+        if (!prod) return;
+
+        // 获取当前选中的颜色
+        var colorDots = document.querySelectorAll('.carousel-color-dot[data-id="' + id + '"]');
+        var selColor = '';
+        colorDots.forEach(function(d) { if (d.style.borderColor === 'rgb(51, 51, 51)' || d.style.borderColor === '#333') selColor = d.dataset.color; });
+        if (!selColor) selColor = prod.colors[0]; // 默认第一个颜色
+
+        // 获取当前选中的尺码
+        var szOpts = document.querySelectorAll('.carousel-sz-opt[data-id="' + id + '"]');
+        var selSize = '';
+        szOpts.forEach(function(s) { if (s.style.borderColor === 'rgb(51, 51, 51)' || s.style.borderColor === '#333') selSize = s.dataset.size; });
+        if (!selSize) selSize = prod.sizes[0]; // 默认第一个尺码
+
+        // 获取当前数量
+        var qtyEl = document.querySelector('.carousel-qty-val[data-id="' + id + '"]');
+        var qty = qtyEl ? parseInt(qtyEl.textContent) || 1 : 1;
+
+        // 查找购物车中是否已有相同商品（同 id + 同色 + 同尺码），有则累加数量，无则新增
+        var existing = cartItems.find(function(i) { return i.id === id && i.size === selSize && i.color === selColor; });
+        if (existing) existing.quantity += qty;
+        else cartItems.push({ id: id, name: { en: prod.name.en, zh: prod.name.zh }, image: prod.images[0], price: prod.price, size: selSize, color: selColor, quantity: qty });
+
+        saveCart();
+
+        // 视觉反馈：按钮短暂变绿 + 显示 ✓
+        btn.textContent = '✓ ' + LABELS.addToCart;
+        btn.classList.add('bg-green-600');
+        setTimeout(function() { btn.textContent = LABELS.addToCart; btn.classList.remove('bg-green-600'); }, 1200); // 【修改】反馈时长: 1200ms
+      });
+    });
+  })();
+</script>
