@@ -22,8 +22,8 @@ let products = [];
 try {
   const res = await fetch('https://pastorjeffnchina.com/api/products');
   if (res.ok) {
-    const apiData = await res.json();
-    products = apiData
+    const apiData = (await res.json()).data || [];
+    products = (Array.isArray(apiData) ? apiData : [])
       .filter(p => p.status === 1 && p.deleted === 0)
       .map(p => {
         const parseArr = (s) => { try { return JSON.parse(s || '[]'); } catch(e) { return []; } };

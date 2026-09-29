@@ -4,7 +4,7 @@
 🌐 路由: /zh/testimonies/:id/    (动态路由)
 🎯 作用: 见证详情页 — 展示单篇见证的完整内容（标题/作者/日期/正文）
 📝 修改指南:
-   【修改】见证数据：编辑 src/content/testimonies.json
+   【修改】见证数据：编辑 src/features/testimonies/testimonies.json
    【修改】内容分割：改 t.content.zh.split('\n\n') 分隔符
    【修改】返回链接文案：改 "返回见证" 文本
    【修改】文章卡片样式：改 article 的 Tailwind class
@@ -18,9 +18,9 @@ import BaseLayout from '../../../layouts/BaseLayout.astro';   // 全局布局
 // ⚡ 构建时从 API 获取，供模板渲染
 let testimonies = [];
 try {
-  const res = await fetch('http://localhost:5200/api/testimonies');
+  const res = await fetch('https://pastorjeffnchina.com/api/testimonies');
   if (res.ok) {
-    testimonies = (await res.json())
+    testimonies = ((await res.json()).data || [])
       .filter(t => t.published !== 0)
       .map(t => ({
         id: t.id,
@@ -33,16 +33,16 @@ try {
   }
 } catch(e) {}
 if (!testimonies.length) {
-  testimonies = (await import('../../../content/testimonies.json')).default;
+  testimonies = (await import('../../../features/testimonies/testimonies.json')).default;
 }  // 见证数据
 
 // 【静态路径】为每篇见证预生成页面（SSG）
 export async function getStaticPaths() {
   let testimonies = [];
   try {
-    const res = await fetch('http://localhost:5200/api/testimonies');
+    const res = await fetch('https://pastorjeffnchina.com/api/testimonies');
     if (res.ok) {
-      testimonies = (await res.json())
+      testimonies = ((await res.json()).data || [])
         .filter(t => t.published !== 0)
         .map(t => ({
           id: t.id,
@@ -55,7 +55,7 @@ export async function getStaticPaths() {
     }
   } catch(e) {}
   if (!testimonies.length) {
-    testimonies = (await import('../../../content/testimonies.json')).default;
+    testimonies = (await import('../../../features/testimonies/testimonies.json')).default;
   }
   return testimonies.map(t => ({ params: { id: String(t.id) } }));
 }
@@ -113,3 +113,11 @@ if (!t) return Astro.redirect('/zh/testimonies/');
     </div>
   </section>
 </BaseLayout>
+
+<script is:inline>
+(function(){try{
+  fetch("/api/testimonies").then(function(r){return r.json()}).then(function(d){
+    if(d.ok&&d.data) window.__liveTestimonies=d.data;
+  });
+}catch(e){}})();
+</script>

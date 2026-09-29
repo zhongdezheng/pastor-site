@@ -2,9 +2,9 @@
 /**
  * 📍 文件位置: src/pages/en/testimonies/index.astro
  * 🌐 路由: /en/testimonies/
- * 🎯 作用: 英文见证列表页——从 content/testimonies.json 读取全部见证，以编号列表形式展示，点击跳转详情
+ * 🎯 作用: 英文见证列表页——从 features/testimonies/testimonies.json 读取全部见证，以编号列表形式展示，点击跳转详情
  * 🔧 修改指南:
- *   - 修改见证内容：编辑 content/testimonies.json
+ *   - 修改见证内容：编辑 features/testimonies/testimonies.json
  *   - 修改列表样式：调整下方 <a> 标签的 Tailwind 类名
  *   - 编号为自然序号 (idx + 1)，非数据库 ID
  *   - 见证日期格式：JSON 中 date 字段直接渲染
@@ -17,9 +17,9 @@ import BaseLayout from '../../../layouts/BaseLayout.astro';
 // ⚡ 构建时从管理后台 API 获取见证，失败则回退本地 JSON
 let testimonies = [];
 try {
-  const res = await fetch('http://localhost:5200/api/testimonies');
+  const res = await fetch('https://pastorjeffnchina.com/api/testimonies');
   if (res.ok) {
-    testimonies = (await res.json())
+    testimonies = ((await res.json()).data || [])
       .filter(t => t.published !== 0)
       .map(t => ({
         id: t.id,
@@ -32,7 +32,7 @@ try {
   }
 } catch(e) {}
 if (!testimonies.length) {
-  testimonies = (await import('../../../content/testimonies.json')).default;
+  testimonies = (await import('../../../features/testimonies/testimonies.json')).default;
 }
 ---
 
@@ -54,3 +54,24 @@ if (!testimonies.length) {
       </div>
     </section>
 </BaseLayout>
+
+<script is:inline>
+(function(){try{
+  fetch("/api/testimonies").then(function(r){return r.json()}).then(function(d){
+    if(!d.ok||!d.data)return; var items=d.data;
+    var list=document.querySelector(".max-w-3xl, .testimonies-list");
+    if(!list) return;
+    var lang=document.documentElement.lang==="zh"?"zh":"en";
+    var links=list.querySelectorAll("a[href*=\"/testimonies/\"]");
+    items.forEach(function(t,i){
+      var a=links[i]; if(!a) return;
+      var tl=t["title_"+lang]||t.title||"";
+      var au=t.author||"";
+      var dt=t.date||"";
+      a.innerHTML='<p class="text-charcoal-800 text-sm sm:text-base text-left"><span class="text-charcoal-500 font-medium">'+(i+1)+'.</span> <span class="font-serif font-bold">'+tl+'</span><span class="text-charcoal-500 mx-1">\u2014\u2014</span><span class="text-charcoal-400">'+dt+' \u00b7 '+au+'</span></p>';
+      a.href="/"+lang+"/testimonies/"+t.id+"/";
+    });
+  });
+  });
+}catch(e){}})();
+</script>
