@@ -4,7 +4,7 @@
  * 🌐 路由: /zh/products/:slug/（动态路由，slug = 产品 id，如 tee-180g）
  * 🎯 作用: 英文产品详情页——展示产品图片、颜色/尺码选择、数量、加入购物车/立即购买、设计器入口
  * 🔧 修改指南:
- *   - 修改产品数据：编辑 content/products.json
+ *   - 修改产品数据：编辑 features/products/products.json
  *   - 修改静态路径：getStaticPaths() 自动从 products.json 生成所有产品页面
  *   - 修改默认价格/货币：搜索 $ 符号替换为其他货币符号
  *   - 颜色映射表：cm 对象中维护中文颜色名 → CSS 颜色的映射
@@ -19,13 +19,13 @@ import BaseLayout from '../../../../layouts/BaseLayout.astro';
 let products = [];
 const parseArr = (s) => { try { return JSON.parse(s || '[]'); } catch(e) { return []; } };
 try {
-  const res = await fetch('http://localhost:5200/api/products');
+  const res = await fetch('https://pastorjeffnchina.com/api/products');
   if (res.ok) {
     products = (await res.json())
       .filter(p => p.status === 1 && p.deleted === 0)
       .map(p => ({
         id: String(p.id),
-        category: p.category_id === 1 ? 'apparel' : 'accessories',
+        category: ({1:'apparel',2:'accessories',3:'leather'})[p.category_id] || 'accessories',
         name: { en: p.name_en || '', zh: p.name_zh || '' },
         price: p.price || 0,
         currency: 'USD',
@@ -41,14 +41,14 @@ try {
   }
 } catch(e) {}
 if (!products.length) {
-  products = (await import('../../../../content/products.json')).default;
+  products = (await import('../../../../features/products/products.json')).default;
 }
 // 补充 API 中缺失的产品图片（按名称匹配）
 try {
   const colorMap = { white:'白色', black:'黑色', red:'红色', blue:'蓝色', green:'绿色',
     yellow:'黄色', pink:'粉色', grey:'浅灰色', gray:'浅灰色', purple:'紫色', orange:'橙色', brown:'棕色' };
   const getColor = (name) => { for (const [en, zh] of Object.entries(colorMap)) { if (name.toLowerCase().includes(en)) return zh; } return null; };
-  const fbAll = (await import('../../../../content/products.json')).default;
+  const fbAll = (await import('../../../../features/products/products.json')).default;
   products = products.map(p => {
     if (!p.images || !p.images.length) {
       const fb = fbAll.find(x =>
@@ -70,7 +70,7 @@ export async function getStaticPaths() {
   let products = [];
   const parseArr = (s) => { try { return JSON.parse(s || '[]'); } catch(e) { return []; } };
   try {
-    const res = await fetch('http://localhost:5200/api/products');
+    const res = await fetch('https://pastorjeffnchina.com/api/products');
     if (res.ok) {
       products = (await res.json())
         .filter(p => p.status === 1 && p.deleted === 0)
@@ -82,11 +82,11 @@ export async function getStaticPaths() {
     }
   } catch(e) {}
   if (!products.length) {
-    products = (await import('../../../../content/products.json')).default;
+    products = (await import('../../../../features/products/products.json')).default;
   }
   // 补充 API 缺失的图片（按名称匹配）
   try {
-    const fbAll = (await import('../../../../content/products.json')).default;
+    const fbAll = (await import('../../../../features/products/products.json')).default;
     products = products.map(p => {
       if (!p.images || !p.images.length) {
         const fb = fbAll.find(x =>
@@ -118,7 +118,7 @@ if (!product) return Astro.redirect('/zh/products/');
   <section class="pt-24 pb-16 px-4 sm:px-6 bg-white min-h-screen">
     <div class="max-w-5xl mx-auto">
       <!-- ↩️ 返回产品列表链接 -->
-      <a href="/zh/products/" class="inline-block text-sm text-charcoal-500 hover:text-charcoal-700 mb-6">&larr; Return</a>
+      <a href="/zh/products/" class="inline-block text-sm text-charcoal-500 hover:text-charcoal-700 mb-6">&larr; 返回</a>
       <!-- 🔲 双栏布局：左侧图片 · 右侧详情 -->
       <div class="flex flex-col md:flex-row gap-8">
         <!-- 📷 左侧：产品主图 + 缩略图列表 -->
@@ -149,54 +149,72 @@ if (!product) return Astro.redirect('/zh/products/');
           <p class="text-2xl font-bold text-red-500 mt-2">${product.price} USD</p>
 
           <!-- 🎨 颜色选择器 -->
-          <div class="mt-5"><span class="text-xs font-semibold text-charcoal-500 uppercase tracking-wide">Color</span>
+          <div class="mt-5"><span class="text-xs font-semibold text-charcoal-500 uppercase tracking-wide">颜色</span>
             <div class="flex gap-2 mt-1.5" id="color-picker"></div></div>
           <!-- 📏 尺码选择器 -->
-          <div class="mt-4"><span class="text-xs font-semibold text-charcoal-500 uppercase tracking-wide">Sizes</span>
+          <div class="mt-4"><span class="text-xs font-semibold text-charcoal-500 uppercase tracking-wide">尺码</span>
             <div class="flex flex-wrap gap-1.5 mt-1.5" id="size-picker"></div></div>
           <!-- 🔢 数量选择器 -->
           <div class="flex items-center gap-3 mt-4">
-            <span class="text-xs font-semibold text-charcoal-500 uppercase tracking-wide">Qty</span>
+            <span class="text-xs font-semibold text-charcoal-500 uppercase tracking-wide">数量</span>
             <button id="qty-minus" class="w-8 h-8 border border-charcoal-300 rounded-full text-sm flex items-center justify-center hover:bg-beige-50">−</button>
             <span id="qty-val" class="w-6 text-center font-bold">1</span>
             <button id="qty-plus" class="w-8 h-8 border border-charcoal-300 rounded-full text-sm flex items-center justify-center hover:bg-beige-50">+</button>
           </div>
           <!-- 🎨 跳转设计器按钮 -->
-          <button id="btn-designer" onclick="location.href='/en/designer/'" class="w-full mt-5 py-2.5 bg-[#c9a84c] hover:bg-[#b89336] text-white rounded-xl font-medium text-sm transition-colors">Custom Design</button>
+          <button id="btn-designer" onclick="location.href='/zh/designer/'" class="w-full mt-2 py-2.5 bg-[#c9a84c] hover:bg-[#b89336] text-white rounded-xl font-medium text-sm transition-colors">定制设计</button>
           <!-- 🛒 加入购物车按钮 -->
-          <button id="btn-add-cart" class="w-full mt-5 py-2.5 bg-charcoal-800 hover:bg-charcoal-700 text-white rounded-xl font-medium text-sm transition-colors">Add to Cart</button>
+          <button id="btn-add-cart" class="w-full mt-2 py-2.5 bg-charcoal-800 hover:bg-charcoal-700 text-white rounded-xl font-medium text-sm transition-colors">加入购物车</button>
           <!-- ⚡ 立即购买按钮（先加购物车再跳转） -->
-          <button id="btn-buy-now" class="w-full mt-2 py-2.5 bg-red-500 hover:bg-red-600 text-white rounded-xl font-medium text-sm transition-colors">Buy Now</button>
+          <button id="btn-buy-now" class="w-full mt-2 py-2.5 bg-red-500 hover:bg-red-600 text-white rounded-xl font-medium text-sm transition-colors">立即购买</button>
 
           <!-- 📄 产品详情说明 -->
           <div class="mt-6 pt-6 border-t border-beige-200">
-            <h3 class="font-serif text-lg font-bold text-charcoal-800 mb-2">Product Details</h3>
-            <div class="text-sm text-charcoal-500 leading-relaxed whitespace-pre-line">{product.details.en}</div>
+            <h3 class="font-serif text-lg font-bold text-charcoal-800 mb-2">产品详情</h3>
+            <div id="prod-details" class="text-sm text-charcoal-500 leading-relaxed whitespace-pre-line">{product.details.zh}</div>
           </div>
           <!-- 🧺 洗涤 & 护理说明 -->
           <div class="mt-4">
-            <h3 class="font-serif text-lg font-bold text-charcoal-800 mb-2">Wash &amp; Care</h3>
-            <p class="text-sm text-charcoal-500">Hand wash or machine wash cold. Do not bleach. Do not soak for long periods. Wash liquid temperature should not exceed 45°C.</p>
-            <p class="text-sm text-charcoal-500 mt-1">Measurements taken flat. Tolerance of 2-4cm is normal.</p>
+            <h3 class="font-serif text-lg font-bold text-charcoal-800 mb-2">洗涤与护理</h3>
+            <p class="text-sm text-charcoal-500">可手洗或机洗，不可漂白。不要长时间浸泡。洗涤液温度不超过45°C。</p>
+            <p class="text-sm text-charcoal-500 mt-1">平铺测量，误差2-4cm属正常现象。</p>
           </div>
         </div>
       </div>
     </div>
   </section>
 
-  <!-- 🛒 购物车浮动按钮（右下角固定） -->
-  <a href="/en/cart/" id="cart-floating" class="fixed bottom-24 right-6 z-50 w-14 h-14 bg-charcoal-800 hover:bg-charcoal-700 rounded-full flex items-center justify-center shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-110">
-    <!-- 🛒 购物车 SVG 图标 -->
-    <svg class="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 100 4 2 2 0 000-4z"/></svg>
-    <!-- 🔴 购物车数量角标 -->
-    <span id="cart-badge" class="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] w-5 h-5 rounded-full flex items-center justify-center font-bold hidden">0</span>
-  </a>
 
   <!-- 🤖 产品详情交互逻辑（is:inline） -->
   <script is:inline>
     (function(){
       // 📦 从注入的 JSON 加载产品数据
       var d = JSON.parse(document.getElementById('__prodData').textContent);
+      
+  (function(){
+    var prodId = PID;
+    fetch("/api/products").then(function(r){return r.json()}).then(function(d){
+      try {
+        if (d.ok && d.data) {
+          // Merge live data into static fallback
+          var live = d.data.find(function(p){ return p.id === prodId || "prod-" + p.id === prodId; });
+          if (!live) return;
+          if (live.colors) COLORS = live.colors;
+          if (live.sizes) SIZES = live.sizes;
+          if (live.price) PPRICE = live.price;
+          var lang = document.documentElement.lang === 'zh' ? 'zh' : 'en';
+          var dEl = document.getElementById('prod-details');
+          if (dEl && live['description_' + lang]) dEl.textContent = live['description_' + lang];
+          if (live.images && live.images.length) {
+            DATA.images = live.images;
+            var mainImg = document.getElementById("main-image");
+            if (mainImg) mainImg.src = live.images[0];
+          }
+        }
+      } catch(e) {}
+    });
+  })();
+
       var DATA = d, COLORS = d.colors, SIZES = d.sizes, PID = d.id, PNAME = d.name, PPRICE = d.price;
       // 🎨 当前选中状态：默认第一个颜色 / 第一个尺码 / 数量 1
       var selColor = COLORS[0], selSize = SIZES[0], qty = 1;
@@ -222,12 +240,12 @@ if (!product) return Astro.redirect('/zh/products/');
       // 🛒 加入购物车
       document.getElementById('btn-add-cart').onclick = addToCart;
       // ⚡ 立即购买 → 先加入购物车，再跳转到购物车页
-      document.getElementById('btn-buy-now').onclick = function(){ addToCart(); location.href = '/en/cart/'; };
+      document.getElementById('btn-buy-now').onclick = function(){ addToCart(); location.href = '/zh/cart/'; };
 
       // 🛒 购物车逻辑：localStorage key = "ps-cart"
       function addToCart(){ var c = JSON.parse(localStorage.getItem('ps-cart')||'[]'), x = c.find(function(i){ return i.id===PID && i.color===selColor && i.size===selSize; }); if(x) x.quantity += qty; else c.push({id:PID,slug:PID,name:PNAME,price:PPRICE,color:selColor,size:selSize,quantity:qty,image:DATA.image}); localStorage.setItem('ps-cart',JSON.stringify(c)); updateBadge(); }
       // 🔴 更新购物车角标数量
-      function updateBadge(){ var c = JSON.parse(localStorage.getItem('ps-cart')||'[]'), n = c.reduce(function(s,i){ return s+i.quantity; },0), b = document.getElementById('cart-badge'); if(n>0){ b.textContent = n; b.classList.remove('hidden'); } else b.classList.add('hidden'); }
+      function updateBadge(){ var c = JSON.parse(localStorage.getItem('ps-cart')||'[]'), n = c.reduce(function(s,i){ return s+i.quantity; },0), b = document.getElementById('cart-badge-main'); if(b){ if(n>0){ b.textContent = n; b.classList.remove('hidden'); } else b.classList.add('hidden'); } }
       updateBadge();
     })();
   </script>
