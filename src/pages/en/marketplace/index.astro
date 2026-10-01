@@ -1,0 +1,141 @@
+---
+/**
+ * 📍 文件位置: src/pages/en/marketplace/index.astro
+ * 🌐 路由: /en/marketplace/
+ * 🎯 作用: Marketplace 页——牧师 × 汽车内饰工厂的信任落地页（见证摘要+我的工作+How I work+SGS报告+CTA）
+ * 🔧 修改指南:
+ *   - 文案直接改下方 HTML；皮革产品列表构建时从 /api/products 动态拉取（category_id=3）
+ *   - SGS 报告在 public/reports/，替换同名 PDF 即可
+ *   - WhatsApp/邮箱来自 src/features/site/site.json
+ */
+import BaseLayout from '../../../layouts/BaseLayout.astro';
+import site from '../../../features/site/site.json';
+
+let leatherProducts = [];
+try {
+  const res = await fetch('https://pastorjeffnchina.com/api/products');
+  if (res.ok) {
+    const d = (await res.json()).data || [];
+    leatherProducts = d.filter(p => p.category_id === 3 && p.status === 1 && !p.deleted);
+  }
+} catch(e) {}
+
+const waLink = 'https://wa.me/' + String(site.site.whatsapp || '').replace(/[^0-9]/g, '');
+const email = site.site.email || 'pastorjeffinchina@gmail.com';
+---
+
+<BaseLayout lang="en" title="Faith in the Marketplace — Auto Interior Leather | Livingstone" description="Pastor Jeff in Guangzhou, partnering with a 20-year auto interior factory. Wholesale automotive leather: microfiber, PVC, suede, genuine — SGS tested. Honest quotes, kept promises.">
+  <section class="py-24 lg:py-32 px-6 bg-beige-50 min-h-screen">
+    <div class="max-w-3xl mx-auto">
+
+      <p class="text-xs uppercase tracking-widest text-sage-600 font-semibold mb-4">Marketplace Ministry</p>
+      <h1 class="text-3xl md:text-4xl font-serif font-bold text-charcoal-900 mb-4">Faith in the Marketplace</h1>
+      <p class="text-charcoal-600 text-lg mb-10">I'm a pastor in Guangzhou, China — and on weekdays I help upholstery shops in the U.S. source automotive interior leather from a 20-year factory. Two callings, one desk.</p>
+
+      <!-- My Story -->
+      <article class="bg-white rounded-2xl shadow-lg border border-beige-200 p-8 mb-8">
+        <h2 class="text-xl font-serif font-bold text-charcoal-900 mb-4">A Door I Didn't Knock On</h2>
+        <div class="text-charcoal-700 leading-relaxed space-y-4">
+          <p>In July 2026, I moved to Zengcheng, a district of Guangzhou. I was new there. I did not know many people, and I had not started to look for a job.</p>
+          <p>Then one day, my phone rang. A company in the auto interior industry found <em>me</em>. They wanted to talk. We had a good talk, then an interview. A few days later, I started to work there. I did not search for this job for a long time. The door opened before I even knocked.</p>
+          <p class="border-l-2 border-sage-400 pl-4 italic font-serif text-charcoal-800">"But seek first the kingdom of God and his righteousness, and all these things will be added to you." — Matthew 6:33</p>
+          <p>I did not find this factory. God gave it to me. So I see this work as my ministry. My office is a factory, not a church. But the same God is with me in both places.</p>
+        </div>
+        <a href="/en/testimonies/2/" class="inline-flex items-center gap-1 mt-6 text-sage-700 hover:text-sage-800 font-medium text-sm transition-colors">
+          Read my full faith story
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
+        </a>
+      </article>
+
+      <!-- My Work -->
+      <article class="bg-white rounded-2xl shadow-lg border border-beige-200 p-8 mb-8">
+        <h2 class="text-xl font-serif font-bold text-charcoal-900 mb-4">My Work</h2>
+        <p class="text-charcoal-700 leading-relaxed mb-6">The factory is Cheyoufu New Materials in Zengcheng, Guangzhou — 20 years in automotive interior leather and seat covers. I handle export for our overseas partners: quotes, samples, production follow-up, shipping.</p>
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+          <div class="text-center py-3 border border-beige-200 rounded-xl"><div class="font-serif text-2xl font-bold text-charcoal-900">20+</div><div class="text-[11px] text-charcoal-400 mt-1">Years</div></div>
+          <div class="text-center py-3 border border-beige-200 rounded-xl"><div class="font-serif text-2xl font-bold text-charcoal-900">800k ㎡</div><div class="text-[11px] text-charcoal-400 mt-1">Monthly capacity</div></div>
+          <div class="text-center py-3 border border-beige-200 rounded-xl"><div class="font-serif text-2xl font-bold text-charcoal-900">300k ㎡</div><div class="text-[11px] text-charcoal-400 mt-1">In stock</div></div>
+          <div class="text-center py-3 border border-beige-200 rounded-xl"><div class="font-serif text-2xl font-bold text-charcoal-900">1,000+</div><div class="text-[11px] text-charcoal-400 mt-1">Colors</div></div>
+        </div>
+        <p class="text-charcoal-700 mb-3">Our leather series:</p>
+        {leatherProducts.length > 0 ? (
+          <ul class="space-y-2 mb-4">
+            {leatherProducts.map(p => (
+              <li>
+                <a href={'/en/products/' + p.id + '/'} class="flex items-center gap-3 p-2 -mx-2 rounded-lg hover:bg-beige-100 transition-colors group">
+                  {p.images && p.images[0] ? <img src={p.images[0]} alt="" class="w-12 h-12 rounded-lg object-cover border border-beige-200" loading="lazy" /> : <span class="w-12 h-12 rounded-lg bg-beige-100 flex-shrink-0"></span>}
+                  <span class="text-charcoal-700 text-sm font-medium group-hover:text-sage-700">{p.name_en}</span>
+                </a>
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <p class="text-charcoal-500 text-sm mb-4">QL Nappa · GH Yunrou · GD Senna · QE Brushed · Suede · NP PVC · Genuine leather</p>
+        )}
+        <a href="/en/products/" class="inline-flex items-center gap-1 text-sage-700 hover:text-sage-800 font-medium text-sm transition-colors">
+          Browse the full leather collection
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
+        </a>
+      </article>
+
+      <!-- How I Work -->
+      <article class="bg-white rounded-2xl shadow-lg border border-beige-200 p-8 mb-8">
+        <h2 class="text-xl font-serif font-bold text-charcoal-900 mb-6">How I Work</h2>
+        <div class="space-y-5">
+          <div class="flex gap-4">
+            <div class="w-8 h-8 rounded-full bg-sage-100 text-sage-800 flex items-center justify-center flex-shrink-0 font-serif font-bold text-sm">1</div>
+            <div><p class="font-semibold text-charcoal-800 text-sm">Honest quotes</p><p class="text-charcoal-500 text-sm mt-0.5">The price I quote is the price you pay. No games, no bait-and-switch.</p></div>
+          </div>
+          <div class="flex gap-4">
+            <div class="w-8 h-8 rounded-full bg-sage-100 text-sage-800 flex items-center justify-center flex-shrink-0 font-serif font-bold text-sm">2</div>
+            <div><p class="font-semibold text-charcoal-800 text-sm">Free color cards</p><p class="text-charcoal-500 text-sm mt-0.5">We ship color cards worldwide — you only cover the courier.</p></div>
+          </div>
+          <div class="flex gap-4">
+            <div class="w-8 h-8 rounded-full bg-sage-100 text-sage-800 flex items-center justify-center flex-shrink-0 font-serif font-bold text-sm">3</div>
+            <div><p class="font-semibold text-charcoal-800 text-sm">Real lead times</p><p class="text-charcoal-500 text-sm mt-0.5">Stock items ship in 5–10 days. Custom colors and grains take 15–20 days.</p></div>
+          </div>
+          <div class="flex gap-4">
+            <div class="w-8 h-8 rounded-full bg-sage-100 text-sage-800 flex items-center justify-center flex-shrink-0 font-serif font-bold text-sm">4</div>
+            <div><p class="font-semibold text-charcoal-800 text-sm">After-sales that acts</p><p class="text-charcoal-500 text-sm mt-0.5">If something goes wrong, I fix it before you ask.</p></div>
+          </div>
+        </div>
+      </article>
+
+      <!-- SGS Reports -->
+      <article class="bg-white rounded-2xl shadow-lg border border-beige-200 p-8 mb-8">
+        <h2 class="text-xl font-serif font-bold text-charcoal-900 mb-3">Compliance &amp; Test Reports</h2>
+        <p class="text-charcoal-600 text-sm mb-5">Our materials are tested by SGS — the world's largest testing and inspection company. Download the original reports:</p>
+        <div class="space-y-2">
+          <a href="/reports/SGS_Report_CANML1901648001_Formaldehyde_Test_ND.pdf" target="_blank" rel="noopener" class="flex items-center justify-between p-3 border border-beige-200 rounded-xl hover:bg-beige-100 transition-colors">
+            <span class="text-charcoal-700 text-sm">SGS Formaldehyde Test <span class="text-sage-700 font-medium">— Not Detected</span></span>
+            <span class="text-charcoal-400 text-xs">PDF</span>
+          </a>
+          <a href="/reports/SGS_Report_CANML1901648002_REACH_Azo_Dyes_Test_ND.pdf" target="_blank" rel="noopener" class="flex items-center justify-between p-3 border border-beige-200 rounded-xl hover:bg-beige-100 transition-colors">
+            <span class="text-charcoal-700 text-sm">SGS REACH Azo Dyes Test <span class="text-sage-700 font-medium">— Not Detected</span></span>
+            <span class="text-charcoal-400 text-xs">PDF</span>
+          </a>
+          <a href="/reports/SGS_Report_GZIN1901003879SC_Flex_Durability_and_Tear_Strength.pdf" target="_blank" rel="noopener" class="flex items-center justify-between p-3 border border-beige-200 rounded-xl hover:bg-beige-100 transition-colors">
+            <span class="text-charcoal-700 text-sm">SGS Flex Durability &amp; Tear Strength</span>
+            <span class="text-charcoal-400 text-xs">PDF</span>
+          </a>
+        </div>
+      </article>
+
+      <!-- CTA -->
+      <div class="bg-charcoal-800 rounded-2xl p-8 text-white">
+        <h2 class="text-xl font-serif font-bold mb-2">Let's talk leather.</h2>
+        <p class="text-charcoal-200 text-sm mb-6">Ask for free color cards or a sample quote — I reply within 24 hours, usually much faster.</p>
+        <div class="flex flex-wrap gap-3">
+          <a href={waLink} target="_blank" rel="noopener" class="inline-flex items-center gap-2 bg-green-500 hover:bg-green-400 text-white font-medium text-sm px-5 py-3 rounded-xl transition-colors">
+            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.297-.347.446-.52.149-.174.198-.298.297-.497.1-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.885-9.885 9.885m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+            WhatsApp Jeff
+          </a>
+          <a href={'mailto:' + email + '?subject=Leather%20inquiry%20from%20the%20website'} class="inline-flex items-center gap-2 border border-charcoal-500 hover:border-charcoal-300 text-charcoal-100 font-medium text-sm px-5 py-3 rounded-xl transition-colors">
+            {email}
+          </a>
+        </div>
+      </div>
+
+    </div>
+  </section>
+</BaseLayout>

@@ -7,7 +7,7 @@
  * 修改指南:
  *   - 【修改】导航链接: 编辑 navLinks 数组，增减链接项
  *   - 【修改】导航标签文案: 编辑 labels 对象的 en/zh 属性
- *   - 【修改】网站名称/tagline: 编辑 src/content/site.json
+ *   - 【修改】网站名称/tagline: 编辑 src/features/site/site.json
  *   - 【修改】页脚版权/经文: 编辑 <footer> 内的文案
  *   - 【修改】购物车浮窗位置: 编辑 cart-floating 的 fixed bottom-24 right-6
  *   - 【修改】WhatsApp 浮窗: 编辑 wa-btn 的 href 和位置
@@ -23,14 +23,39 @@ let site = {
   email: '',
 };
 try {
-  const res = await fetch('http://localhost:5200/api/site-config');
+  const res = await fetch('https://pastorjeffnchina.com/api/site-config');
   if (res.ok) {
     const data = await res.json();
-    if (data.site) site = data.site;
+    // ============================================================
+    // 【修改】读取后台 API 的中英文配置（2026-08-21）
+    // 数据流：后台「站点设置」保存 → D1 数据库 → 本段代码构建时读取 → 前台显示
+    // 字段映射（API 字段 → 前台 site 对象）：
+    //   site_title       → site.name.en（英文站站名）
+    //   site_title_zh    → site.name.zh（中文站站名）
+    //   site_tagline     → site.tagline.en（英文站标语）
+    //   site_tagline_zh  → site.tagline.zh（中文站标语）
+    //   site_email       → site.email（footer 邮箱）
+    //   site_whatsapp    → site.whatsapp（WhatsApp 浮窗）
+    // 【修改】改站名/标语：去后台「站点设置」填中英文，再跑 bash deploy.sh 重新构建即可
+    // 注意：API 返回空时用 || 回退到本地默认值，站名不会丢
+    // ============================================================
+    const cfg = (data && data.data) ? data.data : (data.site || null);
+    if (cfg) {
+      site.name = {
+        en: cfg.site_title || site.name.en,
+        zh: cfg.site_title_zh || site.name.zh,
+      };
+      site.tagline = {
+        en: cfg.site_tagline || '',
+        zh: cfg.site_tagline_zh || '',
+      };
+      site.whatsapp = cfg.site_whatsapp || site.whatsapp;
+      site.email = cfg.site_email || site.email;
+    }
   }
 } catch(e) {}
 if (!site.email) {
-  const fallback = (await import('../content/site.json')).default;
+  const fallback = (await import('../features/site/site.json')).default;
   site = fallback.site;
 }
 
@@ -54,8 +79,8 @@ const otherPath = `/${otherLang}${currentPathRaw}`;
 
 // 【修改】多语言标签字典：key 对应 navLinks 中的 key
 const labels = {
-  en: { home: 'Home', vision: 'Vision', products: 'Products', designer: 'Design', prayer: 'Prayer', testimonies: 'Testimonies', courses: 'Courses', give: 'Give', auth: 'Account', langSwitch: '中文', menu: 'Menu' },
-  zh: { home: '首页', vision: '异象', products: '产品', designer: '设计', prayer: '代祷', testimonies: '见证', courses: '课程', give: '奉献', auth: '账号', langSwitch: 'English', menu: '菜单' },
+  en: { home: 'Home', vision: 'Vision', products: 'Products', designer: 'Design', prayer: 'Prayer', testimonies: 'Testimonies', marketplace: 'Marketplace', courses: 'Courses', give: 'Give', auth: 'Account', langSwitch: '中文', menu: 'Menu' },
+  zh: { home: '首页', vision: '异象', products: '产品', designer: '设计', prayer: '代祷', testimonies: '见证', marketplace: '职场见证', courses: '课程', give: '奉献', auth: '账号', langSwitch: 'English', menu: '菜单' },
 };
 // 根据当前语言取出对应的标签
 const t = labels[lang];
@@ -68,6 +93,7 @@ const navLinks = [
   { key: 'designer', href: `/${lang}/designer/` },
   { key: 'prayer', href: `/${lang}/prayer/` },
   { key: 'testimonies', href: `/${lang}/testimonies/` },
+  { key: 'marketplace', href: `/${lang}/marketplace/` },
   { key: 'courses', href: `/${lang}/courses/` },
   { key: 'give', href: `/${lang}/give/` },
 ];
@@ -78,32 +104,93 @@ const navLinks = [
 <html lang={lang}>
 <head>
   <meta charset="UTF-8" />
-  <!-- 【修改】viewport: 控制移动端缩放行为 -->
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="generator" content={Astro.generator} />
+
+  <!-- ============================================================
+       📖 SEO 教程（本区块 = 搜索引擎 + 社交分享的全部配置）
+       ------------------------------------------------------------
+       ① 页面标题/描述（搜索引擎结果 + 浏览器标签页）
+         - 【修改】单页专属标题/描述：在该页面 <BaseLayout title="..." description="..."> 传参
+         - 【修改】全站默认标题/描述：改下面 og:title / og:description 的 fallback 值
+       ② 分享卡片（WhatsApp/Facebook/X/微信分享链接时显示的卡片）
+         - 封面图：替换 public/images/og-cover.jpg（1200×630 像素）
+         - 卡片标题 = 页面 <BaseLayout title="..."> 的传参（改页面即可，og:title 自动跟随）
+         - 卡片描述 = 页面 <BaseLayout description="..."> 的传参；页面没传才用下面 og:description 默认值
+         - 【注意】改完跑 bash deploy.sh；Facebook 缓存需用调试器 Scrape Again 刷新
+       ③ 换域名时必改（3 处）：
+         - 下面所有 https://pastorjeffnchina.com 硬编码 → 新域名
+         - astro.config.mjs 的 site 字段
+       ============================================================ -->
 
   <!-- 页面标题：优先使用传入 title，否则用 site.name -->
   <title>{title || site.name[lang]}</title>
-  <!-- 页面描述：优先使用传入 description，否则用 SEO 优化默认描述 -->
-  <meta name="description" content={description || (lang === 'en' ? 'Christian faith apparel — T-shirts, hoodies & more. Testimonies, Bible study, prayer wall. Shop now.' : '基督教信心服饰 — T恤、卫衣等。信心见证、圣经学习、代祷墙。立即选购。')} />
-  <!-- SEO 关键词 -->
+  <meta name="description" content={description || (lang === 'en' ? 'Pastor Jeff — Christian faith apparel, testimonies & Bible study. T-shirts, hoodies & more for your faith journey.' : '杰夫牧师 — 基督教信心服饰、见证与圣经学习。T恤、卫衣等，伴您信心之旅。')} />
   <meta name="keywords" content="Christian clothing, faith apparel, testimony, Bible study, pastor, worship, Christian T-shirt, hoodie, 基督教服饰, 信心见证, 圣经学习, 牧师, 主内服饰, 代祷" />
 
-  <!-- favicon，【修改】更换图标替换 /favicon.svg -->
+  <!-- ============================================================
+       🧭 canonical + hreflang（搜索引擎规范链接 + 多语言对应）
+       - canonical：告诉 Google 本页面的"正版"URL，防止 ?v=1 等变体稀释权重
+       - hreflang：告诉 Google 中/英文版本互相对应，SEO 权重互通
+       - 【修改】换域名：替换下面 3 处 https://pastorjeffnchina.com
+       ============================================================ -->
+  <link rel="canonical" href={'https://pastorjeffnchina.com' + Astro.url.pathname} />
+  <link rel="alternate" hreflang="en" href={'https://pastorjeffnchina.com' + Astro.url.pathname.replace(/^\/(en|zh)\//, '/en/')} />
+  <link rel="alternate" hreflang="zh" href={'https://pastorjeffnchina.com' + Astro.url.pathname.replace(/^\/(en|zh)\//, '/zh/')} />
+  <link rel="alternate" hreflang="x-default" href={'https://pastorjeffnchina.com' + Astro.url.pathname.replace(/^\/(en|zh)\//, '/en/')} />
+
+  <!-- ============================================================
+       🖼️ OpenGraph（WhatsApp / Facebook / 微信分享卡片）
+       平台不打开网页，只读这些标签拼卡片：
+         og:title        → 卡片标题（值 = {title || site.name[lang]}）
+                           【修改】单页标题：去该页面改 <BaseLayout title="...">，勿改此行
+                           【修改】全站默认：才改下面 og:title 的 fallback
+         og:description  → 卡片描述（值 = {description || 默认文案}）
+                           【修改】单页描述：去该页面改 <BaseLayout description="...">
+                           【修改】全站默认：改下面 og:description 的 fallback
+         og:image        → 卡片封面（【修改】替换 public/images/og-cover.jpg）
+         og:url          → 卡片点击跳转的地址
+         og:locale       → 语言区域（en_US / zh_CN）
+       ⚠️ 分享后修改内容，平台有缓存：Facebook 用调试器 Scrape Again 强制刷新
+       ============================================================ -->
+  <!-- fb:app_id — Facebook 应用身份（分享卡片图必须，缺了 Facebook 不渲染 og:image）
+       【修改】换 Facebook App 时改 content 里的数字 -->
+  <meta property="fb:app_id" content="1088771680156934" />
+  <meta property="og:type" content="website" />
+  <meta property="og:site_name" content={site.name[lang]} />
+  <meta property="og:title" content={title || site.name[lang]} />
+  <meta property="og:description" content={description || (lang === 'en' ? 'Pastor Jeff — Christian faith apparel, testimonies & Bible study. T-shirts, hoodies & more for your faith journey.' : '杰夫牧师 — 基督教信心服饰、见证与圣经学习。T恤、卫衣等，伴您信心之旅。')} />
+  <meta property="og:url" content={'https://pastorjeffnchina.com' + Astro.url.pathname} />
+  <meta property="og:locale" content={lang === 'en' ? 'en_US' : 'zh_CN'} />
+  <meta property="og:image" content="https://pastorjeffnchina.com/images/og-cover.jpg" />
+  <!-- og:image:alt — 卡片图描述（无障碍 + 部分平台展示用）
+       【修改】换封面图时同步改这里的文字 -->
+  <meta property="og:image:alt" content="Pastor Jeff — Livingstone 活石" />
+
+  <!-- ============================================================
+       🐦 Twitter / X 卡片（与 OG 同步；不认 twitter:* 的平台自动忽略）
+       ⚠️ 【修改】twitter:description 有独立 fallback 文案，
+          改默认描述时需与上面 og:description 同步修改（两处）！
+       ============================================================ -->
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content={title || site.name[lang]} />
+  <meta name="twitter:description" content={description || (lang === 'en' ? 'Pastor Jeff — Christian faith apparel, testimonies & Bible study. T-shirts, hoodies & more for your faith journey.' : '杰夫牧师 — 基督教信心服饰、见证与圣经学习。T恤、卫衣等，伴您信心之旅。')} />
+  <meta name="twitter:image" content="https://pastorjeffnchina.com/images/og-cover.jpg" />
+
+  <!-- favicon + 移动端浏览器栏颜色（【修改】theme-color 换成品牌色） -->
   <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-  <!-- ======  (GA4) —— 全站访问追踪 ======
-     📊 作用: 统计每个页面的访客数、来源国家、停留时间、浏览路径
-     🔧 修改指南:
-       - 更换测量 ID: 把三处 G-SDG26PJBZG 改为新的 ID（GA后台 → 管理 → 数据流 → 测量ID）
-       - 事件追踪: 默认发 page_view；自定义事件用 gtag('event','click',{...})
-       - 关停: 删除这两个 <script> 即可
-     📖 逻辑流程:
-       ① 访客打开页面 → 浏览器看到 <script async src=...> 立即开始下载 gtag.js（异步）
-       ② gtag.js 下载完 → 创建 dataLayer 数组 + 定义 gtag() 函数
-       ③ gtag('config','G-...') → 向 Google 服务器发送 page_view 事件（含URL/标题/屏幕尺寸/语言等）
-       ④ 24~48h 后 GA 面板出数据: 实时在线/获取渠道/受众画像/行为路径
-     🔗 查看数据: https://analytics.google.com 登录后点"报告"
-     ⚠️ 注意: 此ID绑定 pastorjeffnchina.com，若换域名需重新创建数据流
-  -->
+  <meta name="theme-color" content="#1a1a2e" />
+
+  <!-- GA4 预连接（加快统计脚本加载，对首屏无影响） -->
+  <link rel="preconnect" href="https://www.googletagmanager.com" />
+  <link rel="dns-prefetch" href="https://www.googletagmanager.com" />
+
+  <!-- ============================================================
+       📊 GA4 全站访问追踪
+       - 【修改】更换测量 ID：把三处 G-SDG26PJBZG 改为新的 ID
+       - 【修改】关闭统计：删除这两个 <script> 即可
+       ⚠️ 此 ID 绑定 pastorjeffnchina.com，换域名需重新创建数据流
+       ============================================================ -->
   <script async src="https://www.googletagmanager.com/gtag/js?id=G-SDG26PJBZG"></script>
   <script>
     window.dataLayer = window.dataLayer || [];
@@ -267,6 +354,18 @@ const navLinks = [
     // 有商品时显示角标，否则隐藏
     if (b && n > 0) { b.textContent = n; b.classList.remove('hidden'); }
   })();
+</script>
+
+<script is:inline>
+(function(){
+  fetch("/api/site-config").then(function(r){return r.json()}).then(function(d){
+    if(!d.ok||!d.data)return; var s=d.data;
+    var wa=document.getElementById("wa-btn");
+    if(wa&&s.site_whatsapp) wa.href="https://wa.me/"+s.site_whatsapp.replace(/\D/g,"");
+    var em=document.querySelector("footer p:last-of-type");
+    if(em&&s.site_email) em.textContent=s.site_email;
+  });
+})();
 </script>
 </body>
 </html>
