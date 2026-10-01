@@ -1,0 +1,73 @@
+---
+/**
+ * 📍 文件位置: src/pages/en/faq/index.astro
+ * 🌐 路由: /en/faq/
+ * 🎯 作用: 英文 FAQ——15 个批发买家高频问题（材质/品质/定制/打样/运输）
+ * 🔧 修改指南: 直接改下方 categories 数组；新增问答往对应类目 items 里加 {q, a}
+ */
+import BaseLayout from '../../../layouts/BaseLayout.astro';
+
+const categories = [
+  { name: 'Materials & Specifications', items: [
+    { q: 'What automotive upholstery materials and specs do you offer?', a: "A complete material platform for automotive interiors:\n1. Microfiber Nappa Series — 0.8–1.2mm, width 140–155cm\n2. Automotive PU & PVC Leather — 1.2mm, width 140cm, 30+ OEM-inspired colors\n3. Suede & Alcantara Series — 0.8–1.2mm, width 140–155cm\n4. Top-Grain Nappa Genuine Leather — 1.1–1.35mm, avg. hide 40–50 sq.ft\n5. Custom model-specific seat cover solutions" },
+    { q: 'What is the difference between microfiber leather and standard PU/PVC?', a: "Microfiber leather mimics the 3D structure of natural leather, offering superior tactile comfort, higher tensile strength, and greater durability than standard PU/PVC.\nFeatured series: MC Mousse Gold (0.8mm, extra-soft feel), QL Premium Nappa (1.2mm classic Nappa grain), QE Benz-grain brushed microfiber, and GD Senna-grain series." },
+    { q: 'What makes your steering wheel leather unique?', a: "Steering wheels face constant contact with skin oils and sweat. Our dedicated MO-02 Steering Wheel Series (1.2mm) comes in a standard grade plus a Reinforced Version, specially treated to resist sweat, hand oils, cosmetics, and daily abrasion." },
+    { q: 'What suede / Alcantara options do you offer, and where are they applied?', a: "Versatile suede options:\n1. OH Comfort Suede — 0.8mm (45% resin / 55% microfiber)\n2. Long-Pile Suede — 90% polyester / 10% spandex\n3. Thickened Suede for steering wheels — 1.2mm\n4. Premium Micro-Suede / Alcantara — 0.8–1.0mm, eco-friendly solvent-free, anti-slip grip\nApplied to headliners, steering wheels, seat inserts, and door panels." },
+    { q: 'What are the specs and hide sizes of your top-grain genuine leather?', a: "Crafted from natural hides: thickness 1.1–1.35mm, average hide size 40–50 sq.ft (4–4.5 sq.m), available in smooth Nappa and classic lychee grain finishes." },
+  ]},
+  { name: 'Quality, Testing & Compliance', items: [
+    { q: 'Do you have third-party test reports or environmental certificates?', a: "Yes — our materials are backed by SGS test reports, and we comply with EU REACH standards (205-item REACH testing passed). CHEYOUFU is also an official member of the China Leather Industry Association (CLIA).\nOriginal SGS reports are downloadable on our Marketplace page." },
+    { q: 'What abrasion resistance and durability standards do your materials meet?', a: "Our microfiber seat leather achieves over 100,000 cycles in Wyzenbeek abrasion testing, plus superior dry/wet rub color fastness (sweat resistance) and excellent hydrolysis resistance (e.g. 5-week hydrolysis test at 70°C, 95% RH)." },
+    { q: 'How do you ensure batch-to-batch consistency for repeat orders?', a: "12 dedicated QC professionals run 4 checkpoints:\n1. Incoming material inspection\n2. In-process control (color, grain, thickness monitoring)\n3. Finished-product verification\n4. Traceable batch release — batch IDs and QC records keep repeat orders consistent." },
+  ]},
+  { name: 'OEM/ODM & Manufacturing', items: [
+    { q: 'What customization services do you support (color, grain, perforation, quilting, logo)?', a: "Full-spectrum customization:\n1. Color & grain — OEM color matching, custom textures (Nappa, Mousse)\n2. Surface processing — digital perforation, laser cutting, computerized quilting\n3. Branding — logo embossing, computerized embroidery, private-label packaging" },
+    { q: 'Can you supply model-specific seat cover kits, not just raw rolls?', a: "Absolutely. With digital cutting machinery and computerized embroidery/sewing lines, we deliver model-specific seat cover kits, precision pre-cut components, perforated panels, and complete OEM/ODM production from your pattern files." },
+    { q: 'What is your factory scale and monthly capacity?', a: "Located in Zengcheng, Guangzhou: a 5,000 m² facility with 6 automated production lines. Monthly capacity reaches 800,000 m², backed by 300,000 m² of regular stock — supported by 6 R&D engineers and 12 QC specialists." },
+  ]},
+  { name: 'Sampling & Ordering', items: [
+    { q: 'How can we request sample swatches before a bulk order?', a: "We strongly encourage sample verification before bulk orders. We dispatch sample swatch books or cut swatches covering our full color and grain range, so you can evaluate touch, thickness, and color in person.\nColor cards ship worldwide — you only cover the courier." },
+    { q: 'What is your standard workflow from inquiry to export delivery?', a: "A clear 6-step workflow:\n1. Define — application, spec, quantity, target market\n2. Develop — material selection, color matching, sampling\n3. Confirm — sample approval, commercial terms, schedule\n4. Produce — controlled manufacturing with in-process QC\n5. Inspect — finished-product verification\n6. Deliver — moisture-protected packing and container export" },
+    { q: 'Do you keep stock, and what are the lead times?', a: "We maintain 300,000 m² of regular stock in Guangzhou.\nStock items ship in 5–10 days. Custom orders (custom colors, grains, thickness, or pre-cut parts) take 15–20 days depending on volume and process." },
+  ]},
+  { name: 'Packing, Shipping & After-Sales', items: [
+    { q: 'How are leather rolls packed for international ocean freight?', a: "Strict export packing discipline:\n1. Moisture-protected roll wrapping\n2. Clear labeling with traceable batch IDs\n3. Carton or roll packaging optimized per product\n4. Professional container loading to prevent humidity and transit damage" },
+  ]},
+];
+---
+
+<BaseLayout lang="en" title="FAQ — Automotive Leather Wholesale | Livingstone" description="15 answers on materials, quality compliance, OEM/ODM customization, sampling, and shipping — for US upholstery shops and wholesalers.">
+  <section class="py-24 lg:py-32 px-6 bg-beige-50 min-h-screen">
+    <div class="max-w-3xl mx-auto">
+      <p class="text-xs uppercase tracking-widest text-sage-600 font-semibold mb-4">Wholesale FAQ</p>
+      <h1 class="text-3xl md:text-4xl font-serif font-bold text-charcoal-900 mb-4">Frequently Asked Questions</h1>
+      <p class="text-charcoal-600 text-lg mb-10">15 answers covering materials, quality, customization, sampling, and shipping — the questions US upholstery shops ask us most.</p>
+
+      {categories.map(cat => (
+        <div class="mb-10">
+          <h2 class="text-sm uppercase tracking-widest text-charcoal-400 font-semibold mb-3">{cat.name}</h2>
+          <div class="space-y-3">
+            {cat.items.map(item => (
+              <details class="group bg-white rounded-xl border border-beige-200 shadow-sm open:shadow-md transition-shadow">
+                <summary class="flex items-start justify-between gap-4 cursor-pointer p-5 font-medium text-charcoal-800 text-sm md:text-base list-none [&::-webkit-details-marker]:hidden">
+                  <span>{item.q}</span>
+                  <span class="text-sage-700 font-serif text-xl leading-none group-open:rotate-45 transition-transform flex-shrink-0">+</span>
+                </summary>
+                <div class="px-5 pb-5 -mt-1 text-charcoal-600 text-sm leading-relaxed whitespace-pre-line">{item.a}</div>
+              </details>
+            ))}
+          </div>
+        </div>
+      ))}
+
+      <div class="bg-charcoal-800 rounded-2xl p-8 text-white mt-12">
+        <h2 class="text-lg font-serif font-bold mb-2">Still have questions?</h2>
+        <p class="text-charcoal-200 text-sm mb-5">Message Jeff directly — real answers within 24 hours, usually much faster.</p>
+        <div class="flex flex-wrap gap-3">
+          <a href="https://wa.me/8613602812927" target="_blank" rel="noopener" class="inline-flex items-center gap-2 bg-green-500 hover:bg-green-400 text-white font-medium text-sm px-5 py-3 rounded-xl transition-colors">WhatsApp Jeff</a>
+          <a href="/en/marketplace/" class="inline-flex items-center gap-2 border border-charcoal-500 hover:border-charcoal-300 text-charcoal-100 font-medium text-sm px-5 py-3 rounded-xl transition-colors">About Jeff & our factory</a>
+        </div>
+      </div>
+    </div>
+  </section>
+</BaseLayout>

@@ -1,0 +1,73 @@
+---
+/**
+ * 📍 文件位置: src/pages/zh/faq/index.astro
+ * 🌐 路由: /zh/faq/
+ * 🎯 作用: 中文 FAQ——15 个批发买家高频问题
+ * 🔧 修改指南: 直接改下方 categories 数组
+ */
+import BaseLayout from '../../../layouts/BaseLayout.astro';
+
+const categories = [
+  { name: '材质与产品规格', items: [
+    { q: '你们主要提供哪些汽车内饰皮革材质与规格？', a: "车又福提供完整的汽车内饰面料平台：\n1. 超纤 Nappa 系列——厚度 0.8–1.2mm，幅宽 140–155cm\n2. 汽车级 PU 与 PVC 皮革——厚度 1.2mm，幅宽 140cm，30+ 原厂色\n3. 麂皮与 Alcantara 系列——厚度 0.8–1.2mm，幅宽 140–155cm\n4. 头层 Nappa 真皮——厚度 1.1–1.35mm，单张约 40–50 平方英尺\n5. 专车专用座套定制方案" },
+    { q: '超纤革与普通 PU/PVC 有什么区别？有哪些特色超纤？', a: "超纤革采用三维微纤维基布，模仿天然真皮结构，在触感、拉伸强度和耐用性上远超普通 PU/PVC。\n特色系列：MC Mousse Gold（0.8mm 极软手感）、QL Premium Napa（1.2mm 经典纳帕纹）、QE 奔驰拉丝纹超纤、GD 赛纳纹超纤。" },
+    { q: '你们的方向盘皮相比普通皮革有什么独特之处？', a: "方向盘每天高频接触汗液与油脂。我们专门开发了 MO-02 方向盘专用皮系列（1.2mm），除标准版外还提供强化版——经特殊表面处理，有效抵抗手汗、油脂、化妆品及日常磨损。" },
+    { q: '麂皮/翻毛皮有哪些选择？应用在哪些部位？', a: "多种麂皮方案：\n1. OH Comfort Suede 纳魔皮绒——0.8mm（45% 树脂 / 55% 超纤）\n2. 长毛绒麂皮——90% 涤纶 / 10% 氨纶\n3. 加厚方向盘麂皮——1.2mm\n4. Premium Alcantara——0.8–1.0mm，环保无溶剂，防滑抓握\n主要用于顶棚、方向盘、座椅中嵌及门板。" },
+    { q: '头层真皮的规格和张幅是多少？', a: "选用天然黄牛皮制作，厚度 1.1–1.35mm，单张平均 40–50 平方英尺（约 4–4.5 平方米），提供平纹 Nappa 与荔枝纹等多种原厂风格配色。" },
+  ]},
+  { name: '品质、环保与测试认证', items: [
+    { q: '是否有第三方检测报告或环保认证？', a: "有。产品提供 SGS 第三方检测报告，完全符合欧盟 REACH 环保标准（通过 205 项测试）。车又福是中国皮革协会（CLIA）官方会员单位。\nSGS 原始报告可在 Marketplace 页直接下载。" },
+    { q: '面料耐磨度和耐久性指标如何？', a: "以座舱用超纤革为例，Wyzenbeek 耐磨测试超过 100,000 次循环；同时具备出色的干湿擦色牢度（耐汗渍）和优异的耐水解性能（70℃、95% RH 环境下 5 周耐水解测试）。" },
+    { q: '如何把控质量、确保重复订单批次一致？', a: "12 名专业品控人员执行 4 道质检关卡：\n1. 原材料入厂检验\n2. 生产过程控制（实时监控颜色、纹路、厚度与工艺）\n3. 成品检验\n4. 可追溯出厂放行——每批次独立标签与检验记录，确保重复订单高度一致。" },
+  ]},
+  { name: 'OEM/ODM 定制与加工', items: [
+    { q: '支持哪些定制服务（颜色、纹理、打孔、绗缝、Logo）？', a: "全方位定制能力：\n1. 颜色与纹路——支持 OEM 原厂配色或来样调色，多种 Nappa/Mousse 纹理\n2. 表面工艺——数控打孔、激光切割、打花及绗缝绗绣\n3. 品牌定制——Logo 热压、电脑刺绣及私牌包装" },
+    { q: '除了卷材，能否直接提供专车专用座套裁切与缝制成品？', a: "完全可以。工厂配备数控裁切机与电脑刺绣缝制车间，能根据买家提供的车型版型，提供专车专用座套零部件裁切、打孔缝制及 OEM/ODM 半成品/成品交付。" },
+    { q: '工厂规模和月产能是多少？', a: "工厂位于广州增城：5,000㎡ 标准化厂房，6 条自动化生产与后整理线，月产能 800,000㎡，常备现货 300,000㎡——由 6 名研发工程师与 12 名 QC 人员提供技术与质量保障。" },
+  ]},
+  { name: '样品与订货流程', items: [
+    { q: '批量下单前如何索取色卡册或样皮？', a: "我们非常鼓励大货前寄样确认。可寄送包含全系配色与纹理的精装样品册或裁切样片，方便现场核对手感、厚度与颜色。\n色卡全球寄送——你只需承担快递费。" },
+    { q: '从询盘到发货的合作流程是怎样的？', a: "6 步标准流程：\n1. 需求明确——确认应用部位、规格、数量及目标市场\n2. 样品开发——选材、调色及样板制作\n3. 方案确认——样品签样、商务条款及生产计划\n4. 精益生产——过程质检监控\n5. 成品质检——出厂前最终核验\n6. 出口交付——防潮包装与集装箱出运" },
+    { q: '有现货库存吗？现货与定制的交期分别是多少？', a: "广州仓库常备 300,000㎡ 现货库存。\n现货产品 5–10 天发货；定制订单（指定颜色、压纹、特殊厚度或裁切件）15–20 天，视订单规模与工艺复杂度而定。" },
+  ]},
+  { name: '包装、运输与售后', items: [
+    { q: '国际海运发货时，皮革卷材如何包装防护？', a: "规范的出口防护标准：\n1. 防潮卷打包\n2. 清晰批次标签与识别码\n3. 按材质提供纸箱装或卷装包装\n4. 规范集装箱装柜，防止运输挤压变形或受潮" },
+  ]},
+];
+---
+
+<BaseLayout lang="zh" title="常见问题 — 汽车内饰皮革批发 | Livingstone" description="材质规格、品质认证、OEM/ODM 定制、打样订货、包装运输——15 个批发买家最关心的问题。">
+  <section class="py-24 lg:py-32 px-6 bg-beige-50 min-h-screen">
+    <div class="max-w-3xl mx-auto">
+      <p class="text-xs uppercase tracking-widest text-sage-600 font-semibold mb-4">批发常见问题</p>
+      <h1 class="text-3xl md:text-4xl font-serif font-bold text-charcoal-900 mb-4">常见问题</h1>
+      <p class="text-charcoal-600 text-lg mb-10">材质规格、品质认证、定制加工、打样订货、包装运输——15 个批发买家最关心的问题，一次讲清。</p>
+
+      {categories.map(cat => (
+        <div class="mb-10">
+          <h2 class="text-sm uppercase tracking-widest text-charcoal-400 font-semibold mb-3">{cat.name}</h2>
+          <div class="space-y-3">
+            {cat.items.map(item => (
+              <details class="group bg-white rounded-xl border border-beige-200 shadow-sm open:shadow-md transition-shadow">
+                <summary class="flex items-start justify-between gap-4 cursor-pointer p-5 font-medium text-charcoal-800 text-sm md:text-base list-none [&::-webkit-details-marker]:hidden">
+                  <span>{item.q}</span>
+                  <span class="text-sage-700 font-serif text-xl leading-none group-open:rotate-45 transition-transform flex-shrink-0">+</span>
+                </summary>
+                <div class="px-5 pb-5 -mt-1 text-charcoal-600 text-sm leading-relaxed whitespace-pre-line">{item.a}</div>
+              </details>
+            ))}
+          </div>
+        </div>
+      ))}
+
+      <div class="bg-charcoal-800 rounded-2xl p-8 text-white mt-12">
+        <h2 class="text-lg font-serif font-bold mb-2">还有其他问题？</h2>
+        <p class="text-charcoal-200 text-sm mb-5">直接联系 Jeff——24 小时内给你真实回复，通常更快。</p>
+        <div class="flex flex-wrap gap-3">
+          <a href="https://wa.me/8613602812927" target="_blank" rel="noopener" class="inline-flex items-center gap-2 bg-green-500 hover:bg-green-400 text-white font-medium text-sm px-5 py-3 rounded-xl transition-colors">WhatsApp 联系 Jeff</a>
+          <a href="/zh/marketplace/" class="inline-flex items-center gap-2 border border-charcoal-500 hover:border-charcoal-300 text-charcoal-100 font-medium text-sm px-5 py-3 rounded-xl transition-colors">了解 Jeff 与工厂</a>
+        </div>
+      </div>
+    </div>
+  </section>
+</BaseLayout>
