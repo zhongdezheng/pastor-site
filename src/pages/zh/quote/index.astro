@@ -1,0 +1,122 @@
+---
+/**
+ * 📍 文件位置: src/pages/zh/quote/index.astro
+ * 🌐 路由: /zh/quote/
+ * 🎯 作用: 免费色卡/询价表单（中文版）——提交到 /api/leads
+ */
+import BaseLayout from '../../../layouts/BaseLayout.astro';
+const series = [
+  { v: 'QL Premium Nappa', label: 'QL 高端纳帕超纤 · 1.2mm' },
+  { v: 'GH Yunrou Classic', label: 'GH 云柔经典 · 亲肤超纤' },
+  { v: 'GD Original Senna', label: 'GD 原厂塞纳纹 · 1.2mm' },
+  { v: 'QE Mercedes-Benz Brushed', label: 'QE 奔驰纹拉丝 · 1.2mm' },
+  { v: 'Comfort Suede', label: '舒适鹿皮绒（Alcantara 风格）' },
+  { v: 'NP Napa PVC', label: 'NP 纳帕纹 PVC · 30+ 原厂色' },
+  { v: 'Genuine Leather', label: '头层纳帕真皮 · 高端小牛皮' },
+  { v: 'Custom Seat Covers', label: '专车专用座套定制' },
+];
+---
+
+<BaseLayout lang="zh" title="免费色卡与报价 — 汽车内饰皮革 | Livingstone" description="免费索取汽车内饰皮革色卡与批发报价——超纤、PVC、麂皮绒、头层真皮。24 小时内回复。">
+  <section class="py-24 lg:py-32 px-6 bg-beige-50 min-h-screen">
+    <div class="max-w-2xl mx-auto">
+      <p class="text-xs uppercase tracking-widest text-sage-600 font-semibold mb-4">免费色卡与报价</p>
+      <h1 class="text-3xl md:text-4xl font-serif font-bold text-charcoal-900 mb-4">索取色卡和批发报价</h1>
+      <p class="text-charcoal-600 text-lg mb-10">告诉我们你的需求——Jeff 24 小时内回复，通常更快。色卡全球寄送，你只需承担快递费。</p>
+
+      <form id="lead-form" class="bg-white rounded-2xl shadow-lg border border-beige-200 p-8 space-y-5">
+        <input type="text" name="website" tabindex="-1" autocomplete="off" class="hidden" aria-hidden="true" />
+
+        <div>
+          <label for="f-name" class="block text-sm font-medium text-charcoal-700 mb-1">您的姓名 <span class="text-red-500">*</span></label>
+          <input id="f-name" name="name" required maxlength="100" class="w-full rounded-xl border border-beige-300 px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-sage-400 focus:border-sage-400" placeholder="张先生" />
+        </div>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label for="f-company" class="block text-sm font-medium text-charcoal-700 mb-1">公司 / 店铺</label>
+            <input id="f-company" name="company" maxlength="200" class="w-full rounded-xl border border-beige-300 px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-sage-400 focus:border-sage-400" placeholder="某某汽车内饰改装店" />
+          </div>
+          <div>
+            <label for="f-country" class="block text-sm font-medium text-charcoal-700 mb-1">国家 / 地区</label>
+            <input id="f-country" name="country" maxlength="100" class="w-full rounded-xl border border-beige-300 px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-sage-400 focus:border-sage-400" placeholder="美国" />
+          </div>
+        </div>
+        <div>
+          <label for="f-contact" class="block text-sm font-medium text-charcoal-700 mb-1">WhatsApp 号码或邮箱 <span class="text-red-500">*</span></label>
+          <input id="f-contact" name="contact" required maxlength="200" class="w-full rounded-xl border border-beige-300 px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-sage-400 focus:border-sage-400" placeholder="+1 555 123 4567 或 you@shop.com" />
+        </div>
+        <div>
+          <span class="block text-sm font-medium text-charcoal-700 mb-2">感兴趣的系列（可选）</span>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+            {series.map(s => (
+              <label class="flex items-center gap-2 p-2.5 rounded-lg border border-beige-300 cursor-pointer hover:bg-beige-100 transition-colors">
+                <input type="checkbox" name="materials" value={s.v} class="rounded border-beige-300 text-charcoal-700 focus:ring-sage-400" />
+                <span class="text-xs text-charcoal-600">{s.label}</span>
+              </label>
+            ))}
+          </div>
+        </div>
+        <div>
+          <label for="f-message" class="block text-sm font-medium text-charcoal-700 mb-1">留言（可选）</label>
+          <textarea id="f-message" name="message" rows="4" maxlength="5000" class="w-full rounded-xl border border-beige-300 px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-sage-400 focus:border-sage-400" placeholder="例如：需要 2018-2023 款皮卡座椅皮革，首批约 200 米……"></textarea>
+        </div>
+
+        <p id="form-error" class="hidden text-red-600 text-sm"></p>
+        <button id="form-submit" type="submit" class="w-full bg-charcoal-800 hover:bg-charcoal-700 text-white font-medium py-3.5 rounded-xl transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
+          索取免费色卡
+        </button>
+        <p class="text-charcoal-400 text-xs text-center">不发垃圾邮件。信息直达 Jeff 本人。</p>
+      </form>
+
+      <div id="form-success" class="hidden bg-white rounded-2xl shadow-lg border border-beige-200 p-10 text-center mt-8">
+        <div class="w-14 h-14 rounded-full bg-sage-100 text-sage-800 flex items-center justify-center mx-auto mb-4">
+          <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+        </div>
+        <h2 class="text-xl font-serif font-bold text-charcoal-900 mb-2">已收到，谢谢！</h2>
+        <p class="text-charcoal-600 text-sm mb-6">Jeff 会在 24 小时内回复。想更快？现在就 WhatsApp 他。</p>
+        <a href="https://wa.me/8613602812927" target="_blank" rel="noopener" class="inline-flex items-center gap-2 bg-green-500 hover:bg-green-400 text-white font-medium text-sm px-5 py-3 rounded-xl transition-colors">立即 WhatsApp Jeff</a>
+      </div>
+
+      <p class="text-center mt-8"><a href="/zh/marketplace/" class="text-charcoal-400 hover:text-sage-600 text-sm transition-colors">← 返回职场见证</a></p>
+    </div>
+  </section>
+
+  <script>
+    const form = document.getElementById('lead-form');
+    const errBox = document.getElementById('form-error');
+    const btn = document.getElementById('form-submit');
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      errBox.classList.add('hidden');
+      btn.disabled = true; btn.textContent = '提交中...';
+      const fd = new FormData(form);
+      const payload = {
+        name: fd.get('name') || '',
+        company: fd.get('company') || '',
+        country: fd.get('country') || '',
+        contact: fd.get('contact') || '',
+        materials: fd.getAll('materials'),
+        message: fd.get('message') || '',
+        website: fd.get('website') || '',
+        lang: 'zh',
+      };
+      try {
+        const res = await fetch('/api/leads', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+        const d = await res.json();
+        if (res.ok && (d.success || d.id)) {
+          form.classList.add('hidden');
+          document.getElementById('form-success').classList.remove('hidden');
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        } else {
+          errBox.textContent = d.error || '提交失败——请改用 WhatsApp 联系我们。';
+          errBox.classList.remove('hidden');
+          btn.disabled = false; btn.textContent = '索取免费色卡';
+        }
+      } catch (err) {
+        errBox.textContent = '网络错误——请重试或改用 WhatsApp。';
+        errBox.classList.remove('hidden');
+        btn.disabled = false; btn.textContent = '索取免费色卡';
+      }
+    });
+  </script>
+</BaseLayout>

@@ -1,0 +1,634 @@
+<!--
+================================================================================
+文件位置: templates/index.html
+作用: 管理后台主壳页面，包含全局 CSS 样式、侧边栏导航、Quill CSS/JS 引用、编辑弹窗模板、JS 文件引用，通过 {\% include %\} 引入 8 个 Tab 子模板
+被谁调用: Flask 后端 render_template('index.html') 渲染
+修改指南:
+  - 【修改】新增 Tab: 依次在 topbar-nav 添加链接 → 新建 _tab_xxx.html 子模板 → 在 {\% include %\} 区域引用 → admin-all.js 添加 Tab 切换，新建 modules/tab-xxx.js 处理逻辑
+  - 【修改】更换编辑器富文本组件: 修改底部的 Quill CSS/JS CDN 引用，并在 modules/quill.js 中更新 Quill 初始化代码
+  - 【注意】CSS 样式集中内嵌在 <style> 中，修改全局样式注意不要影响弹窗(modal)和 Tab 面板布局
+  - 【注意】{\% include %\} 引入的子模板是 Jinja2 服务端拼接，不支持前端动态加载
+================================================================================
+--><!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>管理后台</title>
+<style>
+:root { --bg:#f5f5f5; --card:#fff; --primary:#1a1a2e; --accent:#c9a84c; --accent2:#e94560; --text:#333; --muted:#888; --border:#e0e0e0; --green:#059669; --red:#dc2626; --blue:#2563eb; }
+* { margin:0; padding:0; box-sizing:border-box; }
+body { font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif; background:var(--bg); color:var(--text); line-height:1.6; }
+
+/* Topbar — single row */
+.topbar { position:sticky; top:0; z-index:100; background:var(--primary); color:#fff; padding:0 1.5rem; box-shadow:0 2px 12px rgba(0,0,0,0.15); display:flex; align-items:center; justify-content:space-between; }
+.topbar-brand { font-size:1rem; font-weight:700; white-space:nowrap; color:var(--accent); }
+.topbar-nav { display:flex; gap:0; overflow:hidden; }
+.nav-item { display:flex; align-items:center; padding:0.75rem 0.7rem; cursor:pointer; font-size:0.82rem; color:rgba(255,255,255,0.7); transition:.2s; border-bottom:3px solid transparent; white-space:nowrap; }
+.nav-item:hover { color:#fff; background:rgba(255,255,255,0.04); }
+.nav-item.active { color:var(--accent); border-bottom-color:var(--accent); font-weight:600; background:rgba(255,255,255,0.05); }
+.nav-item.logout { color:rgba(255,255,255,0.5); cursor:pointer; }
+.nav-item.logout:hover { color:var(--accent2); }
+.main { max-width:1100px; margin:0 auto; padding:1.5rem 2rem; min-height:calc(100vh - 56px); }
+.page-title { font-size:1.4rem; font-weight:700; color:var(--primary); margin-bottom:1rem; }
+
+/* Cards */
+.card { background:var(--card); border-radius:10px; padding:1.25rem; margin-bottom:1rem; border:1px solid var(--border); }
+.card h3 { font-size:1rem; font-weight:700; margin-bottom:0.75rem; color:var(--primary); }
+
+/* Forms — one prop per row */
+.form-row { display:flex; align-items:center; gap:1rem; margin-bottom:0.75rem; }
+.form-row label { width:100px; font-size:0.85rem; font-weight:600; color:var(--muted); text-align:right; flex-shrink:0; }
+.form-row input, .form-row textarea, .form-row select { flex:1; padding:0.55rem 0.75rem; border:1px solid var(--border); border-radius:8px; font-size:0.9rem; font-family:inherit; transition:.2s; }
+.form-row input:focus, .form-row textarea:focus { outline:none; border-color:var(--accent); box-shadow:0 0 0 3px rgba(201,168,76,0.12); }
+.form-row textarea { min-height:200px; resize:vertical; }
+
+/* Upload zone */
+.upload-zone { border:2px dashed var(--border); border-radius:10px; padding:2rem; text-align:center; cursor:pointer; transition:.2s; background:#fafafa; }
+.upload-zone:hover, .upload-zone.dragover { border-color:var(--accent); background:#fef9e7; }
+.upload-zone p { font-size:0.85rem; color:var(--muted); }
+.upload-previews { display:flex; gap:0.5rem; margin-top:0.75rem; flex-wrap:wrap; }
+.upload-previews img { width:80px; height:80px; object-fit:cover; border-radius:8px; border:1px solid var(--border); }
+
+/* Buttons */
+.btn { padding:0.5rem 1.25rem; border:none; border-radius:8px; cursor:pointer; font-size:0.85rem; font-weight:600; transition:.2s; display:inline-flex; align-items:center; gap:0.3rem; }
+.btn-primary { background:var(--accent); color:#fff; }
+.btn-primary:hover { background:#b89336; }
+.btn-danger { background:var(--red); color:#fff; font-size:0.75rem; padding:0.3rem 0.7rem; }
+.btn-success { background:var(--green); color:#fff; font-size:0.75rem; padding:0.3rem 0.7rem; }
+.btn-outline { background:transparent; border:1px solid var(--border); color:var(--text); font-size:0.75rem; padding:0.3rem 0.7rem; }
+.btn-outline:hover { background:var(--bg); }
+.btn-sm { font-size:0.75rem; padding:0.25rem 0.6rem; }
+
+/* Table */
+.table-wrap { overflow-x:auto; }
+table { width:100%; border-collapse:collapse; font-size:0.85rem; }
+th { background:#f8f8f8; padding:0.6rem; text-align:left; font-weight:600; font-size:0.75rem; color:var(--muted); text-transform:uppercase; letter-spacing:0.3px; border-bottom:2px solid var(--border); }
+td { padding:0.6rem; border-bottom:1px solid var(--border); }
+tr:hover td { background:#fafafa; }
+
+/* Tags */
+.tag { display:inline-block; padding:0.1rem 0.5rem; border-radius:10px; font-size:0.7rem; font-weight:600; }
+.tag-listed { background:#d1fae5; color:#065f46; }
+.tag-unlisted { background:#fee2e2; color:#991b1b; }
+.tag-replied { background:#d1fae5; color:#065f46; }
+.tag-notreplied { background:#fce7f3; color:#9d174d; }
+
+/* Stats */
+.stats-row { display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:0.75rem; margin-bottom:1rem; }
+.stat-card { background:var(--card); border-radius:10px; padding:1rem; border:1px solid var(--border); text-align:right; }
+.stat-card .num { font-size:1.6rem; font-weight:800; color:var(--primary); }
+.stat-card .label { font-size:0.75rem; color:var(--muted); margin-top:0.15rem; }
+
+/* Modal */
+.modal-overlay { position:fixed; inset:0; background:rgba(0,0,0,0.45); z-index:200; display:none; align-items:center; justify-content:center; }
+.modal-overlay.open { display:flex; }
+.modal { background:var(--card); border-radius:14px; padding:1.5rem 2rem; max-width:600px; width:95%; max-height:90vh; overflow-y:auto; }
+.modal h3 { margin-bottom:1rem; font-size:1.1rem; }
+
+.tab-panel { display:none; }
+.tab-panel.active { display:block; }
+
+/* Login */
+.login-page { position:fixed; inset:0; background:var(--primary); display:flex; align-items:center; justify-content:center; z-index:999; flex-direction:column; gap:1rem; }
+.login-page .login-title { color:var(--accent); font-size:2rem; font-weight:800; }
+.login-page .login-card { background:var(--card); border-radius:14px; padding:2rem; width:340px; }
+.login-page .login-card h3 { text-align:center; margin-bottom:1.25rem; }
+.login-page .form-group { margin-bottom:0.75rem; }
+.login-page .form-group label { display:block; font-size:0.85rem; font-weight:600; color:var(--muted); margin-bottom:0.2rem; }
+.login-page .form-group input { width:100%; padding:0.55rem; border:1px solid var(--border); border-radius:8px; }
+/* Dashboard */
+.dash-grid { display:grid; grid-template-columns:repeat(auto-fill, minmax(200px,1fr)); gap:1rem; margin-bottom:1.5rem; }
+.dash-card { background:var(--card); border-radius:12px; padding:1.25rem; text-align:center; border:1px solid var(--border); transition:.2s; }
+.dash-card:hover { box-shadow:0 4px 16px rgba(0,0,0,0.08); transform:translateY(-2px); }
+.dash-card .dash-val { font-size:2rem; font-weight:800; color:var(--primary); line-height:1.2; }
+.dash-card .dash-label { font-size:0.82rem; color:var(--muted); margin-top:0.3rem; }
+.dash-card.accent .dash-val { color:var(--accent); }
+.dash-card.warn .dash-val { color:var(--red); }
+.dash-row { display:grid; grid-template-columns:2fr 1fr; gap:1.5rem; margin-bottom:1.5rem; }
+.dash-section { background:var(--card); border-radius:12px; border:1px solid var(--border); overflow:hidden; }
+.dash-section h4 { font-size:0.95rem; font-weight:700; padding:0.75rem 1rem; border-bottom:1px solid var(--border); color:var(--primary); }
+.dash-section table { width:100%; border-collapse:collapse; }
+.dash-section th { font-size:0.78rem; color:var(--muted); text-transform:uppercase; padding:0.6rem 1rem; text-align:left; border-bottom:1px solid var(--border); background:rgba(0,0,0,0.01); }
+.dash-section td { font-size:0.85rem; padding:0.6rem 1rem; border-bottom:1px solid #f0f0f0; }
+.dash-section tr:last-child td { border-bottom:none; }
+.dash-quick { display:flex; flex-wrap:wrap; gap:0.5rem; padding:0.75rem 1rem; }
+.dash-quick .btn { font-size:0.82rem; }
+/* 站点配置 */
+.cfg-row { display:flex; align-items:center; background:var(--card); border:1px solid var(--border); border-radius:10px; padding:0.5rem 1rem; margin-bottom:0.5rem; transition:.15s; }
+.cfg-row:hover { border-color:var(--primary-light); }
+.cfg-label { font-size:0.82rem; font-weight:600; min-width:110px; color:var(--text); flex-shrink:0; }
+.cfg-input { flex:1; padding:0.5rem; border:1px solid var(--border); border-radius:6px; font-size:0.85rem; background:rgba(0,0,0,0.02); transition:.15s; }
+.cfg-input:focus { border-color:var(--primary); outline:none; box-shadow:0 0 0 2px rgba(79,70,229,0.1); }
+@media (max-width:600px) {
+  .cfg-row { flex-direction:column; align-items:stretch; }
+  .cfg-label { min-width:auto; margin-bottom:0.25rem; }
+}
+@media (max-width:768px) {
+  .dash-row { grid-template-columns:1fr; }
+  .dash-grid { grid-template-columns:repeat(2,1fr); }
+}
+
+/* Quill 富文本编辑器 */
+.quill-box { flex:1; border:1px solid var(--border); border-radius:8px; background:#fff; margin-bottom:0.2rem; }
+.quill-box:focus-within { border-color:var(--accent); box-shadow:0 0 0 3px rgba(201,168,76,0.12); }
+.quill-box .ql-toolbar.ql-snow { border:none; border-bottom:1px solid #e8e8e8; border-radius:8px 8px 0 0; background:#fafafa; padding:3px 6px; }
+.quill-box .ql-container.ql-snow { border:none; font-size:0.9rem; font-family:inherit; border-radius:0 0 8px 8px; }
+.quill-box .ql-editor { min-height:150px; max-height:350px; overflow-y:auto; line-height:1.7; }
+.quill-box .ql-editor p { margin-bottom:0.3rem; }
+.quill-box.short .ql-editor { min-height:80px; max-height:200px; }
+.quill-box.tall .ql-editor { min-height:320px; max-height:500px; }
+
+</style>
+<link href="/admin/quill/quill.snow.css" rel="stylesheet">
+<script src="/admin/quill/quill.min.js?v=2"></script>
+</head>
+<body>
+
+<!-- Login Page -->
+<div class="login-page" id="login-page">
+  <div class="login-title">✦ 恩典之约</div>
+  <div class="login-card">
+    <h3 style="text-align:center">管理后台登录</h3>
+    <div class="form-group"><label>用户名</label><input type="text" id="login-user" placeholder="请输入用户名"></div>
+    <div class="form-group"><label>密码</label><input type="password" id="login-pass" placeholder="请输入密码"></div>
+    <button class="btn btn-primary" style="width:100%;display:flex;justify-content:center;align-items:center" onclick="doLogin()">登录</button>
+    <p id="login-msg" style="color:var(--red);font-size:0.85rem;text-align:right;margin-top:0.5rem;display:none"></p>
+  </div>
+</div>
+
+<!-- Topbar -->
+<header class="topbar" id="topbar" style="display:none">
+  <span class="topbar-brand">管理后台</span>
+  <nav class="topbar-nav">
+    <div class="nav-item active" data-tab="tab-dashboard">📊 仪表盘</div>
+    <div class="nav-item" data-tab="tab-profile">个人介绍</div>
+    <div class="nav-item" data-tab="tab-vision">全球异象</div>
+    <div class="nav-item" data-tab="tab-testimonies">见证管理</div>
+    <div class="nav-item" data-tab="tab-carousel">轮播经文</div>
+    <div class="nav-item" data-tab="tab-products">产品管理</div>
+    <div class="nav-item" data-tab="tab-courses">课程管理</div>
+    <div class="nav-item" data-tab="tab-prayers">代祷管理</div>
+    <div class="nav-item" data-tab="tab-leads">线索管理</div>
+    <div class="nav-item" data-tab="tab-orders">订单管理</div>
+    <div class="nav-item" data-tab="tab-users">👥 用户管理</div>
+    <div class="nav-item" data-tab="tab-site-config">⚙️ 站点设置</div>
+    <div class="nav-item logout" data-tab="tab-logout">管理员</div>
+  </nav>
+</header>
+
+<main class="main" id="main-content" style="display:none">
+
+  
+  <div class="tab-panel active" id="tab-dashboard">
+    <div class="page-title">📊 数据概览</div>
+
+    <!-- 统计卡片 -->
+    <div class="dash-grid">
+      <div class="dash-card">
+        <div class="dash-val" id="stat-orders-today">--</div>
+        <div class="dash-label">今日订单</div>
+      </div>
+      <div class="dash-card accent">
+        <div class="dash-val" id="stat-revenue-today">--</div>
+        <div class="dash-label">今日收入 (USD)</div>
+      </div>
+      <div class="dash-card">
+        <div class="dash-val" id="stat-orders-month">--</div>
+        <div class="dash-label">本月订单</div>
+      </div>
+      <div class="dash-card accent">
+        <div class="dash-val" id="stat-revenue-month">--</div>
+        <div class="dash-label">本月收入 (USD)</div>
+      </div>
+      <div class="dash-card">
+        <div class="dash-val" id="stat-products">--</div>
+        <div class="dash-label">上架产品</div>
+      </div>
+      <div class="dash-card">
+        <div class="dash-val" id="stat-categories">--</div>
+        <div class="dash-label">产品分类</div>
+      </div>
+      <div class="dash-card warn">
+        <div class="dash-val" id="stat-prayers-pending">--</div>
+        <div class="dash-label">待回复代祷</div>
+      </div>
+      <div class="dash-card">
+        <div class="dash-val" id="stat-testimonies">--</div>
+        <div class="dash-label">见证总数</div>
+      </div>
+    </div>
+
+    <!-- 最近订单 + 快捷入口 -->
+    <div class="dash-row">
+      <div class="dash-section">
+        <h4>🛒 最近订单</h4>
+        <div style="overflow-x:auto">
+          <table>
+            <thead><tr><th>编号</th><th>客户</th><th>产品</th><th>金额</th><th>状态</th></tr></thead>
+            <tbody id="dash-recent-orders"><tr><td colspan="5" style="text-align:center;color:var(--muted);padding:2rem">加载中...</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+      <div class="dash-section">
+        <h4>⚡ 快捷入口</h4>
+        <div class="dash-quick">
+          <button class="btn btn-outline btn-sm" onclick="switchTab('tab-products')">📦 管理产品</button>
+          <button class="btn btn-outline btn-sm" onclick="switchTab('tab-orders')">📋 查看订单</button>
+          <button class="btn btn-outline btn-sm" onclick="switchTab('tab-prayers')">🙏 代祷管理</button>
+          <button class="btn btn-outline btn-sm" onclick="switchTab('tab-testimonies')">📝 见证管理</button>
+          <button class="btn btn-outline btn-sm" onclick="switchTab('tab-carousel')">🎠 轮播管理</button>
+          <button class="btn btn-outline btn-sm" onclick="switchTab('tab-courses')">📚 课程管理</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Google Analytics 报告 -->
+    <div class="dash-section" style="margin-top:1.5rem">
+      <h4>📈 Google 数据分析</h4>
+      <div style="width:100%; overflow:auto; -webkit-overflow-scrolling:touch">
+        <iframe width="100%" height="580" src="https://datastudio.google.com/embed/reporting/d26bd459-29bf-403f-aff5-47043ba939fd/page/l4g5F" frameborder="0" style="border:0" allowfullscreen sandbox="allow-storage-access-by-user-activation allow-scripts allow-same-origin allow-popups allow-popups-to-escape-sandbox"></iframe>
+      </div>
+    </div>
+  </div>
+  <!--
+================================================================================
+文件位置: templates/_tab_profile.html
+作用: 个人介绍 Tab，包含中英文姓名/头衔、简短介绍(Quill 富文本)、经文段落、头像上传
+被谁调用: index.html 通过 {\% include '_tab_profile.html' %\} 引入
+修改指南:
+  - 【修改】调整 Quill 编辑器字段: 与 admin-all.js 中 profileQuillEN/profileQuillZH 的初始化配置需要同步调整
+  - 【修改】新增字段: 在表单中添加新 input，同时在 admin-all.js 的 profile 保存逻辑中携带新字段
+  - 【注意】Quill 编辑器通过隐藏 textarea 中转值，修改 form 结构时保留对应 textarea 的 id 与 data-quill 属性
+  - 【注意】头像上传使用 <input type="file"> + admin-all.js 中的 uploadFile()，字段名需与后端 /admin/api/profile/avatar 保持一致
+================================================================================
+-->  <!-- ====== TAB: 个人介绍 ====== -->
+  <section class="tab-panel active" id="tab-profile"><h1 class="page-title">个人介绍</h1>
+    <div class="card"><h3>中文 | Chinese</h3>
+      <div class="form-row"><label>姓名</label><input id="set-name-zh" placeholder="杰夫牧师"></div>
+      <div class="form-row"><label>头衔/职位</label><input id="set-title-zh" placeholder="一位来自中国的年轻牧师"></div>
+      <div class="form-row"><label>简短介绍</label><div class="quill-box"><div class="quill-editor" id="set-intro-zh-editor"></div></div>
+          <textarea id="set-intro-zh" style="display:none"></textarea></div>
+      <div class="form-row"><label>个人经文</label><div style="display:flex;gap:0.5rem;flex:1"><input id="set-verse-zh" placeholder="「我的恩典够你用的...」" style="flex:1"><input id="set-verse-ref-zh" placeholder="— 哥林多后书 12:9" style="flex:1"></div></div>
+    </div>
+    <div class="card"><h3>英语 | English</h3>
+      <div class="form-row"><label>Name</label><input id="set-name-en" placeholder="Pastor Jeff"></div>
+      <div class="form-row"><label>Title</label><input id="set-title-en" placeholder="A Young Pastor from China"></div>
+      <div class="form-row"><label>Brief Intro</label><div class="quill-box"><div class="quill-editor" id="set-intro-en-editor"></div></div>
+          <textarea id="set-intro-en" style="display:none"></textarea></div>
+      <div class="form-row"><label>Verse</label><div style="display:flex;gap:0.5rem;flex:1"><input id="set-verse-en" placeholder='"My grace is sufficient for you..."' style="flex:1"><input id="set-verse-ref-en" placeholder="— 2 Corinthians 12:9" style="flex:1"></div></div>
+    </div>
+    <div class="card"><h3>通用设置</h3>
+      <div class="form-row"><label>头像</label>
+        <div style="flex:1">
+          <img id="avatar-preview" class="upload-previews img" style="display:none;width:80px;height:80px;object-fit:cover;border-radius:8px;margin-bottom:0.5rem">
+          <input type="file" id="set-avatar" accept="image/*" style="display:none" onchange="uploadAvatar(this)">
+          <button class="btn btn-outline" onclick="document.getElementById('set-avatar').click()">选择图片</button>
+        </div>
+      </div>
+      <button class="btn btn-primary" onclick="saveSettings()">保存设置并同步到网站</button>
+      <p id="settings-msg" style="color:var(--green);margin-top:0.5rem;display:none"</p>
+    </div>
+  </section>
+  <!--
+================================================================================
+文件位置: templates/_tab_vision.html
+作用: 全球异象 Tab，中英文标题+内容编辑(Quill 富文本)，支持图文混排
+被谁调用: index.html 通过 {\% include '_tab_vision.html' %\} 引入
+修改指南:
+  - 【修改】调整 Quill 字段: 与 admin-all.js 中 visionQuillEN/visionQuillZH 的初始化配置同步
+  - 【修改】扩展为多个异象条目: 需改为列表+编辑弹窗模式，参考 _tab_testimonies.html 的实现
+  - 【注意】异象内容可能包含长图文，保存时注意后端字段长度限制
+================================================================================
+-->  <!-- ====== TAB: 全球异象 ====== -->
+  <section class="tab-panel" id="tab-vision"><h1 class="page-title">全球异象</h1>
+    <div class="card"><h3>中文 | Chinese</h3>
+      <div class="form-row"><label>标题</label><input id="vision-title-zh" placeholder="全球异象"></div>
+      <div class="form-row"><label>内容</label><div class="quill-box"><div class="quill-editor" id="vision-content-zh-editor"></div></div>
+          <textarea id="vision-content-zh" style="display:none"></textarea></div>
+    </div>
+    <div class="card"><h3>英文 | English</h3>
+      <div class="form-row"><label>Title</label><input id="vision-title-en" placeholder="Global Vision"></div>
+      <div class="form-row"><label>Content</label><div class="quill-box"><div class="quill-editor" id="vision-content-en-editor"></div></div>
+          <textarea id="vision-content-en" style="display:none"></textarea></div>
+    </div>
+    <button class="btn btn-primary" onclick="saveVision()">保存异象</button>
+    <p id="vision-msg" style="color:var(--green);margin-top:0.5rem;display:none">已保存</p>
+  </section>
+  <!--
+================================================================================
+文件位置: templates/_tab_testimonies.html
+作用: 见证管理 Tab，列表展示已有见证 + 新增/编辑表单（中英文内容、作者、视频链接等）
+被谁调用: index.html 通过 {\% include '_tab_testimonies.html' %\} 引入
+修改指南:
+  - 【修改】新增/编辑字段: 在表单中加 input/textarea，并在 admin-all.js 的 testimony 保存/提交函数中同步
+  - 【修改】调整 Quill 编辑器: 与 admin-all.js 中 testimonyQuillEN/testimonyQuillZH 配置一致
+  - 【注意】见证列表由 admin-all.js 动态渲染(innerHTML)，修改列表 HTML 模板需同步 JS 中的模板字符串
+  - 【注意】新增/编辑共用同一个 form，通过全局变量区分模式，切换时务必清空表单状态
+================================================================================
+-->  <!-- ====== TAB: 见证管理 ====== -->
+  <section class="tab-panel" id="tab-testimonies"><h1 class="page-title">见证管理</h1>
+    <div class="card"><h3>发布新见证 | Publish Testimony</h3>
+      <div class="form-row"><label>中文标题</label><input id="test-title-zh" placeholder="请输入中文标题"></div>
+      <div class="form-row"><label>英文标题</label><input id="test-title-en" placeholder="English title"></div>
+      <div class="form-row"><label>中文内容</label><div class="quill-box tall"><div class="quill-editor" id="test-content-zh-editor"></div></div>
+          <textarea id="test-content-zh" style="display:none"></textarea></div>
+      <div class="form-row"><label>英文内容</label><div class="quill-box tall"><div class="quill-editor" id="test-content-en-editor"></div></div>
+          <textarea id="test-content-en" style="display:none"></textarea></div>
+      <div class="form-row"><label>中文摘要</label><input id="test-excerpt-zh" placeholder="简短的摘要"></div>
+      <div class="form-row"><label>英文摘要</label><input id="test-excerpt-en" placeholder="Short excerpt"></div>
+      <div class="form-row"><label>日期</label><input id="test-date" type="date"></div>
+      <div class="form-row"><label>作者</label><input id="test-author" placeholder="作者名称"></div>
+      <div class="form-row"><label>图片</label>
+        <div style="flex:1">
+          <div class="upload-zone" onclick="document.getElementById('test-upload').click()">
+            <p>点击上传或拖拽图片到此处</p>
+          </div>
+          <input type="file" id="test-upload" accept="image/*" multiple style="display:none" onchange="handleTestImages(this.files)">
+          <div class="upload-previews" id="test-previews"></div>
+        </div>
+      </div>
+      <div class="form-row"><label>发布状态</label><label style="font-weight:400"><input type="checkbox" id="test-published" checked> 发布</label></div>
+      <button class="btn btn-primary" onclick="addTestimony()">发布见证</button>
+    </div>
+    <div class="card"><h3>已发布见证 | Published Testimonies</h3>
+      <div class="table-wrap"><table><thead><tr><th>中文标题</th><th>英文标题</th><th>日期</th><th>作者</th><th>状态</th><th>操作</th></tr></thead><tbody id="admin-testimonies-table"></tbody></table></div>
+    </div>
+  </section>
+  <!--
+================================================================================
+文件位置: templates/_tab_carousel.html
+作用: 轮播经文 Tab，首页轮播区展示的经文管理，列表+新增/编辑表单
+被谁调用: index.html 通过 {\% include '_tab_carousel.html' %\} 引入
+修改指南:
+  - 【修改】新增经文字段: 在 form 中添加，并在 admin-all.js 的 carousel 保存逻辑中携带
+  - 【修改】调整轮播排序: 在 admin-all.js 中修改排序 API 调用逻辑
+  - 【注意】经文中英文两个字段都是必填，删除或隐藏一个需同步调整 JS 校验
+  - 【注意】列表同样由 JS 动态渲染，HTML 模板变更需对应调整 JS 中的渲染代码
+================================================================================
+-->  <!-- ====== TAB: 轮播经文 ====== -->
+  <section class="tab-panel" id="tab-carousel"><h1 class="page-title">轮播经文管理</h1>
+    <div class="card"><h3>添加新经文</h3>
+      <div class="form-row"><label>经文(中文)</label><textarea id="cv-content-zh" rows="2" placeholder="经文内容（中文）"></textarea></div>
+      <div class="form-row"><label>章节(中文)</label><input id="cv-title-zh" placeholder="如：约翰福音 3:16"></div>
+      <div class="form-row"><label>经文(英文)</label><textarea id="cv-content-en" rows="2" placeholder="Verse text (English)"></textarea></div>
+      <div class="form-row"><label>章节(英文)</label><input id="cv-title-en" placeholder="e.g. John 3:16"></div>
+      <div class="form-row"><label>配图URL</label><input id="cv-image"></div>
+      <div class="form-row"><label>排序</label><input id="cv-sort" type="number" value="0" style="width:100px"></div>
+      <button class="btn btn-primary" onclick="addCarousel()">添加经文</button>
+    </div>
+    
+    <div class="card" id="carousel-edit-card" style="display:none"><h3>编辑经文</h3>
+      <input type="hidden" id="cv-edit-id">
+      <div class="form-row"><label>经文(中文)</label><textarea id="cv-edit-content-zh" rows="2"></textarea></div>
+      <div class="form-row"><label>章节(中文)</label><input id="cv-edit-title-zh"></div>
+      <div class="form-row"><label>经文(英文)</label><textarea id="cv-edit-content-en" rows="2"></textarea></div>
+      <div class="form-row"><label>章节(英文)</label><input id="cv-edit-title-en"></div>
+      <div class="form-row"><label>配图URL</label><input id="cv-edit-image"></div>
+      <div class="form-row"><label>排序</label><input id="cv-edit-sort" type="number" value="0" style="width:100px"></div>
+      <div style="display:flex;gap:0.5rem">
+        <button class="btn btn-primary" onclick="saveCarouselEdit()">保存修改</button>
+        <button class="btn btn-outline" onclick="document.getElementById('carousel-edit-card').style.display='none'">取消</button>
+      </div>
+    </div>
+
+    <div class="card" id="carousel-list"></div>
+  </section>
+  <!--
+================================================================================
+文件位置: templates/_tab_products.html
+作用: 产品管理 Tab，含类目(category)管理和产品(product)列表，产品新增/编辑表单含颜色、尺码、图片上传
+被谁调用: index.html 通过 {\% include '_tab_products.html' %\} 引入
+修改指南:
+  - 【修改】新增产品字段: 在表单加字段 + admin-all.js product 保存函数同步
+  - 【修改】颜色/尺码变体逻辑: 当前通过 inline 按钮增删变体行，修改 HTML 后检查 JS 中对应选择器
+  - 【修改】图片上传: 使用 admin-all.js 中的 uploadFile()，多图上传通过 file input multiple 属性 + JS 逐张上传
+  - 【注意】类目和产品是两级联动——先建类目再添加产品，修改时保留 category_id 的 select 选项加载逻辑
+  - 【注意】变体（颜色/尺码/SKU/库存/价格）是嵌套 JSON，修改结构需同步后端 product model
+================================================================================
+-->  <!-- ====== TAB: 产品管理（含类目） ====== -->
+  <section class="tab-panel" id="tab-products"><h1 class="page-title">产品管理</h1>
+    <!-- 类目区 -->
+    <div class="card"><h3>产品类目</h3>
+      <div style="display:flex;gap:0.75rem;align-items:flex-end">
+        <div style="flex:1"><label style="font-size:0.8rem;font-weight:600;color:var(--muted)">类目中文名</label><input id="cat-name-zh" placeholder="如：服装区" style="width:100%;padding:0.55rem 0.75rem"></div>
+        <div style="flex:1"><label style="font-size:0.8rem;font-weight:600;color:var(--muted)">类目英文名</label><input id="cat-name-en" placeholder="Apparel" style="width:100%;padding:0.55rem 0.75rem"></div>
+        <button class="btn btn-primary" onclick="addCategory()">添加类目</button>
+      </div>
+      <div id="categories-list" style="margin-top:0.75rem"></div>
+    </div>
+
+    <!-- 添加/编辑产品表单 -->
+    <div class="card" id="product-form-card"><h3 id="product-form-title">添加产品</h3>
+      <div class="form-row"><label>所属类目</label><select id="prod-cat" style="width:100%"></select></div>
+      <div class="form-row"><label>品名(中文)</label><input id="prod-name-zh" placeholder="如：180g男士圆领短袖T恤"></div>
+      <div class="form-row"><label>品名(英文)</label><input id="prod-name-en" placeholder="Product name"></div>
+      <div class="form-row"><label>价格(USD)</label><input id="prod-price" type="number" step="0.01" value="0" style="width:150px"></div>
+      <div class="form-row"><label>尺码</label><input id="prod-sizes" placeholder="S, M, L, XL, 2XL, 3XL"></div>
+      <div class="form-row"><label>颜色</label><input id="prod-colors" placeholder="白色, 黑色"></div>
+      <div class="form-row"><label>面料</label><input id="prod-material" placeholder="100%棉（200gsm）"></div>
+      <div class="form-row"><label>描述(中文)</label><div class="quill-box short"><div class="quill-editor" id="prod-desc-zh-editor"></div></div>
+          <textarea id="prod-desc-zh" style="display:none"></textarea></div>
+      <div class="form-row"><label>描述(英文)</label><div class="quill-box short"><div class="quill-editor" id="prod-desc-en-editor"></div></div>
+          <textarea id="prod-desc-en" style="display:none"></textarea></div>
+      <div class="form-row"><label>产品图片</label>
+        <div style="flex:1">
+          <div class="upload-zone" id="upload-zone" onclick="document.getElementById('file-input').click()">
+            <p>点击上传或拖拽图片到此处</p>
+          </div>
+          <input type="file" id="file-input" accept="image/*" multiple style="display:none" onchange="handleFiles(this.files)">
+          <div class="upload-previews" id="upload-previews"></div>
+        </div>
+      </div>
+      <input type="hidden" id="prod-edit-id" value="">
+      <div style="text-align:right"><button class="btn btn-primary" id="btn-save-product" onclick="saveProduct()">添加产品</button>
+      <button class="btn btn-outline" id="btn-cancel-edit" style="display:none" onclick="cancelEdit()">取消编辑</button></div>
+    </div>
+
+    <!-- 产品列表 -->
+    <div class="card"><h3>已上架产品（拖拽排序）</h3>
+      <div class="table-wrap"><table>
+        <thead><tr><th style="width:30px"></th><th>标题</th><th>类目</th><th>价格</th><th>状态</th><th>操作</th></tr></thead>
+        <tbody id="products-table-body" class="sortable-body"></tbody>
+      </table></div>
+    </div>
+
+    <div class="card" id="deleted-products-card" style="display:none"><h3 style="color:var(--red)">🗑 已删除产品</h3>
+      <div class="table-wrap"><table>
+        <thead><tr><th>标题</th><th>类目</th><th>价格</th><th>操作</th></tr></thead>
+        <tbody id="deleted-products-body"></tbody>
+      </table></div>
+    </div>
+  </section>
+  <!--
+================================================================================
+文件位置: templates/_tab_courses.html
+作用: 课程管理 Tab，课程列表+新增/编辑表单，含课程类型(免费/付费)、等级(初级/中级/高级)、价格、封面图等
+被谁调用: index.html 通过 {\% include '_tab_courses.html' %\} 引入
+修改指南:
+  - 【修改】新增课程字段: 在表单加字段 + admin-all.js course 保存函数同步
+  - 【修改】课程类型/等级枚举: 修改 HTML select options + JS 校验逻辑保持一致
+  - 【注意】封面图通过 admin-all.js uploadFile() 上传，上传后 path 写入隐藏 input
+  - 【注意】课程列表由 JS 动态渲染，修改表格列/布局时需同时更新 JS 模板
+================================================================================
+-->  
+  <section class="tab-panel" id="tab-courses"><h1 class="page-title">课程管理</h1>
+    <div class="card"><h3>添加课程</h3>
+      <div class="form-row"><label>课程名(中文)</label><input id="course-title-zh" placeholder="信仰根基"></div>
+      <div class="form-row"><label>课程名(英文)</label><input id="course-title-en" placeholder="Foundations of Faith"></div>
+      <div class="form-row"><label>描述(中文)</label><input id="course-desc-zh"></div>
+      <div class="form-row"><label>描述(英文)</label><input id="course-desc-en"></div>
+      <div class="form-row"><label>图标(emoji)</label><input id="course-icon" value="📖" style="width:80px"></div>
+      <div class="form-row"><label>级别</label><input id="course-level" value="入门" style="width:120px"></div>
+      <div class="form-row"><label>课数</label><input id="course-lessons" type="number" value="6" style="width:80px"></div>
+      <div class="form-row"><label>排序</label><input id="course-sort" type="number" value="0" style="width:80px"></div>
+      <button class="btn btn-primary" onclick="addCourse()">添加课程</button>
+    </div>
+    <div class="card" id="course-edit-card" style="display:none"><h3>编辑课程</h3>
+      <input type="hidden" id="course-edit-id">
+      <div class="form-row"><label>课程名(中文)</label><input id="course-edit-title-zh"></div>
+      <div class="form-row"><label>课程名(英文)</label><input id="course-edit-title-en"></div>
+      <div class="form-row"><label>描述(中文)</label><input id="course-edit-desc-zh"></div>
+      <div class="form-row"><label>描述(英文)</label><input id="course-edit-desc-en"></div>
+      <div class="form-row"><label>图标(emoji)</label><input id="course-edit-icon" style="width:80px"></div>
+      <div class="form-row"><label>级别</label><input id="course-edit-level" style="width:120px"></div>
+      <div class="form-row"><label>课数</label><input id="course-edit-lessons" type="number" style="width:80px"></div>
+      <div class="form-row"><label>排序</label><input id="course-edit-sort" type="number" style="width:80px"></div>
+      <div style="display:flex;gap:0.5rem">
+        <button class="btn btn-primary" onclick="saveCourseEdit()">保存修改</button>
+        <button class="btn btn-outline" onclick="document.getElementById('course-edit-card').style.display='none'">取消</button>
+      </div>
+    </div>
+    <div class="card" id="courses-list"></div>
+  </section>
+  <!--
+================================================================================
+文件位置: templates/_tab_prayers.html
+作用: 代祷管理 Tab，包含首页代祷经文编辑 + 用户代祷请求列表 + 回复表单 + 删除功能
+被谁调用: index.html 通过 {\% include '_tab_prayers.html' %\} 引入
+修改指南:
+  - 【修改】代祷经文编辑: 使用 Quill 编辑器，与 admin-all.js 中 prayerVerseQuill 配置同步
+  - 【修改】回复功能: 回复表单通过 JavaScript 动态处理，修改 HTML ID 需同步 JS
+  - 【注意】删除操作不可逆且不弹出确认，修改删除逻辑时建议加二次确认
+  - 【注意】用户代祷列表由 JS 动态渲染，每条包含回复表单，修改行结构需检查事件绑定是否会失效
+================================================================================
+-->  <section class="tab-panel" id="tab-prayers"><h1 class="page-title">代祷管理</h1>
+
+    <!-- 首页代祷经文编辑 -->
+    <div class="card"><h3>首页代祷区经文</h3>
+      <div class="form-row"><label>中文经文</label><input id="prayer-verse-zh" value="加拉太书 6:2 —「你们各人的重担要互相担当，如此，就完全了基督的律法。」"></div>
+      <div class="form-row"><label>English Verse</label><input id="prayer-verse-en" value='Galatians 6:2 — "Bear one another\'s burdens, and so fulfill the law of Christ."'></div>
+      <button class="btn btn-primary" onclick="savePrayerVerse()">保存经文</button>
+      <p id="prayer-verse-msg" style="color:var(--green);margin-top:0.5rem;display:none">已保存</p>
+    </div>
+
+    <!-- 代祷专栏说明编辑 -->
+    <div class="card"><h3>代祷专栏页说明文字</h3>
+      <div class="form-row"><label>中文说明</label><div class="quill-box short"><div class="quill-editor" id="prayer-intro-zh-editor"></div></div>
+          <textarea id="prayer-intro-zh" style="display:none">主内深交，不至隔绝。无论你正在经历职场的试炼、家庭的重担，还是事工的旷野，请将你的代祷题目留下来。身处这片土地，我和同工们愿意在每一天的祭坛前为你守望，在主里一同担当你的重担。你并不孤单。</textarea></div>
+      <div class="form-row"><label>English Intro</label><div class="quill-box short"><div class="quill-editor" id="prayer-intro-en-editor"></div></div>
+          <textarea id="prayer-intro-en" style="display:none">No distance can sever our fellowship in Christ. Whether you are walking through marketplace trials, family burdens, or a wilderness in your ministry—please leave your prayer requests here. From this harvest field, my team and I commit to standing with you daily at the altar, bearing your burdens in the Lord. You are never alone.</textarea></div>
+      <button class="btn btn-primary" onclick="savePrayerIntro()">保存说明</button>
+      <p id="prayer-intro-msg" style="color:var(--green);margin-top:0.5rem;display:none">已保存</p>
+    </div>
+
+    <div class="card"><h3>代祷列表</h3>
+    <div class="stats-row" id="prayers-stats"></div>
+    <div class="card" id="prayers-list"></div>
+    <div class="modal-overlay" id="reply-modal">
+      <div class="modal"><h3>回复代祷</h3>
+        <div class="form-row"><label>邮箱</label><input id="reply-email" readonly></div>
+        <div class="form-row"><label>原始内容</label><textarea id="reply-original" rows="3" readonly></textarea></div>
+        <div class="form-row"><label>回复内容</label><textarea id="reply-content" rows="4"></textarea></div>
+        <input type="hidden" id="reply-id">
+        <button class="btn btn-primary" onclick="submitReply()">发送回复</button>
+        <button class="btn btn-outline" onclick="document.getElementById('reply-modal').classList.remove('open')">取消</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ====== 线索管理 Tab ======
+       文件位置: templates/_tab_leads.html（内联）
+       被谁调用: index.html，Tab 切换时 loadLeads() 渲染
+  -->
+  <section class="tab-panel" id="tab-leads"><h1 class="page-title">线索管理</h1>
+    <p style="color:var(--muted);margin:-12px 0 16px">色卡/询价表单提交的线索。来源：/en/quote/ 与 /zh/quote/ 表单。</p>
+    <div class="stats-row" id="leads-stats"></div>
+    <div class="card" id="leads-list"></div>
+  </section>
+  
+<section class="tab-panel" id="tab-orders"><h1 class="page-title">订单管理 <a href="/api/export/orders.csv" target="_blank" class="btn btn-outline btn-sm" style="float:right;margin-top:0.25rem">📥 导出 Excel</a></h1>
+    <div class="stats-row" id="orders-stats"></div>
+    <div class="card"><div class="table-wrap"><table>
+      <thead><tr><th>ID</th><th>客户</th><th>产品</th><th>数量</th><th>规格</th><th>金额</th><th>状态</th><th>时间</th><th>操作</th></tr></thead>
+      <tbody id="orders-table-body"></tbody>
+    </table></div></div>
+  </section>
+
+  
+  <div class="tab-panel" id="tab-site-config">
+    <div class="page-title">⚙️ 站点设置</div>
+    <!-- 【修改】2026-08-21：站点设置改为手动保存（原来"自动保存"实际 401 失效）
+         改任何字段后，点表单底部【保存修改】按钮统一提交；主色调改完需刷新前台查看 -->
+    <p style="color:var(--muted);font-size:0.85rem;margin-bottom:1.25rem">修改后点击底部【保存修改】生效 · 主色调修改需刷新前台查看</p>
+    <div style="max-width:640px" id="site-config-form">
+      <div style="text-align:center;color:var(--muted);padding:2rem">加载中...</div>
+    </div>
+    <div id="config-flash" style="position:fixed;bottom:2rem;right:2rem;background:var(--primary);color:#fff;padding:0.5rem 1rem;border-radius:8px;font-size:0.85rem;opacity:0;transition:opacity 0.3s;pointer-events:none;z-index:9999"></div>
+  </div>
+
+  
+  <div class="tab-panel" id="tab-users">
+    <div class="page-title">👥 用户管理</div>
+    <div style="margin-bottom:1rem">
+      <button class="btn btn-primary" onclick="addUser()">+ 添加用户</button>
+    </div>
+    <div class="card"><div class="table-wrap"><table>
+      <thead><tr><th>用户名</th><th>显示名</th><th>角色</th><th>创建时间</th><th>操作</th></tr></thead>
+      <tbody id="users-table-body"></tbody>
+    </table></div></div>
+  </div>
+
+  <!-- Edit Product Modal - same form layout -->
+  <div class="modal-overlay" id="edit-product-modal">
+    <div class="modal" style="max-width:650px"><h3 id="edit-modal-title">编辑产品</h3>
+      <div class="form-row"><label>所属类目</label><select id="edit-prod-cat" style="width:100%"></select></div>
+      <div class="form-row"><label>品名(中文)</label><input id="edit-prod-name-zh"></div>
+      <div class="form-row"><label>品名(英文)</label><input id="edit-prod-name-en"></div>
+      <div class="form-row"><label>价格(USD)</label><input id="edit-prod-price" type="number" step="0.01" style="width:150px"></div>
+      <div class="form-row"><label>尺码</label><input id="edit-prod-sizes"></div>
+      <div class="form-row"><label>颜色</label><input id="edit-prod-colors"></div>
+      <div class="form-row"><label>面料</label><input id="edit-prod-material"></div>
+      <div class="form-row"><label>描述(中文)</label><div class="quill-box short"><div class="quill-editor" id="edit-prod-desc-zh-editor"></div></div>
+          <textarea id="edit-prod-desc-zh" style="display:none"></textarea></div>
+      <div class="form-row"><label>描述(英文)</label><div class="quill-box short"><div class="quill-editor" id="edit-prod-desc-en-editor"></div></div>
+          <textarea id="edit-prod-desc-en" style="display:none"></textarea></div>
+      <div class="form-row"><label>产品图片</label><div style="flex:1"><div class="upload-zone" onclick="document.getElementById('edit-file-input').click()"><p>点击上传或拖拽图片到此处</p></div><input type="file" id="edit-file-input" accept="image/*" multiple style="display:none" onchange="handleEditFiles(this.files)"><div class="upload-previews" id="edit-upload-previews"></div></div></div>
+      <div style="text-align:right;margin-top:1rem">
+        <button class="btn btn-primary" onclick="saveEditProduct()">保存修改</button>
+        <button class="btn btn-outline" onclick="document.getElementById('edit-product-modal').classList.remove('open')">取消</button>
+      </div>
+    </div>
+  </div>
+</main>
+
+<!-- JS 模块，按依赖顺序加载 -->
+<script src="/admin/js/modules/quill.js?v=2"></script>
+<script src="/admin/js/modules/tab-dashboard.js"></script>
+<script src="/admin/js/modules/tab-profile.js?v=2"></script>
+<script src="/admin/js/modules/tab-vision.js?v=2"></script>
+<script src="/admin/js/modules/tab-carousel.js?v=2"></script>
+<script src="/admin/js/modules/tab-categories.js?v=2"></script>
+<script src="/admin/js/modules/tab-products.js?v=3"></script>
+<script src="/admin/js/modules/tab-prayers.js?v=2"></script>
+<script src="/admin/js/modules/tab-leads.js?v=1"></script>
+<script src="/admin/js/modules/tab-testimonies.js?v=2"></script>
+<script src="/admin/js/modules/tab-courses.js?v=2"></script>
+<script src="/admin/js/modules/tab-orders.js?v=2"></script>
+<!-- 【修改】版本号机制：每次改动 tab-site-config.js 后，把 ?v=9 改成 ?v=10（随便递增），否则浏览器用缓存旧文件看不到新功能 -->
+<script src="/admin/js/modules/tab-site-config.js?v=9"></script>
+<script src="/admin/js/modules/tab-users.js"></script>
+<!-- admin-all.js 必须在最后加载（依赖所有模块函数已定义 + 包含 init 调用） -->
+<script src="/admin/js/admin-all.js?v=4"></script>
+</body>
+</html>
