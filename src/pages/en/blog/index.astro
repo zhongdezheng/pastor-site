@@ -1,0 +1,42 @@
+---
+/**
+ * 📍 文件位置: src/pages/en/blog/index.astro
+ * 🌐 路由: /en/blog/
+ * 🎯 作用: Blog 列表页——工厂故事与材质科普（触达跟进的分享内容）
+ */
+import BaseLayout from '../../../layouts/BaseLayout.astro';
+
+const posts = [
+  { slug: 'microfiber-vs-genuine', title: 'Microfiber vs. Genuine Leather: A Shop Owner\u2019s Guide', date: '2026-10-04', read: '4 min', excerpt: 'The real differences that matter when you quote a job — feel, durability, price, and when to use which.' },
+  { slug: 'roll-to-road', title: 'From Roll to Road: How Model-Specific Seat Covers Are Made', date: '2026-10-04', read: '4 min', excerpt: 'Digital cutting, computerized embroidery and QC — what happens between your pattern file and a finished seat cover kit.' },
+  { slug: 'factory-week', title: 'A Week Inside Our Guangzhou Factory', date: '2026-10-04', read: '5 min', excerpt: 'Color matching, cutting floors and container loading — a look at where your leather actually comes from.' },
+];
+---
+
+<BaseLayout lang="en" title="Blog — From the Factory Floor | Livingstone" description="Material guides, factory stories and craftsmanship notes from a 20-year auto interior leather factory in Guangzhou.">
+  <section class="py-24 lg:py-32 px-6 bg-beige-50 min-h-screen">
+    <div class="max-w-3xl mx-auto">
+      <p class="text-xs uppercase tracking-widest text-sage-600 font-semibold mb-4">From the Factory Floor</p>
+      <h1 class="text-3xl md:text-4xl font-serif font-bold text-charcoal-900 mb-4">Blog</h1>
+      <p class="text-charcoal-600 text-lg mb-10">Material guides, factory stories and craftsmanship notes — written for upholstery shops and interior builders.</p>
+      {posts.map(p => (
+        <a href={'/en/blog/' + p.slug + '/'} class="block bg-white rounded-2xl shadow-lg border border-beige-200 p-7 mb-6 hover:shadow-xl transition-shadow">
+          <div class="flex items-center gap-3 text-xs text-charcoal-400 mb-2">
+            <span>{p.date}</span><span>·</span><span>{p.read} read</span>
+          </div>
+          <h2 class="text-lg font-serif font-bold text-charcoal-900 mb-2">{p.title}</h2>
+          <p class="text-charcoal-600 text-sm mb-3">{p.excerpt}</p>
+          <span class="text-sage-700 text-sm font-medium">Read article →</span>
+        </a>
+      ))}
+      <div class="bg-charcoal-800 rounded-2xl p-8 text-white mt-10">
+        <h2 class="text-lg font-serif font-bold mb-2">Need leather for your next job?</h2>
+        <p class="text-charcoal-200 text-sm mb-5">7 series in stock — free color cards worldwide.</p>
+        <div class="flex flex-wrap gap-3">
+          <a href="/en/products/" class="inline-flex items-center gap-2 bg-white text-charcoal-800 font-medium text-sm px-5 py-3 rounded-xl">Browse leather series</a>
+          <a href="https://wa.me/8613602812927" target="_blank" rel="noopener" class="inline-flex items-center gap-2 bg-green-500 hover:bg-green-400 text-white font-medium text-sm px-5 py-3 rounded-xl">WhatsApp Jeff</a>
+        </div>
+      </div>
+    </div>
+  </section>
+</BaseLayout>

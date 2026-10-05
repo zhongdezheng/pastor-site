@@ -1,0 +1,36 @@
+---
+import BaseLayout from '../../../layouts/BaseLayout.astro';
+const posts = [
+  { slug: 'microfiber-vs-genuine', title: '超纤与真皮：改装店选材指南', date: '2026-10-04', read: '4 分钟', excerpt: '报价时真正影响决策的差异——手感、耐用性、价格，以及什么时候该用哪种。' },
+  { slug: 'roll-to-road', title: '从卷材到装车：专车座套是怎么做出来的', date: '2026-10-04', read: '4 分钟', excerpt: '数控裁切、电脑刺绣、四道质检——从版型文件到成品座套的全过程。' },
+  { slug: 'factory-week', title: '增城工厂的一周', date: '2026-10-04', read: '5 分钟', excerpt: '调色、裁切、装柜——你的皮革到底从哪来。' },
+];
+---
+
+<BaseLayout lang="zh" title="博客 — 来自工厂一线 | Livingstone" description="来自广州 20 年汽车内饰皮革工厂的材质指南、工厂故事与工艺笔记。">
+  <section class="py-24 lg:py-32 px-6 bg-beige-50 min-h-screen">
+    <div class="max-w-3xl mx-auto">
+      <p class="text-xs uppercase tracking-widest text-sage-600 font-semibold mb-4">来自工厂一线</p>
+      <h1 class="text-3xl md:text-4xl font-serif font-bold text-charcoal-900 mb-4">博客</h1>
+      <p class="text-charcoal-600 text-lg mb-10">材质指南、工厂故事与工艺笔记——写给内饰改装同行。</p>
+      {posts.map(p => (
+        <a href={'/zh/blog/' + p.slug + '/'} class="block bg-white rounded-2xl shadow-lg border border-beige-200 p-7 mb-6 hover:shadow-xl transition-shadow">
+          <div class="flex items-center gap-3 text-xs text-charcoal-400 mb-2">
+            <span>{p.date}</span><span>·</span><span>{p.read}</span>
+          </div>
+          <h2 class="text-lg font-serif font-bold text-charcoal-900 mb-2">{p.title}</h2>
+          <p class="text-charcoal-600 text-sm mb-3">{p.excerpt}</p>
+          <span class="text-sage-700 text-sm font-medium">阅读全文 →</span>
+        </a>
+      ))}
+      <div class="bg-charcoal-800 rounded-2xl p-8 text-white mt-10">
+        <h2 class="text-lg font-serif font-bold mb-2">下一个项目需要皮革？</h2>
+        <p class="text-charcoal-200 text-sm mb-5">7 个系列现货——色卡全球免费寄送。</p>
+        <div class="flex flex-wrap gap-3">
+          <a href="/zh/products/" class="inline-flex items-center gap-2 bg-white text-charcoal-800 font-medium text-sm px-5 py-3 rounded-xl">浏览皮革系列</a>
+          <a href="https://wa.me/8613602812927" target="_blank" rel="noopener" class="inline-flex items-center gap-2 bg-green-500 hover:bg-green-400 text-white font-medium text-sm px-5 py-3 rounded-xl">WhatsApp 联系 Jeff</a>
+        </div>
+      </div>
+    </div>
+  </section>
+</BaseLayout>
