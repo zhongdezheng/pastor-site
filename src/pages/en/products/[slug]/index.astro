@@ -22,10 +22,11 @@ try {
   const res = await fetch('https://pastorjeffnchina.com/api/products');
   if (res.ok) {
     products = ((await res.json()).data || [])
-      .filter(p => p.status === 1 && p.deleted === 0)
+      // 【2026-11-10 皮料下线】过滤皮料类目（category_id=3）
+      .filter(p => p.status === 1 && p.deleted === 0 && p.category_id !== 3)
       .map(p => ({
         id: String(p.id),
-        category: ({1:'apparel',2:'accessories',3:'leather'})[p.category_id] || 'accessories',
+        category: ({1:'apparel',2:'accessories'})[p.category_id] || 'accessories',
         name: { en: p.name_en || '', zh: p.name_zh || '' },
         price: p.price || 0,
         currency: 'USD',
@@ -73,7 +74,8 @@ export async function getStaticPaths() {
     const res = await fetch('https://pastorjeffnchina.com/api/products');
     if (res.ok) {
       products = ((await res.json()).data || [])
-        .filter(p => p.status === 1 && p.deleted === 0)
+        // 【2026-11-10 皮料下线】路由生成同样排除皮料（category_id=3）
+        .filter(p => p.status === 1 && p.deleted === 0 && p.category_id !== 3)
         .map(p => ({
           id: String(p.id),
           name: { en: p.name_en || '', zh: p.name_zh || '' },

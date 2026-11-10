@@ -7,26 +7,17 @@
 import BaseLayout from '../../../layouts/BaseLayout.astro';
 import site from '../../../features/site/site.json';
 
-let leatherProducts = [];
-try {
-  const res = await fetch('https://pastorjeffnchina.com/api/products');
-  if (res.ok) {
-    const d = (await res.json()).data || [];
-    leatherProducts = d.filter(p => p.category_id === 3 && p.status === 1 && !p.deleted);
-  }
-} catch(e) {}
-
 const waLink = 'https://wa.me/' + String(site.site.whatsapp || '').replace(/[^0-9]/g, '');
 const email = site.site.email || 'pastorjeffinchina@gmail.com';
 ---
 
-<BaseLayout lang="zh" title="职场见证 — 信仰与皮革生意 | Livingstone" description="广州牧师 Jeff，与一家 20 年汽车内饰工厂合作。批发汽车内饰皮革：超纤、PVC、麂皮绒、头层真皮——SGS 检测。诚实的报价，守住的承诺。">
+<BaseLayout lang="zh" title="职场见证 — 信仰与工作 | Livingstone" description="广州牧师 Jeff 的职场见证——信仰与工作在同一张办公桌。诚实的报价，守住的承诺。">
   <section class="py-24 lg:py-32 px-6 bg-beige-50 min-h-screen">
     <div class="max-w-3xl mx-auto">
 
       <p class="text-xs uppercase tracking-widest text-sage-600 font-semibold mb-4">职场事工</p>
       <h1 class="text-3xl md:text-4xl font-serif font-bold text-charcoal-900 mb-4">信仰，走进职场</h1>
-      <p class="text-charcoal-600 text-lg mb-10">我是广州的一位牧师——工作日里，我帮美国的汽车内饰改装店，从一家 20 年的工厂采购汽车内饰皮革。两个呼召，同一张办公桌。</p>
+      <p class="text-charcoal-600 text-lg mb-10">我是广州的一位牧师——工作日里，我在一家工厂上班，和同事打交道、处理外贸订单。两个呼召，同一张办公桌。</p>
 
       <!-- 我的见证 -->
       <article class="bg-white rounded-2xl shadow-lg border border-beige-200 p-8 mb-8">
@@ -46,34 +37,15 @@ const email = site.site.email || 'pastorjeffinchina@gmail.com';
       <!-- 我的工作 -->
       <article class="bg-white rounded-2xl shadow-lg border border-beige-200 p-8 mb-8">
         <h2 class="text-xl font-serif font-bold text-charcoal-900 mb-4">我的工作</h2>
-        <p class="text-charcoal-700 leading-relaxed mb-6">工厂是车又福新材料（广州增城）——20 年汽车内饰皮革与座套制造。我负责海外出口：报价、打样、跟产、出货。</p>
+        <p class="text-charcoal-700 leading-relaxed mb-6">我工作的地方是广州增城的一家制造工厂。我在那里负责海外订单：报价、打样、跟产、出货。</p>
         <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
           <div class="text-center py-3 border border-beige-200 rounded-xl"><div class="font-serif text-2xl font-bold text-charcoal-900">20+</div><div class="text-[11px] text-charcoal-400 mt-1">年行业经验</div></div>
           <div class="text-center py-3 border border-beige-200 rounded-xl"><div class="font-serif text-2xl font-bold text-charcoal-900">80万㎡</div><div class="text-[11px] text-charcoal-400 mt-1">月产能</div></div>
           <div class="text-center py-3 border border-beige-200 rounded-xl"><div class="font-serif text-2xl font-bold text-charcoal-900">30万㎡</div><div class="text-[11px] text-charcoal-400 mt-1">常备现货</div></div>
           <div class="text-center py-3 border border-beige-200 rounded-xl"><div class="font-serif text-2xl font-bold text-charcoal-900">1000+</div><div class="text-[11px] text-charcoal-400 mt-1">可选颜色</div></div>
         </div>
-        <p class="text-charcoal-700 mb-3">我们的皮革系列：</p>
-        {leatherProducts.length > 0 ? (
-          <ul class="space-y-2 mb-4">
-            {leatherProducts.map(p => (
-              <li>
-                <a href={'/zh/products/' + p.id + '/'} class="flex items-center gap-3 p-2 -mx-2 rounded-lg hover:bg-beige-100 transition-colors group">
-                  {p.images && p.images[0] ? <img src={p.images[0]} alt="" class="w-12 h-12 rounded-lg object-cover border border-beige-200" loading="lazy" /> : <span class="w-12 h-12 rounded-lg bg-beige-100 flex-shrink-0"></span>}
-                  <span class="text-charcoal-700 text-sm font-medium group-hover:text-sage-700">{p.name_zh || p.name_en}</span>
-                </a>
-              </li>
-            ))}
-          </ul>
-        ) : (
-          <p class="text-charcoal-500 text-sm mb-4">QL 纳帕 · GH 云柔 · GD 塞纳 · QE 奔驰纹 · 鹿皮绒 · NP PVC · 头层真皮</p>
-        )}
         <a href="/zh/products/" class="inline-flex items-center gap-1 text-sage-700 hover:text-sage-800 font-medium text-sm transition-colors">
-          浏览完整皮革系列
-          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
-        </a>
-        <a href="/zh/blog/" class="inline-flex items-center gap-1 text-charcoal-400 hover:text-sage-600 font-medium text-sm transition-colors">
-          来自工厂一线——阅读博客
+          逛逛小店
           <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
         </a>
       </article>
@@ -88,7 +60,7 @@ const email = site.site.email || 'pastorjeffinchina@gmail.com';
           </div>
           <div class="flex gap-4">
             <div class="w-8 h-8 rounded-full bg-sage-100 text-sage-800 flex items-center justify-center flex-shrink-0 font-serif font-bold text-sm">2</div>
-            <div><p class="font-semibold text-charcoal-800 text-sm">免费色卡</p><p class="text-charcoal-500 text-sm mt-0.5">色卡全球寄送——你只需承担快递费。</p></div>
+            <div><p class="font-semibold text-charcoal-800 text-sm">说话算数</p><p class="text-charcoal-500 text-sm mt-0.5">答应的事，记下来、做到、回报进度。</p></div>
           </div>
           <div class="flex gap-4">
             <div class="w-8 h-8 rounded-full bg-sage-100 text-sage-800 flex items-center justify-center flex-shrink-0 font-serif font-bold text-sm">3</div>
@@ -104,40 +76,19 @@ const email = site.site.email || 'pastorjeffinchina@gmail.com';
         </div>
       </article>
 
-      <!-- SGS 报告 -->
-      <article class="bg-white rounded-2xl shadow-lg border border-beige-200 p-8 mb-8">
-        <h2 class="text-xl font-serif font-bold text-charcoal-900 mb-3">合规与检测报告</h2>
-        <p class="text-charcoal-600 text-sm mb-5">材料由 SGS（全球最大检测认证机构）检测，原始报告下载：</p>
-        <div class="space-y-2">
-          <a href="/reports/SGS_Report_CANML1901648001_Formaldehyde_Test_ND.pdf" target="_blank" rel="noopener" class="flex items-center justify-between p-3 border border-beige-200 rounded-xl hover:bg-beige-100 transition-colors">
-            <span class="text-charcoal-700 text-sm">SGS 甲醛检测 <span class="text-sage-700 font-medium">— 未检出</span></span>
-            <span class="text-charcoal-400 text-xs">PDF</span>
-          </a>
-          <a href="/reports/SGS_Report_CANML1901648002_REACH_Azo_Dyes_Test_ND.pdf" target="_blank" rel="noopener" class="flex items-center justify-between p-3 border border-beige-200 rounded-xl hover:bg-beige-100 transition-colors">
-            <span class="text-charcoal-700 text-sm">SGS REACH 偶氮染料检测 <span class="text-sage-700 font-medium">— 未检出</span></span>
-            <span class="text-charcoal-400 text-xs">PDF</span>
-          </a>
-          <a href="/reports/SGS_Report_GZIN1901003879SC_Flex_Durability_and_Tear_Strength.pdf" target="_blank" rel="noopener" class="flex items-center justify-between p-3 border border-beige-200 rounded-xl hover:bg-beige-100 transition-colors">
-            <span class="text-charcoal-700 text-sm">SGS 耐折牢度与撕裂强度</span>
-            <span class="text-charcoal-400 text-xs">PDF</span>
-          </a>
-        </div>
-      </article>
-
       <!-- CTA -->
       <div class="bg-charcoal-800 rounded-2xl p-8 text-white">
-        <h2 class="text-xl font-serif font-bold mb-2">聊聊皮革。</h2>
-        <p class="text-charcoal-200 text-sm mb-6">索要免费色卡或样品报价——24 小时内回复，通常更快。</p>
+        <h2 class="text-xl font-serif font-bold mb-2">联系 Jeff。</h2>
+        <p class="text-charcoal-200 text-sm mb-6">有任何想聊的——24 小时内回复，通常更快。</p>
         <div class="flex flex-wrap gap-3">
           <a href={waLink} target="_blank" rel="noopener" class="inline-flex items-center gap-2 bg-green-500 hover:bg-green-400 text-white font-medium text-sm px-5 py-3 rounded-xl transition-colors">
             <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.297-.347.446-.52.149-.174.198-.298.297-.497.1-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.885-9.885 9.885m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
             WhatsApp 联系 Jeff
           </a>
-          <a href={'mailto:' + email + '?subject=皮革咨询（来自网站）'} class="inline-flex items-center gap-2 border border-charcoal-500 hover:border-charcoal-300 text-charcoal-100 font-medium text-sm px-5 py-3 rounded-xl transition-colors">
+          <a href={'mailto:' + email + '?subject=你好（来自网站）'} class="inline-flex items-center gap-2 border border-charcoal-500 hover:border-charcoal-300 text-charcoal-100 font-medium text-sm px-5 py-3 rounded-xl transition-colors">
             {email}
           </a>
         </div>
-        <p class="text-charcoal-300 text-xs mt-5">喜欢填表单？<a href="/zh/quote/" class="underline hover:text-white">在这里索取免费色卡</a> <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg></p>
       </div>
 
     </div>

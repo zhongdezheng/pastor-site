@@ -26,12 +26,13 @@ try {
   if (res.ok) {
     const apiData = (await res.json()).data || [];
     products = (Array.isArray(apiData) ? apiData : [])
-      .filter(p => p.status === 1 && p.deleted === 0)
+      // 【2026-11-10 皮料下线】过滤掉皮料类目（category_id=3），皮料不再上架此站
+      .filter(p => p.status === 1 && p.deleted === 0 && p.category_id !== 3)
       .map(p => {
         const parseArr = (s) => { try { return JSON.parse(s || '[]'); } catch(e) { return []; } };
         return {
           id: String(p.id),
-          category: ({1:'apparel',2:'accessories',3:'leather'})[p.category_id] || 'accessories',
+          category: ({1:'apparel',2:'accessories'})[p.category_id] || 'accessories',
           name: { en: p.name_en || '', zh: p.name_zh || '' },
           price: p.price || 0,
           currency: 'USD',
@@ -81,7 +82,7 @@ const { lang } = Astro.props;
 // 【修改】多语言标签字典（完整版，包含弹窗和表单字段）
 const labels = {
   en: {
-    all: 'All', apparel: 'Clothing', leather: 'Leather', accessories: 'Jewelry',
+    all: 'All', apparel: 'Clothing', accessories: 'Jewelry',
     categories: 'Categories', addToCart: 'Add to Cart', buyNow: 'Buy Now',
     color: 'Color', sizes: 'Sizes', qty: 'Qty', weight: 'Weight',
     stock: 'In Stock', outOfStock: 'Out of Stock', orderNow: 'Order Now',
@@ -89,7 +90,7 @@ const labels = {
     submitOrder: 'Submit Order', close: 'Close',
   },
   zh: {
-    all: '全部', apparel: '服装', leather: '皮革', accessories: '首饰',
+    all: '全部', apparel: '服装', accessories: '首饰',
     categories: '产品分类', addToCart: '加入购物车', buyNow: '立即购买',
     color: '颜色', sizes: '尺码', qty: '数量', weight: '克重',
     stock: '库存', outOfStock: '已售罄', orderNow: '立即下单',
@@ -102,7 +103,7 @@ const t = labels[lang];
 // 【修改】分类列表（key 与 products.json 中 category 字段对应）
 const categories = [
   { key: 'apparel', label: t.apparel },
-  { key: 'leather', label: t.leather },
+  // 【2026-11-10 皮料下线】皮革分类入口已移除
   { key: 'accessories', label: t.accessories },
 ];
 
@@ -524,7 +525,7 @@ const sizeGuide = lang === 'en'
       var sizes = (p.sizes || []).map(function(s){ return '<span class="text-[9px] border border-charcoal-200 rounded px-1 py-0 text-charcoal-500 whitespace-nowrap">' + s + '</span>'; }).join('');
       var colors = (p.colors || []).map(function(cl, i){ return '<span class="showcase-color-dot inline-block w-5 h-5 sm:w-4 sm:h-4 rounded-full cursor-pointer border-2 transition-colors" style="background:' + (colorMap[cl] || cl) + ';border-color:' + (i===0 ? '#333' : '#d1d5db') + '" data-id="' + pid + '" data-color="' + cl + '" title="' + cl + '"></span>'; }).join('');
       var name = p['name_' + lang] || p.name_en || p.name_zh || '';
-      return '<a href="/' + lang + '/products/' + pid + '/" class="product-card-item block bg-white rounded-xl border border-beige-200 overflow-hidden cursor-pointer hover:shadow-lg transition-all duration-300 hover:-translate-y-0.5" data-category="' + (({1:'apparel',2:'accessories',3:'leather'})[p.category_id] || 'accessories') + '" data-id="' + pid + '">' +
+      return '<a href="/' + lang + '/products/' + pid + '/" class="product-card-item block bg-white rounded-xl border border-beige-200 overflow-hidden cursor-pointer hover:shadow-lg transition-all duration-300 hover:-translate-y-0.5" data-category="' + (({1:'apparel',2:'accessories'})[p.category_id] || 'accessories') + '" data-id="' + pid + '">' +
         '<div class="aspect-square bg-beige-100 flex items-center justify-center relative">' + img + '</div>' +
         '<div class="p-4 flex flex-col gap-2" style="min-height:200px">' +
         '<h3 class="font-serif font-bold text-xs text-charcoal-800 leading-tight line-clamp-2 flex-shrink-0">' + name + '</h3>' +

@@ -13,6 +13,15 @@
 ============================================================
 -->
 ---
+// 【2026-11-10 皮料下线】皮革叙述改写表——D1 原文仍含旧表述，构建时统一替换
+const _leatherScrub = [
+  ["A company in the auto interior industry found me.", "A company found me."],
+  ["I never asked God for a job in the leather industry. But this industry found me.", "I never asked God for a job in business. But this door opened for me."],
+  ["一家做汽车内饰的公司找到了我，说要和我聊聊。", "一家公司找到了我，说要和我聊聊。"],
+  ["我从来没有求过皮革行业的工作，是这个行业找到了我。", "我从来没有求过生意场上的工作，是这扇门自己开了。"],
+];
+function scrub(t) { for (const [a, b] of _leatherScrub) t = t.split(a).join(b); return t; }
+
 // ── 导入 ────────────────────────────────────────────────────
 import BaseLayout from '../../../layouts/BaseLayout.astro';   // 全局布局
 // ⚡ 构建时从管理后台 API 获取见证，失败则回退本地 JSON
@@ -27,8 +36,8 @@ try {
         title: { en: t.title_en || t.title || "", zh: t.title_zh || t.title || "" },
         date: t.date || "",
         author: { en: t.author || "", zh: t.author || "" },
-        excerpt: { en: t.excerpt_en || "", zh: t.excerpt_zh || "" },
-        content: { en: t.content_en || t.content || "", zh: t.content_zh || t.content || "" },
+        excerpt: { en: scrub(t.excerpt_en || ""), zh: scrub(t.excerpt_zh || "") },
+        content: { en: scrub(t.content_en || t.content || ""), zh: scrub(t.content_zh || t.content || "") }, // 【2026-11-10 皮料下线】构建时改写皮革叙述
       }));
   }
 } catch(e) {}

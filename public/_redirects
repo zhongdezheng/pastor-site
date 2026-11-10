@@ -5,3 +5,10 @@
 /zh/products  /zh/products/  301
 /zh/prayer  /zh/prayer/  301
 /zh/contact  /zh/contact/  301
+
+# ── 2026-11-10 皮料下线：询价页/博客/皮料详情页 → 有效页面 ──
+/zh/quote/            /zh/products/   301
+/en/quote/            /en/products/   301
+/zh/blog/*            /zh/            301
+/en/blog/*            /en/            301
+/reports/*            /zh/            301

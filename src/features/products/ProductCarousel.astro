@@ -24,12 +24,13 @@ try {
   if (res.ok) {
     const apiData = (await res.json()).data || [];
     products = (Array.isArray(apiData) ? apiData : [])
-      .filter(p => p.status === 1 && p.deleted === 0)
+      // 【2026-11-10 皮料下线】过滤掉皮料类目（category_id=3），皮料不再上架此站
+      .filter(p => p.status === 1 && p.deleted === 0 && p.category_id !== 3)
       .map(p => {
         const parseArr = (s) => { try { return JSON.parse(s || '[]'); } catch(e) { return []; } };
         return {
           id: String(p.id),
-          category: ({1:'apparel',2:'accessories',3:'leather'})[p.category_id] || 'accessories',
+          category: ({1:'apparel',2:'accessories'})[p.category_id] || 'accessories',
           name: { en: p.name_en || '', zh: p.name_zh || '' },
           price: p.price || 0,
           currency: 'USD',
@@ -302,7 +303,8 @@ const t = labels[lang];
     try {
       fetch("/api/products").then(function(r){return r.json()}).then(function(d){
         if(!d.ok || !d.data) return;
-        renderCarousel(d.data);
+        // 【2026-11-10 皮料下线】实时同步同样过滤皮料类目（category_id=3）
+        renderCarousel(d.data.filter(function(p){ return p.category_id !== 3; }));
       });
     } catch(e) {}
   }, 200);
@@ -323,7 +325,7 @@ const t = labels[lang];
       var sizes = (p.sizes || []).map(function(s, i){ return '<span class="carousel-sz-opt text-[9px] border rounded px-1 py-0 whitespace-nowrap cursor-pointer transition-colors" style="border-color:' + (i===0 ? '#333' : '#d1d5db') + ';color:' + (i===0 ? '#1f2937' : '#6b7280') + '" data-id="' + pid + '" data-size="' + s + '">' + s + '</span>'; }).join('');
       var colors = (p.colors || []).map(function(cl, i){ return '<span class="carousel-color-dot inline-block w-5 h-5 sm:w-4 sm:h-4 rounded-full cursor-pointer border-2 transition-colors" style="background:' + (colorMap[cl] || cl) + ';border-color:' + (i===0 ? '#333' : '#d1d5db') + '" data-id="' + pid + '" data-color="' + cl + '" title="' + cl + '"></span>'; }).join('');
       var name = p['name_' + lang] || p.name_en || p.name_zh || '';
-      return '<a href="/' + lang + '/products/' + pid + '/" class="product-card-item block bg-white rounded-xl border border-beige-200 overflow-hidden cursor-pointer hover:shadow-2xl transition-all duration-500 hover:-translate-y-4 hover:scale-[1.02]" data-category="' + (({1:'apparel',2:'accessories',3:'leather'})[p.category_id] || 'accessories') + '" data-id="' + pid + '">' +
+      return '<a href="/' + lang + '/products/' + pid + '/" class="product-card-item block bg-white rounded-xl border border-beige-200 overflow-hidden cursor-pointer hover:shadow-2xl transition-all duration-500 hover:-translate-y-4 hover:scale-[1.02]" data-category="' + (({1:'apparel',2:'accessories'})[p.category_id] || 'accessories') + '" data-id="' + pid + '">' +
         '<div class="aspect-square bg-beige-100 flex items-center justify-center relative">' + img + '</div>' +
         '<div class="p-4 flex flex-col gap-1.5">' +
         '<h3 class="font-serif font-bold text-xs text-charcoal-800 leading-tight line-clamp-2 flex-shrink-0">' + name + '</h3>' +
@@ -344,7 +346,7 @@ const t = labels[lang];
     window.__carouselRendered = true;  // 重建成功 → 启用事件委托
     // 更新全局 PRODUCTS（供主脚本加购逻辑使用，id 用 prod- 前缀）
     if (typeof PRODUCTS !== 'undefined') {
-      PRODUCTS = items.map(function(p){ return { id: 'prod-' + p.id, category: ({1:'apparel',2:'accessories',3:'leather'})[p.category_id] || 'accessories', name: {}, name_zh: p.name_zh, name_en: p.name_en, price: p.price, colors: p.colors || [], sizes: p.sizes || [], images: p.images || [], stock: 200 }; });
+      PRODUCTS = items.map(function(p){ return { id: 'prod-' + p.id, category: ({1:'apparel',2:'accessories'})[p.category_id] || 'accessories', name: {}, name_zh: p.name_zh, name_en: p.name_en, price: p.price, colors: p.colors || [], sizes: p.sizes || [], images: p.images || [], stock: 200 }; });
     }
   }
 
