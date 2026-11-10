@@ -6,7 +6,7 @@
  * 🔧 修改指南:
  *   - 修改页面介绍文字：在 <p class="text-center..."> 中直接编辑
  *   - 修改表单字段：增减 <input> / <textarea> 并在下方 script 中同步处理
- *   - 修改 API 端点：script 中 fetch URL 的 https://admin.pastorjeffnchina.com/api/prayers
+ *   - 修改 API 端点：script 中 fetch URL 的 /api/prayers
  *   - 地球动画：iframe src="/prayer-globe.html"，需确保 public/ 下该文件存在
  *   - 表单必填校验：script 中检查 country 和 request 非空
  */
@@ -97,7 +97,7 @@ import BaseLayout from '../../../layouts/BaseLayout.astro';
 
     try {
       // 🔗 POST 到后台 API，content 字段拼接「国家: 代祷事项」
-      var res = await fetch('https://admin.pastorjeffnchina.com/api/prayers', {
+      var res = await fetch('/api/prayers', {
         method: 'POST',
         headers: {'Content-Type': 'application/json'},
         body: JSON.stringify({name: d.get('name')||'', email: d.get('email')||'', content: country + ': ' + request})

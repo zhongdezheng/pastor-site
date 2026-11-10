@@ -10,7 +10,7 @@ import BaseLayout from '../../../layouts/BaseLayout.astro';
 // ⚡ 构建时从管理后台 API 获取课程，失败则回退本地 JSON
 let courses = [];
 try {
-  const res = await fetch('http://localhost:5200/api/courses');
+  const res = await fetch('https://pastorjeffnchina.com/api/courses');
   if (res.ok) {
     courses = (await res.json())
       .filter(c => c.status === 1)
@@ -26,7 +26,7 @@ try {
   }
 } catch(e) {}
 if (!courses.length) {
-  courses = (await import('../../../content/courses.json')).default;
+  courses = (await import('../../../features/courses/courses.json')).default;
 }
 ---
 
@@ -56,3 +56,26 @@ if (!courses.length) {
 </BaseLayout>
 
 <script is:inline>function enrollWhatsApp(c){window.open('https://wa.me/85297094785?text='+encodeURIComponent('你好！我想报名参加：'+c),'_blank');}</script>
+<script is:inline>
+(function(){try{
+  fetch("/api/courses").then(function(r){return r.json()}).then(function(d){
+    if(!d.ok||!d.data)return; var items=d.data;
+    var grid=document.querySelector("[class*=\"grid\"], [class*=\"courses\"], .max-w-6xl>div");
+    if(!grid) return;
+    var lang=document.documentElement.lang==="zh"?"zh":"en";
+    var cards=grid.querySelectorAll("[class*=\"card\"], [class*=\"bg-white\"], .course-card");
+    items.forEach(function(c,i){
+      var card=cards[i]; if(!card) return;
+      var tl=c["title_"+lang]||c.title||"";
+      var desc=c["description_"+lang]||c.description||"";
+      var icon=card.querySelector("[class*=\"text-3xl\"], [class*=\"text-4xl\"]");
+      if(icon&&c.icon) icon.textContent=c.icon;
+      var h3=card.querySelector("h3");
+      if(h3) h3.textContent=tl;
+      var p=card.querySelector("p");
+      if(p) p.textContent=desc.substring(0,100)+(desc.length>100?"...":"");
+    });
+  });
+  });
+}catch(e){}})();
+</script>

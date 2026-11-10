@@ -5,7 +5,7 @@
 🎯 作用: 中文代祷页 — 3D地球展示 + 代祷提交表单
 📝 修改指南:
    【修改】表单字段：在 <form> 内增删 input/textarea
-   【修改】提交 API：改 fetch URL (admin.pastorjeffnchina.com/api/prayers)
+   【修改】提交 API：改 fetch URL (/api/prayers)
    【修改】提交数据结构：改 JSON.stringify 的字段
    【修改】3D地球 iframe：src="/prayer-globe.html"，可替换为其他可视化
    【修改】错误信息文案：改 prayer-error 的 textContent
@@ -106,7 +106,7 @@ import BaseLayout from '../../../layouts/BaseLayout.astro'; // 全局布局
 
     try {
       // 【API】提交到Strapi后端
-      var res = await fetch('https://admin.pastorjeffnchina.com/api/prayers', {
+      var res = await fetch('/api/prayers', {
         method: 'POST',
         headers: {'Content-Type': 'application/json'},
         body: JSON.stringify({name: d.get('name')||'', email: d.get('email')||'', content: country + ': ' + request})

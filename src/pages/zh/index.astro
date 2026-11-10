@@ -13,15 +13,15 @@
 ---
 // ── 布局与组件导入 ──────────────────────────────────────────
 import BaseLayout from '../../layouts/BaseLayout.astro';   // 全局布局（头部/页脚/SEO）
-import Hero from '../../components/Hero.astro';             // 首屏大图+欢迎语
-import Scripture3D from '../../components/Scripture3D.astro'; // 3D经文轮播
-import ProductCarousel from '../../components/ProductCarousel.astro'; // 产品轮播
-import VisionSection from '../../components/VisionSection.astro';      // 异象介绍卡片
-import PrayerHomeSection from '../../components/PrayerHomeSection.astro'; // 代祷引导入口
+import Hero from '../../features/hero/Hero.astro';             // 首屏大图+欢迎语
+import Scripture3D from '../../features/scripture/Scripture3D.astro'; // 3D经文轮播
+import ProductCarousel from '../../features/products/ProductCarousel.astro'; // 产品轮播
+import VisionSection from '../../features/vision/VisionSection.astro';      // 异象介绍卡片
+import PrayerHomeSection from '../../features/prayer/PrayerHomeSection.astro'; // 代祷引导入口
 ---
 
 <!-- 【布局】中文首页：语言=zh，标题显示在浏览器标签 -->
-<BaseLayout lang="zh" title="光与恩典 | 一位年轻牧师的信心之旅">
+<BaseLayout lang="zh" title="杰夫牧师 | 一位牧者的信心之旅">
   <!-- 【板块1】首屏主视觉 — Hero 大图 + 标题 + CTA 按钮 -->
   <Hero lang="zh" />
   <!-- 【板块2】3D经文展示 — 经文选段在3D粒子场景中旋转 -->

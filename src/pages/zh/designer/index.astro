@@ -4,7 +4,7 @@
 🌐 路由: /zh/designer/
 🎯 作用: 定制设计器 — Fabric.js 画布，上传图片/添加文字，预览并加入购物车
 📝 修改指南:
-   【修改】产品数据：编辑 src/content/products.json
+   【修改】产品数据：编辑 src/features/products/products.json
    【修改】画布背景色：改 backgroundColor: '#f8f6f0'（canvas初始化处）
    【修改】对齐吸附阈值：改 SNAP_THRESHOLD（默认15px）
    【修改】Canvas尺寸：改 style="width: ... aspect-ratio: 1/1"
@@ -19,7 +19,7 @@
 ---
 // ── 导入 ────────────────────────────────────────────────────
 import BaseLayout from '../../../layouts/BaseLayout.astro'; // 全局布局
-import products from '../../../content/products.json';      // 产品数据
+import products from '../../../features/products/products.json';      // 产品数据
 ---
 
 <BaseLayout lang="zh" title="定制基督教服饰设计 | 活石">
@@ -29,7 +29,7 @@ import products from '../../../content/products.json';      // 产品数据
 
 <!-- 【隐藏】设计器页面不需要页脚和浮动按钮 -->
 <style is:inline>
-  footer, #cart-floating, #wa-btn { display: none !important; }
+  footer { display: none !important; }
 </style>
 
 <!-- 【主布局】全屏高度、灰色背景 -->
@@ -713,7 +713,7 @@ import products from '../../../content/products.json';      // 产品数据
     updateDetail();
 
     // 渲染颜色色块 + 尺码选项
-    var colorMap = { '白色': '#f0f0f0', '黑色': '#222', '杏色': '#f5deb3', '粉色': '#ffb6c1' };
+    var colorMap = { '白色': '#f0f0f0', '黑色': '#222', '红色': '#dc2626', '浅灰色': '#d1d5db', '杏色': '#f5deb3', '粉色': '#ffb6c1' };
     var colors = g.colors || [];
     renderColorSwatches(colors, colorMap);
 
@@ -801,6 +801,17 @@ import products from '../../../content/products.json';      // 产品数据
         baseSrc = '/images/products/kids-tee/black.jpeg';
       } else {
         baseSrc = '/images/products/kids-tee/white.jpeg';
+      }
+    } else if (name.toLowerCase().includes('hoodie') || name.toLowerCase().includes('hooded') || zhName.includes('卫衣')) {
+      // 卫衣颜色映射
+      if (c === '黑色') {
+        baseSrc = '/images/products/卫衣/Z5FVT7SN7W_黑色_3.jpg';
+      } else if (c === '红色') {
+        baseSrc = '/images/products/卫衣/Z5FVT7SN7W_红色_19.jpg';
+      } else if (c === '浅灰色') {
+        baseSrc = '/images/products/卫衣/Z5FVT7SN7W_浅灰色_27.jpg';
+      } else {
+        baseSrc = '/images/products/卫衣/Z5FVT7SN7W_白色_11.jpg';
       }
     } else {
       // 成人T恤颜色映射

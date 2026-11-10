@@ -46,8 +46,10 @@ import BaseLayout from '../../../layouts/BaseLayout.astro'; // 全局布局
           <input type="email" id="give-email" placeholder="邮箱" class="w-full px-3 py-2 border rounded-lg text-sm">
           <textarea id="give-note" rows="2" placeholder="留言或代祷事项..." class="w-full px-3 py-2 border rounded-lg text-sm"></textarea>
         </div>
-        <!-- 【提交按钮】PayPal支付 — 【修改】按钮文案在此 -->
-        <button class="w-full py-3 bg-charcoal-800 hover:bg-charcoal-700 text-white rounded-xl font-medium text-sm transition-colors" onclick="submitGive()">通过 PayPal 奉献</button>
+        <!-- 💳 PayPal 智能按钮 -->
+        <div id="paypal-button-container"></div>
+        <div id="give-success" class="hidden text-center text-green-600 font-semibold text-sm py-3">🎉 感谢您的慷慨奉献！</div>
+        <div id="give-error" class="hidden text-center text-red-500 font-semibold text-sm py-3"></div>
       </div>
       
     </div>
@@ -66,15 +68,38 @@ import BaseLayout from '../../../layouts/BaseLayout.astro'; // 全局布局
 <script is:inline>
   // 【金额选择】点击预设卡片时更新输入框
   function selectAmount(amt){document.getElementById('give-amount').value=amt;}
-  // 【提交】收集信息 → 打开 PayPal.me 支付链接
-  function submitGive(){
-    var a=document.getElementById('give-amount').value,
-        n=document.getElementById('give-name').value.trim(),
-        e=document.getElementById('give-email').value.trim(),
-        m=document.getElementById('give-note').value.trim();
-    var lines=['我想奉献 $'+a,'姓名: '+n,'邮箱: '+e,'留言: '+m,'支付: PayPal'];
-    // 【修改】PayPal 链接：替换 paypalme 用户名
-    window.open('https://www.paypal.com/paypalme/pastorjeffinchina/'+a,'_blank');
-  }
+  // 💳 加载 PayPal 智能按钮
+  (function(){
+    var container=document.getElementById('paypal-button-container'),err=document.getElementById('give-error'),ok=document.getElementById('give-success');
+    if(!container)return;
+    fetch('/api/paypal/config').then(function(r){return r.json()}).then(function(cfg){
+      if(!cfg.enabled||!cfg.clientId){container.innerHTML='<p class="text-sm text-center text-charcoal-400 py-3">支付暂时不可用</p>';return;}
+      var s=document.createElement('script');
+      s.src='https://www.paypal.com/sdk/js?client-id='+cfg.clientId+'&currency=USD&intent=capture&components=buttons&disable-funding=credit,paylater&locale=zh_CN';
+      s.onload=function(){
+        paypal.Buttons({
+          style:{layout:'vertical',color:'gold',shape:'rect',label:'donate'},
+          createOrder:function(){
+            var a=parseFloat(document.getElementById('give-amount').value)||10;
+            return fetch('/api/paypal/create-order',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({amount:a})})
+              .then(function(r){return r.json()}).then(function(d){if(d.error)throw new Error(d.error);return d.id;});
+          },
+          onApprove:function(data){
+            return fetch('/api/paypal/capture-order',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({orderID:data.orderID})})
+              .then(function(r){return r.json()}).then(function(res){
+                if(res.error)throw new Error(res.error);
+                container.innerHTML='';
+                ok.classList.remove('hidden');
+              });
+          },
+          onError:function(e){
+            err.textContent='支付错误: '+(e&&e.message?e.message:JSON.stringify(e));
+            err.classList.remove('hidden');
+          }
+        }).render('#paypal-button-container');
+      };
+      document.head.appendChild(s);
+    }).catch(function(){container.innerHTML='<p class="text-sm text-center text-charcoal-400 py-3">支付暂时不可用</p>';});
+  })();
 </script>
 </BaseLayout>

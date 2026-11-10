@@ -2,9 +2,9 @@
 /**
  * 📍 文件位置: src/pages/en/vision/index.astro
  * 🌐 路由: /en/vision/
- * 🎯 作用: 展示 Livingstone 异象（Vision）的详细页面，从 content/vision.json 读取英文内容并渲染
+ * 🎯 作用: 展示 Livingstone 异象（Vision）的详细页面，从 features/vision/vision.json 读取英文内容并渲染
  * 🔧 修改指南:
- *   - 修改异象内容：编辑 content/vision.json → en 字段
+ *   - 修改异象内容：编辑 features/vision/vision.json → en 字段
  *   - 修改样式：调整下方 HTML 中的 Tailwind 类名
  *   - 段落分割：代码用 \n\n 分割正文，确保 JSON 中以双换行分隔段落
  *   - 页面标题格式：{v.title} — Livingstone，可在 BaseLayout 的 title 属性修改
@@ -16,7 +16,7 @@ import BaseLayout from '../../../layouts/BaseLayout.astro';
 // ⚡ 构建时从 API 获取异象
 let visionData = { en: {}, zh: {} };
 try {
-  const res = await fetch('http://localhost:5200/api/vision');
+  const res = await fetch('https://pastorjeffnchina.com/api/vision');
   if (res.ok) {
     const api = await res.json();
     visionData = {
@@ -26,7 +26,7 @@ try {
   }
 } catch(e) {}
 if (!visionData.en.content) {
-  visionData = (await import('../../../content/vision.json')).default;
+  visionData = (await import('../../../features/vision/vision.json')).default;
 }
 
 // 📝 v = visionData.en：英文异象对象 { title, content }
@@ -57,3 +57,17 @@ const paragraphs = v.content.split('\n\n').filter(p => p.trim());
     </div>
   </section>
 </BaseLayout>
+
+<script is:inline>
+(function(){try{
+  fetch("/api/vision").then(function(r){return r.json()}).then(function(d){
+    if(!d.ok||!d.data)return; var v=d.data;
+    var lang=document.documentElement.lang==="zh"?"zh":"en";
+    var h1=document.querySelector("h1");
+    if(h1) h1.textContent=v["title_"+lang]||h1.textContent;
+    var body=document.querySelector("[class*=\"prose\"], [class*=\"content\"], article");
+    if(body) body.innerHTML=(v["content_"+lang]||"").split("\n\n").map(function(p){return "<p>"+p+"</p>";}).join("");
+  });
+  });
+}catch(e){}})();
+</script>

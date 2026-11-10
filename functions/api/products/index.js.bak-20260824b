@@ -1,0 +1,95 @@
+/* ============================================================
+ * 产品 API（列表/新增/排序）— 本文件 = products/index.js
+ * 📖 作用: 前台产品展示 + 管理后台产品管理共用
+ * 📍 路由: functions/api/products/index.js → 只匹配 /api/products（精确路径）
+ *         （Cloudflare Pages 文件路由规则：单文件不匹配子路径）
+ *
+ * 🧭 完整教程（2026-08-24 补充）：
+ *   - 数据流:
+ *       前台首页/产品列表页 → GET /api/products（无 token）→ 只返回上架产品
+ *       后台产品管理 Tab  → GET /api/products（带登录 token）→ 返回全部
+ *   - 身份区分逻辑: 请求头 Authorization 带 "Bearer <ADMIN_TOKEN>" = 管理员
+ *       管理员 → SELECT 全部产品（含已下架 status=0、已删除 deleted=1）
+ *       公开   → SELECT 只取 status=1 AND deleted=0（上架且未删除）
+ *   - 后台产品管理页依赖此接口显示：
+ *       主表格 = 上架+下架产品（带"已上架/已下架"标签）
+ *       "🗑 已删除产品"区 = deleted=1 的产品（有恢复/彻底删除按钮）
+ *   - 新增产品: POST /api/products（本文件处理）
+ *   - 拖拽排序: POST /api/products/reorder（products/reorder.js 处理）
+ *   - 单条操作(编辑/下架/软删/恢复): PUT/DELETE /api/products/{id}（products/[id].js 处理）
+ * 🛠️ 修改指南:
+ *   - 产品数据在 D1 数据库 products 表（后台「产品管理」Tab 直接改）
+ *   - 【修改】改列表筛选: 改下面 GET 分支的两条 SQL WHERE 条件
+ *   - 【修改】新增产品字段: 改 POST 分支的 INSERT 语句 + [id].js 的 UPDATE
+ *   - 排序: 改 sort_order 字段
+ * ⚠️ 删除 = 软删除（deleted=1），不物理删除
+ * ============================================================ */
+function checkAuth(r, env) {
+  const auth = r.headers.get('Authorization') || '';
+  // 【修改】认证前缀（2026-08-21）：后台 admin-all.js 发送 "Bearer " + token（7 字符），
+  //   slice(7) 去掉前缀后与 ADMIN_TOKEN 比对；原误写 '***' 导致后台产品操作全部 401
+  return (auth.startsWith('Bearer ') ? auth.slice(7) : auth).trim() === env.ADMIN_TOKEN;
+}
+
+function formatProduct(r) {
+  return {
+    id: r.id, name_zh: r.name_zh, name_en: r.name_en, price: r.price,
+    colors: (() => { try { return JSON.parse(r.colors || '[]'); } catch(e) { return []; } })(),
+    sizes: (() => { try { return JSON.parse(r.sizes || '[]'); } catch(e) { return []; } })(),
+    material: r.material, description_zh: r.description_zh, description_en: r.description_en,
+    images: (() => { try { return JSON.parse(r.images || '[]'); } catch(e) { return []; } })(),
+    category_id: r.category_id, status: r.status, sort_order: r.sort_order, created_at: r.created_at,
+  };
+}
+
+/* 拆分说明（2026-08-21）：Cloudflare Pages 单文件只匹配精确路径，
+ * 子路径 /api/products/2 会 404。拆成 index.js（列表/新增/排序）+ [id].js（单条操作） */
+export async function onRequest(ctx) {
+  const { request, env } = ctx;
+  const h = { 'Content-Type': 'application/json; charset=utf-8', 'Access-Control-Allow-Origin': '*' };
+  const m = request.method;
+  const url = new URL(request.url);
+
+  // GET — 列表（身份区分）：
+  //   - 请求头带 "Bearer <ADMIN_TOKEN>"（管理员，后台产品管理页）→ 返回全部产品
+  //     （含已下架 status=0 和已删除 deleted=1，由后台 JS 分区显示）
+  //   - 无 token（公开，前台页面）→ 只返回 status=1 AND deleted=0 的上架产品
+  // 【修改】2026-08-24：区分身份——后台产品管理需要看到全部产品（含下架/已删除），
+  //   前台只显示上架；后台"🗑 已删除产品"区依赖此接口返回 deleted=1 的数据
+  if (m === 'GET') {
+    const auth = request.headers.get('Authorization') || '';
+    const isAdmin = (auth.startsWith('Bearer ') ? auth.slice(7) : auth).trim() === env.ADMIN_TOKEN;
+    const sql = isAdmin
+      ? 'SELECT * FROM products ORDER BY sort_order, id'
+      : 'SELECT * FROM products WHERE status=1 AND deleted=0 ORDER BY sort_order, id';
+    const rows = await env.DB.prepare(sql).all();
+    return new Response(JSON.stringify({ ok: true, data: rows.results.map(formatProduct) }), { headers: h });
+  }
+
+  // 以下 — 管理员
+  if (!checkAuth(request, env))
+    return new Response(JSON.stringify({ error: 'Unauthorized' }), { status: 401, headers: h });
+
+  // POST /api/products/reorder — 拖拽排序（后台「产品管理」拖行排序调用）
+  if (m === 'POST' && url.pathname.endsWith('/reorder')) {
+    const d = await request.json();
+    const ids = Array.isArray(d.ids) ? d.ids : [];
+    if (ids.length) {
+      await env.DB.batch(ids.map(function(pid, i) {
+        return env.DB.prepare('UPDATE products SET sort_order=? WHERE id=?').bind(i + 1, pid);
+      }));
+    }
+    return new Response(JSON.stringify({ ok: true, count: ids.length }), { headers: h });
+  }
+
+  // POST /api/products — 新增产品
+  if (m === 'POST') {
+    const d = await request.json();
+    const r = await env.DB.prepare(
+      'INSERT INTO products (name_zh,name_en,price,colors,sizes,material,description_zh,description_en,images,category_id,sort_order) VALUES (?1,?2,?3,?4,?5,?6,?7,?8,?9,?10,?11)'
+    ).bind(d.name_zh, d.name_en||'', d.price||0, d.colors||'[]', d.sizes||'[]', d.material||'', d.description_zh||'', d.description_en||'', d.images||'[]', d.category_id||0, d.sort_order||0).run();
+    return new Response(JSON.stringify({ ok: true, id: r.meta.last_row_id }), { headers: h });
+  }
+
+  return new Response(JSON.stringify({ error: 'Method not allowed' }), { status: 405, headers: h });
+}

@@ -4,7 +4,7 @@
  * 🌐 路由: /en/designer/
  * 🎯 作用: 英文定制设计器——使用 Fabric.js 在 Canvas 上对产品（T恤）进行图文定制设计，支持选择产品/颜色/尺码/数量/上传图片/添加文字，完成后加入购物车
  * 🔧 修改指南:
- *   - 产品数据：从 content/products.json 加载，通过 __designerProducts API 注入
+ *   - 产品数据：从 features/products/products.json 加载，通过 __designerProducts API 注入
  *   - Canvas 尺寸：wrapper 决定 canvas 大小，默认正方形 1:1
  *   - 基础图片映射：reloadColor() 中根据产品类型（成人/儿童）和颜色映射图片路径
  *   - 儿童产品判定：name 中包含 "children"/"kid" 或 zh 名中包含 "儿童"
@@ -17,7 +17,7 @@
 // 【修改】引入基础布局
 import BaseLayout from '../../../layouts/BaseLayout.astro';
 // 【修改】引入产品数据（JSON 数组）
-import products from '../../../content/products.json';
+import products from '../../../features/products/products.json';
 ---
 
 <BaseLayout lang="en" title="Custom Christian Apparel Design | Livingstone">
@@ -27,7 +27,7 @@ import products from '../../../content/products.json';
 
 <!-- 🎨 隐藏页脚和浮动按钮（设计器需要全屏体验） -->
 <style is:inline>
-  footer, #cart-floating, #wa-btn { display: none !important; }
+  footer { display: none !important; }
 </style>
 
 <!-- 🎨 设计器主容器（全屏高度） -->
@@ -707,7 +707,7 @@ import products from '../../../content/products.json';
     updateDetail();
 
     // 🎨 渲染颜色 swatches
-    var colorMap = { '白色': '#f0f0f0', '黑色': '#222', '杏色': '#f5deb3', '粉色': '#ffb6c1' };
+    var colorMap = { '白色': '#f0f0f0', '黑色': '#222', '红色': '#dc2626', '浅灰色': '#d1d5db', '杏色': '#f5deb3', '粉色': '#ffb6c1' };
     var colors = g.colors || [];
     renderColorSwatches(colors, colorMap);
 
@@ -800,6 +800,17 @@ import products from '../../../content/products.json';
         baseSrc = '/images/products/kids-tee/black.jpeg';
       } else {
         baseSrc = '/images/products/kids-tee/white.jpeg';
+      }
+    } else if (name.toLowerCase().includes('hoodie') || name.toLowerCase().includes('hooded') || zhName.includes('卫衣')) {
+      // 🧥 卫衣（白/黑/红/浅灰/杏）
+      if (c === '黑色') {
+        baseSrc = '/images/products/卫衣/Z5FVT7SN7W_黑色_3.jpg';
+      } else if (c === '红色') {
+        baseSrc = '/images/products/卫衣/Z5FVT7SN7W_红色_19.jpg';
+      } else if (c === '浅灰色') {
+        baseSrc = '/images/products/卫衣/Z5FVT7SN7W_浅灰色_27.jpg';
+      } else {
+        baseSrc = '/images/products/卫衣/Z5FVT7SN7W_白色_11.jpg';
       }
     } else {
       // 🧑 成人 180g T恤（黑/白）

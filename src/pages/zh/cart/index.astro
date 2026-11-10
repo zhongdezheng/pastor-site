@@ -5,7 +5,7 @@
 🎯 作用: 购物车页 — 显示已添加商品、修改数量/删除、PayPal支付
 📝 修改指南:
    【修改】支付方式：改 PayPal SDK 配置或替换为其他支付
-   【修改】API 端点：改 fetch URL (admin.pastorjeffnchina.com/api/paypal/*)
+   【修改】API 端点：改 fetch URL (/api/paypal/*)
    【修改】空购物车文案：改 "购物车是空的" 字符串
    【修改】支付按钮样式：改 paypal.Buttons({style}) 配置
    【修改】货币：改 SDK URL 的 currency=USD
@@ -16,7 +16,7 @@
 ---
 // ── 导入 ────────────────────────────────────────────────────
 import BaseLayout from '../../../layouts/BaseLayout.astro'; // 全局布局
-import products from '../../../content/products.json';      // 产品数据（用于展示产品名和图片）
+import products from '../../../features/products/products.json';      // 产品数据（用于展示产品名和图片）
 ---
 
 <BaseLayout lang="zh" title="购物车 | 活石">
@@ -52,7 +52,7 @@ import products from '../../../content/products.json';      // 产品数据（�
    【PayPal】SDK 加载 / 按钮渲染 / 创建订单 / 捕获支付
    【数据源】localStorage('ps-cart') + products.json
    【修改】localStorage key：改 'ps-cart'
-   【修改】API base URL：改所有 https://admin.pastorjeffnchina.com/api/...
+   【修改】API base URL：改所有 /api/...
 ============================================================
 -->
 <script is:inline>
@@ -135,7 +135,7 @@ import products from '../../../content/products.json';      // 产品数据（�
     paypalContainer.innerHTML='<p class="text-charcoal-400 text-sm text-center py-4">正在加载支付方式...</p>';
 
     // 【API】获取PayPal配置（clientId + 模式）
-    fetch('https://admin.pastorjeffnchina.com/api/paypal/config')
+    fetch('/api/paypal/config')
     .then(function(r){return r.json();})
     .then(function(cfg){
       if(!cfg.enabled || !cfg.clientId){
@@ -154,7 +154,7 @@ import products from '../../../content/products.json';      // 产品数据（�
     paypalLoaded=true;
     var s=document.createElement('script');
     // 【修改】货币：currency=USD
-    s.src='https://www.paypal.com/sdk/js?client-id='+clientId+'&currency=USD&intent=capture&disable-funding=credit&components=buttons';
+    s.src='https://www.paypal.com/sdk/js?client-id='+clientId+'&currency=USD&intent=capture&disable-funding=credit,paylater&components=buttons&locale=zh_CN';
     if(mode==='sandbox') s.src+='&buyer-country=US'; // 沙箱模式加国家参数
     s.onload=renderButtons;
     s.onerror=function(){ paypalContainer.innerHTML='<p class="text-red-500 text-sm text-center py-2">支付加载失败，请刷新页面重试。</p>'; };
@@ -172,7 +172,7 @@ import products from '../../../content/products.json';      // 产品数据（�
       // 【创建订单】POST 到后端
       createOrder: function(data,actions){
         var cart=getCart();
-        return fetch('https://admin.pastorjeffnchina.com/api/paypal/create-order',{
+        return fetch('/api/paypal/create-order',{
           method:'POST',headers:{'Content-Type':'application/json'},
           body:JSON.stringify({items:cart.map(function(i){return {name:i.name||'Product',price:i.price,quantity:i.quantity,slug:i.slug||i.id};})})
         }).then(function(r){return r.json();}).then(function(data){
@@ -184,7 +184,7 @@ import products from '../../../content/products.json';      // 产品数据（�
       onApprove: function(data,actions){
         paypalContainer.innerHTML='<p class="text-charcoal-400 text-sm text-center py-4">正在处理支付...</p>';
         var cart=getCart();
-        return fetch('https://admin.pastorjeffnchina.com/api/paypal/capture-order',{
+        return fetch('/api/paypal/capture-order',{
           method:'POST',headers:{'Content-Type':'application/json'},
           body:JSON.stringify({orderID:data.orderID, items:cart.map(function(i){return {name:i.name||'Product',price:i.price,quantity:i.quantity,slug:i.slug||i.id,color:i.color,size:i.size};})})
         }).then(function(r){return r.json();}).then(function(result){
@@ -200,7 +200,7 @@ import products from '../../../content/products.json';      // 产品数据（�
       },
       // 【支付错误】
       onError: function(err){
-        paypalError.textContent='支付出错，请稍后重试。';
+        paypalError.textContent='支付错误: ' + (err && err.message ? err.message : JSON.stringify(err));
         paypalError.classList.remove('hidden');
       }
     }).render('#paypal-button-container');

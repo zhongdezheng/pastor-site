@@ -2,7 +2,7 @@
 /**
  * 📍 文件位置: src/pages/en/give/index.astro
  * 🌐 路由: /en/give/
- * 🎯 作用: 英文奉献/捐赠页面——提供固定金额选择、自定义金额输入、个人信息收集，跳转 PayPal.me 支付
+ * 🎯 作用: 英文奉献/捐赠页面——金额选择 + PayPal 智能按钮（Donate）收款
  * 🔧 修改指南:
  *   - 修改预设金额：编辑下方 grid 中三个卡片的 onclick="selectAmount(N)" 和对应文字
  *   - 修改 PayPal 链接：替换 script 中 paypal.me/pastorjeffinchina 为目标账号
@@ -57,8 +57,10 @@ import BaseLayout from '../../../layouts/BaseLayout.astro';
           <input type="email" id="give-email" placeholder="Email" class="w-full px-3 py-2 border rounded-lg text-sm">
           <textarea id="give-note" rows="2" placeholder="Message or prayer request..." class="w-full px-3 py-2 border rounded-lg text-sm"></textarea>
         </div>
-        <!-- 💳 PayPal 支付按钮 -->
-        <button class="w-full py-3 bg-charcoal-800 hover:bg-charcoal-700 text-white rounded-xl font-medium text-sm transition-colors" onclick="submitGive()">Continue with PayPal</button>
+        <!-- 💳 PayPal 智能按钮 -->
+        <div id="paypal-button-container"></div>
+        <div id="give-success" class="hidden text-center text-green-600 font-semibold text-sm py-3">🎉 Thank you for your generous gift!</div>
+        <div id="give-error" class="hidden text-center text-red-500 font-semibold text-sm py-3"></div>
       </div>
       
     </div>
@@ -69,11 +71,37 @@ import BaseLayout from '../../../layouts/BaseLayout.astro';
 <script is:inline>
   // 🎁 选择预设金额 → 填入输入框
   function selectAmount(amt){document.getElementById('give-amount').value=amt;}
-  // 💳 提交奉献 → 拼接信息后跳转 PayPal.me
-  function submitGive(){
-    var a=document.getElementById('give-amount').value,n=document.getElementById('give-name').value.trim(),e=document.getElementById('give-email').value.trim(),m=document.getElementById('give-note').value.trim();
-    var lines=['I would like to give $'+a,'Name: '+n,'Email: '+e,'Message: '+m,'Payment: PayPal'];
-    // 🔗 跳转到 PayPal.me（金额作为 URL 路径参数）
-    window.open('https://www.paypal.com/paypalme/pastorjeffinchina/'+a,'_blank');
-  }
+  // 💳 加载 PayPal 智能按钮
+  (function(){
+    var container=document.getElementById('paypal-button-container'),err=document.getElementById('give-error'),ok=document.getElementById('give-success');
+    if(!container)return;
+    fetch('/api/paypal/config').then(function(r){return r.json()}).then(function(cfg){
+      if(!cfg.enabled||!cfg.clientId){container.innerHTML='<p class="text-sm text-center text-charcoal-400 py-3">Payment is temporarily unavailable</p>';return;}
+      var s=document.createElement('script');
+      s.src='https://www.paypal.com/sdk/js?client-id='+cfg.clientId+'&currency=USD&intent=capture&components=buttons&disable-funding=credit,paylater&locale=en_US';
+      s.onload=function(){
+        paypal.Buttons({
+          style:{layout:'vertical',color:'gold',shape:'rect',label:'donate'},
+          createOrder:function(){
+            var a=parseFloat(document.getElementById('give-amount').value)||10;
+            return fetch('/api/paypal/create-order',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({amount:a})})
+              .then(function(r){return r.json()}).then(function(d){if(d.error)throw new Error(d.error);return d.id;});
+          },
+          onApprove:function(data){
+            return fetch('/api/paypal/capture-order',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({orderID:data.orderID})})
+              .then(function(r){return r.json()}).then(function(res){
+                if(res.error)throw new Error(res.error);
+                container.innerHTML='';
+                ok.classList.remove('hidden');
+              });
+          },
+          onError:function(e){
+            err.textContent='Payment error: '+(e&&e.message?e.message:JSON.stringify(e));
+            err.classList.remove('hidden');
+          }
+        }).render('#paypal-button-container');
+      };
+      document.head.appendChild(s);
+    }).catch(function(){container.innerHTML='<p class="text-sm text-center text-charcoal-400 py-3">Payment is temporarily unavailable</p>';});
+  })();
 </script>

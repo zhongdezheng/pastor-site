@@ -1,0 +1,68 @@
+/* ============================================================
+ * 产品 API — GET 公开 / POST·PUT·DELETE 管理员
+ * 📖 作用: 前台产品展示 + 管理后台产品管理共用
+ * 🛠️ 修改指南:
+ *   - 产品数据在 D1 数据库 products 表（后台「产品管理」Tab 直接改）
+ *   - 后台保存即生效（前端页面实时拉取），无需部署
+ *   - 排序: 改 sort_order 字段
+ * ⚠️ 删除 = 软删除（deleted=1），不物理删除
+ * ============================================================ */
+function checkAuth(r, env) {
+  const auth = r.headers.get('Authorization') || '';
+  // 【修改】认证前缀（2026-08-21）：后台 admin-all.js 发送 "Bearer " + token（7 字符），
+  //   slice(7) 去掉前缀后与 ADMIN_TOKEN 比对；原误写 '***' 导致后台产品操作全部 401
+  return (auth.startsWith('Bearer ') ? auth.slice(7) : auth).trim() === env.ADMIN_TOKEN;
+}
+
+function formatProduct(r) {
+  return {
+    id: r.id, name_zh: r.name_zh, name_en: r.name_en, price: r.price,
+    colors: (() => { try { return JSON.parse(r.colors || '[]'); } catch(e) { return []; } })(),
+    sizes: (() => { try { return JSON.parse(r.sizes || '[]'); } catch(e) { return []; } })(),
+    material: r.material, description_zh: r.description_zh, description_en: r.description_en,
+    images: (() => { try { return JSON.parse(r.images || '[]'); } catch(e) { return []; } })(),
+    category_id: r.category_id, status: r.status, sort_order: r.sort_order, created_at: r.created_at,
+  };
+}
+
+/* 拆分说明（2026-08-21）：Cloudflare Pages 单文件只匹配精确路径，
+ * 子路径 /api/products/2 会 404。拆成 index.js（列表/新增/排序）+ [id].js（单条操作） */
+export async function onRequest(ctx) {
+  const { request, env } = ctx;
+  const h = { 'Content-Type': 'application/json; charset=utf-8', 'Access-Control-Allow-Origin': '*' };
+  const m = request.method;
+  const url = new URL(request.url);
+
+  // GET — 公开：列表（只返回上架产品）
+  if (m === 'GET') {
+    const rows = await env.DB.prepare('SELECT * FROM products WHERE status=1 AND deleted=0 ORDER BY sort_order, id').all();
+    return new Response(JSON.stringify({ ok: true, data: rows.results.map(formatProduct) }), { headers: h });
+  }
+
+  // 以下 — 管理员
+  if (!checkAuth(request, env))
+    return new Response(JSON.stringify({ error: 'Unauthorized' }), { status: 401, headers: h });
+
+  // POST /api/products/reorder — 拖拽排序（后台「产品管理」拖行排序调用）
+  if (m === 'POST' && url.pathname.endsWith('/reorder')) {
+    const d = await request.json();
+    const ids = Array.isArray(d.ids) ? d.ids : [];
+    if (ids.length) {
+      await env.DB.batch(ids.map(function(pid, i) {
+        return env.DB.prepare('UPDATE products SET sort_order=? WHERE id=?').bind(i + 1, pid);
+      }));
+    }
+    return new Response(JSON.stringify({ ok: true, count: ids.length }), { headers: h });
+  }
+
+  // POST /api/products — 新增产品
+  if (m === 'POST') {
+    const d = await request.json();
+    const r = await env.DB.prepare(
+      'INSERT INTO products (name_zh,name_en,price,colors,sizes,material,description_zh,description_en,images,category_id,sort_order) VALUES (?1,?2,?3,?4,?5,?6,?7,?8,?9,?10,?11)'
+    ).bind(d.name_zh, d.name_en||'', d.price||0, d.colors||'[]', d.sizes||'[]', d.material||'', d.description_zh||'', d.description_en||'', d.images||'[]', d.category_id||0, d.sort_order||0).run();
+    return new Response(JSON.stringify({ ok: true, id: r.meta.last_row_id }), { headers: h });
+  }
+
+  return new Response(JSON.stringify({ error: 'Method not allowed' }), { status: 405, headers: h });
+}

@@ -1,0 +1,71 @@
+/* ============================================================
+ * 产品 API — GET 公开 / POST·PUT·DELETE 管理员
+ * 📖 作用: 前台产品展示 + 管理后台产品管理共用
+ * 🛠️ 修改指南:
+ *   - 产品数据在 D1 数据库 products 表（后台「产品管理」Tab 直接改）
+ *   - 后台保存即生效（前端页面实时拉取），无需部署
+ *   - 排序: 改 sort_order 字段
+ * ⚠️ 删除 = 软删除（deleted=1），不物理删除
+ * ============================================================ */
+function checkAuth(r, env) {
+  const auth = r.headers.get('Authorization') || '';
+  return (auth.startsWith('***') ? auth.slice(3) : auth).trim() === env.ADMIN_TOKEN;
+}
+
+function formatProduct(r) {
+  return {
+    id: r.id, name_zh: r.name_zh, name_en: r.name_en, price: r.price,
+    colors: (() => { try { return JSON.parse(r.colors || '[]'); } catch(e) { return []; } })(),
+    sizes: (() => { try { return JSON.parse(r.sizes || '[]'); } catch(e) { return []; } })(),
+    material: r.material, description_zh: r.description_zh, description_en: r.description_en,
+    images: (() => { try { return JSON.parse(r.images || '[]'); } catch(e) { return []; } })(),
+    category_id: r.category_id, status: r.status, sort_order: r.sort_order, created_at: r.created_at,
+  };
+}
+
+export async function onRequest(ctx) {
+  const { request, env } = ctx;
+  const h = { 'Content-Type': 'application/json; charset=utf-8', 'Access-Control-Allow-Origin': '*' };
+  const m = request.method;
+  const url = new URL(request.url);
+  const id = url.pathname.match(/\/api\/products\/(\d+)/)?.[1];
+
+  // GET — 公开：列表或单条
+  if (m === 'GET') {
+    if (id) {
+      const r = await env.DB.prepare('SELECT * FROM products WHERE id=? AND deleted=0').bind(id).first();
+      if (!r) return new Response(JSON.stringify({ ok: true, data: null }), { headers: h });
+      return new Response(JSON.stringify({ ok: true, data: formatProduct(r) }), { headers: h });
+    }
+    const rows = await env.DB.prepare('SELECT * FROM products WHERE status=1 AND deleted=0 ORDER BY sort_order, id').all();
+    return new Response(JSON.stringify({ ok: true, data: rows.results.map(formatProduct) }), { headers: h });
+  }
+
+  // POST/PUT/DELETE — 管理员
+  if (!checkAuth(request, env))
+    return new Response(JSON.stringify({ error: 'Unauthorized' }), { status: 401, headers: h });
+
+  if (m === 'POST') {
+    const d = await request.json();
+    const r = await env.DB.prepare(
+      'INSERT INTO products (name_zh,name_en,price,colors,sizes,material,description_zh,description_en,images,category_id,sort_order) VALUES (?1,?2,?3,?4,?5,?6,?7,?8,?9,?10,?11)'
+    ).bind(d.name_zh, d.name_en||'', d.price||0, d.colors||'[]', d.sizes||'[]', d.material||'', d.description_zh||'', d.description_en||'', d.images||'[]', d.category_id||0, d.sort_order||0).run();
+    return new Response(JSON.stringify({ ok: true, id: r.meta.last_row_id }), { headers: h });
+  }
+
+  if (m === 'PUT' && id) {
+    const d = await request.json();
+    const fields = ['name_zh','name_en','price','colors','sizes','material','description_zh','description_en','images','category_id','status','sort_order'];
+    const sets = fields.filter(f => d[f] !== undefined).map(f => `${f}=?`).join(', ');
+    const vals = fields.filter(f => d[f] !== undefined).map(f => d[f]);
+    await env.DB.prepare(`UPDATE products SET ${sets} WHERE id=?`).bind(...vals, id).run();
+    return new Response(JSON.stringify({ ok: true }), { headers: h });
+  }
+
+  if (m === 'DELETE' && id) {
+    await env.DB.prepare('UPDATE products SET deleted=1 WHERE id=?').bind(id).run();
+    return new Response(JSON.stringify({ ok: true }), { headers: h });
+  }
+
+  return new Response(JSON.stringify({ error: 'Method not allowed' }), { status: 405, headers: h });
+}

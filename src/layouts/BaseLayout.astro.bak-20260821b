@@ -1,0 +1,358 @@
+---
+/*
+ * ============================================================================
+ * 文件位置: src/layouts/BaseLayout.astro
+ * 作用: 全局布局组件，定义网站的统一框架（导航栏、页脚、购物车浮窗、WhatsApp 浮窗）
+ * 被谁调用: 所有页面（src/pages/ 下的 .astro 文件）通过 <BaseLayout> 包裹使用
+ * 修改指南:
+ *   - 【修改】导航链接: 编辑 navLinks 数组，增减链接项
+ *   - 【修改】导航标签文案: 编辑 labels 对象的 en/zh 属性
+ *   - 【修改】网站名称/tagline: 编辑 src/features/site/site.json
+ *   - 【修改】页脚版权/经文: 编辑 <footer> 内的文案
+ *   - 【修改】购物车浮窗位置: 编辑 cart-floating 的 fixed bottom-24 right-6
+ *   - 【修改】WhatsApp 浮窗: 编辑 wa-btn 的 href 和位置
+ *   - 注意: 多语言通过 lang prop 切换，新增语言需同时修改 labels 和 navLinks
+ * ============================================================================
+ */
+
+// ⚡ 构建时从管理后台 API 获取站点配置，失败则回退本地 JSON
+let site = {
+  name: { en: 'Livingstone', zh: '活石' },
+  tagline: { en: '', zh: '' },
+  whatsapp: '',
+  email: '',
+};
+try {
+  const res = await fetch('https://pastorjeffnchina.com/api/site-config');
+  if (res.ok) {
+    const data = await res.json();
+    // 【修改】读取 API 中英文配置（2026-08-21）：后台站点设置 → 前台导航/footer/标题
+    const cfg = (data && data.data) ? data.data : (data.site || null);
+    if (cfg) {
+      site.name = {
+        en: cfg.site_title || site.name.en,
+        zh: cfg.site_title_zh || site.name.zh,
+      };
+      site.tagline = {
+        en: cfg.site_tagline || '',
+        zh: cfg.site_tagline_zh || '',
+      };
+      site.whatsapp = cfg.site_whatsapp || site.whatsapp;
+      site.email = cfg.site_email || site.email;
+    }
+  }
+} catch(e) {}
+if (!site.email) {
+  const fallback = (await import('../features/site/site.json')).default;
+  site = fallback.site;
+}
+
+// Props 接口定义：【修改】如需新增 prop，在此添加
+interface Props {
+  lang: 'en' | 'zh';  // 【修改】支持更多语言时扩充联合类型
+  title?: string;     // 可选页面标题，不传则用 site.name
+  description?: string; // 可选页面描述，不传则用 site.tagline
+}
+
+// 从 Astro.props 解构 props
+const { lang, title, description } = Astro.props;
+
+// 计算另一种语言的代码（用于语言切换链接）
+const otherLang = lang === 'en' ? 'zh' : 'en';
+
+// 获取当前路径（去掉语言前缀），用于生成另一语言版本的 URL
+const currentPathRaw = Astro.url.pathname.replace(/^\/(en|zh)\//, '/');
+// 拼接出另一语言版本的完整路径
+const otherPath = `/${otherLang}${currentPathRaw}`;
+
+// 【修改】多语言标签字典：key 对应 navLinks 中的 key
+const labels = {
+  en: { home: 'Home', vision: 'Vision', products: 'Products', designer: 'Design', prayer: 'Prayer', testimonies: 'Testimonies', courses: 'Courses', give: 'Give', auth: 'Account', langSwitch: '中文', menu: 'Menu' },
+  zh: { home: '首页', vision: '异象', products: '产品', designer: '设计', prayer: '代祷', testimonies: '见证', courses: '课程', give: '奉献', auth: '账号', langSwitch: 'English', menu: '菜单' },
+};
+// 根据当前语言取出对应的标签
+const t = labels[lang];
+
+// 【修改】导航链接数组：增删导航项在此修改
+const navLinks = [
+  { key: 'home', href: `/${lang}/` },
+  { key: 'vision', href: `/${lang}/vision/` },
+  { key: 'products', href: `/${lang}/products/` },
+  { key: 'designer', href: `/${lang}/designer/` },
+  { key: 'prayer', href: `/${lang}/prayer/` },
+  { key: 'testimonies', href: `/${lang}/testimonies/` },
+  { key: 'courses', href: `/${lang}/courses/` },
+  { key: 'give', href: `/${lang}/give/` },
+];
+---
+
+<!-- ====== HTML 文档根，lang 属性用于 SEO 和可访问性 ====== -->
+<!doctype html>
+<html lang={lang}>
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="generator" content={Astro.generator} />
+
+  <!-- ============================================================
+       📖 SEO 教程（本区块 = 搜索引擎 + 社交分享的全部配置）
+       ------------------------------------------------------------
+       ① 页面标题/描述（搜索引擎结果 + 浏览器标签页）
+         - 【修改】单页专属标题/描述：在该页面 <BaseLayout title="..." description="..."> 传参
+         - 【修改】全站默认标题/描述：改下面 og:title / og:description 的 fallback 值
+       ② 分享卡片（WhatsApp/Facebook/X/微信分享链接时显示的卡片）
+         - 封面图：替换 public/images/og-cover.jpg（1200×630 像素）
+         - 卡片标题 = 页面 <BaseLayout title="..."> 的传参（改页面即可，og:title 自动跟随）
+         - 卡片描述 = 页面 <BaseLayout description="..."> 的传参；页面没传才用下面 og:description 默认值
+         - 【注意】改完跑 bash deploy.sh；Facebook 缓存需用调试器 Scrape Again 刷新
+       ③ 换域名时必改（3 处）：
+         - 下面所有 https://pastorjeffnchina.com 硬编码 → 新域名
+         - astro.config.mjs 的 site 字段
+       ============================================================ -->
+
+  <!-- 页面标题：优先使用传入 title，否则用 site.name -->
+  <title>{title || site.name[lang]}</title>
+  <meta name="description" content={description || (lang === 'en' ? 'Pastor Jeff — Christian faith apparel, testimonies & Bible study. T-shirts, hoodies & more for your faith journey.' : '杰夫牧师 — 基督教信心服饰、见证与圣经学习。T恤、卫衣等，伴您信心之旅。')} />
+  <meta name="keywords" content="Christian clothing, faith apparel, testimony, Bible study, pastor, worship, Christian T-shirt, hoodie, 基督教服饰, 信心见证, 圣经学习, 牧师, 主内服饰, 代祷" />
+
+  <!-- ============================================================
+       🧭 canonical + hreflang（搜索引擎规范链接 + 多语言对应）
+       - canonical：告诉 Google 本页面的"正版"URL，防止 ?v=1 等变体稀释权重
+       - hreflang：告诉 Google 中/英文版本互相对应，SEO 权重互通
+       - 【修改】换域名：替换下面 3 处 https://pastorjeffnchina.com
+       ============================================================ -->
+  <link rel="canonical" href={'https://pastorjeffnchina.com' + Astro.url.pathname} />
+  <link rel="alternate" hreflang="en" href={'https://pastorjeffnchina.com' + Astro.url.pathname.replace(/^\/(en|zh)\//, '/en/')} />
+  <link rel="alternate" hreflang="zh" href={'https://pastorjeffnchina.com' + Astro.url.pathname.replace(/^\/(en|zh)\//, '/zh/')} />
+  <link rel="alternate" hreflang="x-default" href={'https://pastorjeffnchina.com' + Astro.url.pathname.replace(/^\/(en|zh)\//, '/en/')} />
+
+  <!-- ============================================================
+       🖼️ OpenGraph（WhatsApp / Facebook / 微信分享卡片）
+       平台不打开网页，只读这些标签拼卡片：
+         og:title        → 卡片标题（值 = {title || site.name[lang]}）
+                           【修改】单页标题：去该页面改 <BaseLayout title="...">，勿改此行
+                           【修改】全站默认：才改下面 og:title 的 fallback
+         og:description  → 卡片描述（值 = {description || 默认文案}）
+                           【修改】单页描述：去该页面改 <BaseLayout description="...">
+                           【修改】全站默认：改下面 og:description 的 fallback
+         og:image        → 卡片封面（【修改】替换 public/images/og-cover.jpg）
+         og:url          → 卡片点击跳转的地址
+         og:locale       → 语言区域（en_US / zh_CN）
+       ⚠️ 分享后修改内容，平台有缓存：Facebook 用调试器 Scrape Again 强制刷新
+       ============================================================ -->
+  <!-- fb:app_id — Facebook 应用身份（分享卡片图必须，缺了 Facebook 不渲染 og:image）
+       【修改】换 Facebook App 时改 content 里的数字 -->
+  <meta property="fb:app_id" content="1088771680156934" />
+  <meta property="og:type" content="website" />
+  <meta property="og:site_name" content={site.name[lang]} />
+  <meta property="og:title" content={title || site.name[lang]} />
+  <meta property="og:description" content={description || (lang === 'en' ? 'Pastor Jeff — Christian faith apparel, testimonies & Bible study. T-shirts, hoodies & more for your faith journey.' : '杰夫牧师 — 基督教信心服饰、见证与圣经学习。T恤、卫衣等，伴您信心之旅。')} />
+  <meta property="og:url" content={'https://pastorjeffnchina.com' + Astro.url.pathname} />
+  <meta property="og:locale" content={lang === 'en' ? 'en_US' : 'zh_CN'} />
+  <meta property="og:image" content="https://pastorjeffnchina.com/images/og-cover.jpg" />
+  <!-- og:image:alt — 卡片图描述（无障碍 + 部分平台展示用）
+       【修改】换封面图时同步改这里的文字 -->
+  <meta property="og:image:alt" content="Pastor Jeff — Livingstone 活石" />
+
+  <!-- ============================================================
+       🐦 Twitter / X 卡片（与 OG 同步；不认 twitter:* 的平台自动忽略）
+       ⚠️ 【修改】twitter:description 有独立 fallback 文案，
+          改默认描述时需与上面 og:description 同步修改（两处）！
+       ============================================================ -->
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content={title || site.name[lang]} />
+  <meta name="twitter:description" content={description || (lang === 'en' ? 'Pastor Jeff — Christian faith apparel, testimonies & Bible study. T-shirts, hoodies & more for your faith journey.' : '杰夫牧师 — 基督教信心服饰、见证与圣经学习。T恤、卫衣等，伴您信心之旅。')} />
+  <meta name="twitter:image" content="https://pastorjeffnchina.com/images/og-cover.jpg" />
+
+  <!-- favicon + 移动端浏览器栏颜色（【修改】theme-color 换成品牌色） -->
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+  <meta name="theme-color" content="#1a1a2e" />
+
+  <!-- GA4 预连接（加快统计脚本加载，对首屏无影响） -->
+  <link rel="preconnect" href="https://www.googletagmanager.com" />
+  <link rel="dns-prefetch" href="https://www.googletagmanager.com" />
+
+  <!-- ============================================================
+       📊 GA4 全站访问追踪
+       - 【修改】更换测量 ID：把三处 G-SDG26PJBZG 改为新的 ID
+       - 【修改】关闭统计：删除这两个 <script> 即可
+       ⚠️ 此 ID 绑定 pastorjeffnchina.com，换域名需重新创建数据流
+       ============================================================ -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-SDG26PJBZG"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-SDG26PJBZG');
+  </script>
+
+</head>
+<body>
+  <!-- ====== 导航栏：固定顶部、毛玻璃效果 ====== -->
+  <!-- 【修改】背景色: bg-beige-50/95 控制透明度和玻璃效果 -->
+  <!-- 【修改】边框: border-beige-200/50 控制底部分隔线 -->
+  <nav class="fixed top-0 left-0 right-0 z-40 bg-beige-50/95 backdrop-blur-md border-b border-beige-200/50">
+    <div class="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
+
+      <!-- Logo + 站名，【修改】站名来自 site.json -->
+      <a href={`/${lang}/`} class="font-serif text-lg sm:text-xl font-bold text-charcoal-800 tracking-tight">
+        ✝ {site.name[lang]}
+      </a>
+
+      <!-- ====== 桌面端导航（md 及以上显示） ====== -->
+      <!-- 【修改】导航链接样式: gap-6 控制间距, text-sm 控制字号 -->
+      <div class="hidden md:flex items-center gap-6 text-sm font-medium text-charcoal-500">
+        {navLinks.map(l => {
+          // 判断当前页面是否激活（精确匹配或子路径匹配）
+          const isActive = Astro.url.pathname === l.href || Astro.url.pathname.startsWith(l.href.replace(/\/$/, '/') + '/');
+          // 【修改】激活态样式: font-bold + text-charcoal-800
+          return <a href={l.href} class={`hover:text-charcoal-800 transition-colors ${isActive ? 'font-bold text-charcoal-800' : ''}`}>{t[l.key]}</a>;
+        })}
+
+        <!-- 账号按钮 -->
+        <a href={`/${lang}/auth/`} class="px-3 py-1.5 border border-charcoal-300 rounded-full text-xs text-charcoal-500 hover:text-charcoal-700 hover:border-charcoal-400 transition-colors">{t.auth}</a>
+
+        <!-- 语言切换按钮 -->
+        <a href={otherPath} class="px-3 py-1.5 border border-charcoal-300 rounded-full text-xs text-charcoal-500 hover:text-charcoal-700 hover:border-charcoal-400 transition-colors">{t.langSwitch}</a>
+      </div>
+
+      <!-- ====== 移动端：汉堡菜单 + 语言切换 ====== -->
+      <div class="flex items-center gap-3 md:hidden">
+        <a href={`/${lang}/auth/`} class="text-xs text-charcoal-500 border border-charcoal-300 rounded-full px-2 py-1">{t.auth}</a>
+        <a href={otherPath} class="text-xs text-charcoal-500 border border-charcoal-300 rounded-full px-2 py-1">{t.langSwitch}</a>
+
+        <!-- 汉堡菜单按钮，点击切换 menu-icon-open/menu-icon-close 的 hidden 状态 -->
+        <!-- 【修改】按钮样式: w-9 h-9 控制大小, rounded-lg 控制圆角 -->
+        <button id="menu-toggle" class="w-9 h-9 flex items-center justify-center rounded-lg hover:bg-beige-100 transition-colors" aria-label={t.menu}>
+          <svg class="w-6 h-6 text-charcoal-700" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+            <!-- 打开图标（三条横线） -->
+            <path id="menu-icon-open" stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16"/>
+            <!-- 关闭图标（X），默认隐藏 -->
+            <path id="menu-icon-close" stroke-linecap="round" stroke-linejoin="round" d="M6 6l12 12M18 6L6 18" class="hidden"/>
+          </svg>
+        </button>
+      </div>
+    </div>
+
+    <!-- ====== 移动端下拉菜单（默认隐藏） ====== -->
+    <!-- 【修改】背景色: bg-beige-50, 点击汉堡按钮切换 hidden -->
+    <div id="mobile-menu" class="hidden md:hidden bg-beige-50 border-b border-beige-200/50 px-4 pb-4">
+      <div class="flex flex-col gap-1 pt-2">
+        {navLinks.map(l => {
+          const isActive = Astro.url.pathname === l.href || Astro.url.pathname.startsWith(l.href.replace(/\/$/, '/') + '/');
+          return <a href={l.href} class={`block px-3 py-2.5 rounded-lg text-sm ${isActive ? 'font-bold text-charcoal-800 bg-beige-100' : 'font-medium text-charcoal-600 hover:bg-beige-100 hover:text-charcoal-800'} transition-colors`}>{t[l.key]}</a>;
+        })}
+      </div>
+    </div>
+  </nav>
+
+  <!-- ====== 主内容区：pt-16 给固定导航栏留出空间 ====== -->
+  <main class="pt-16">
+    <slot />
+  </main>
+
+  <!-- ====== 页脚 ====== -->
+  <!-- 【修改】背景: bg-charcoal-900, 文字: text-beige-300 -->
+  <!-- 【修改】padding: py-12 控制上下间距 -->
+  <footer class="bg-charcoal-900 text-beige-300 py-12 px-4 sm:px-6">
+    <div class="max-w-4xl mx-auto text-center">
+      <!-- 站名 -->
+      <p class="font-serif text-xl sm:text-2xl font-bold text-beige-100 mb-2">✝ {site.name[lang]}</p>
+      <!-- tagline -->
+      <p class="text-sm text-beige-500 mb-2">{site.tagline[lang]}</p>
+      <!-- 邮箱 -->
+      <p class="text-xs text-beige-400 mb-6">{site.email}</p>
+      <!-- 版权 + 经文 -->
+            <p class="text-xs text-beige-600">
+        &copy; {new Date().getFullYear()} {site.name.en}
+      </p>
+      <p class="text-xs text-beige-600 mt-1">
+        {lang === 'en'
+          ? '"Love one another as I have loved you." — John 15:12'
+          : '「你们要彼此相爱，像我爱你们一样。」— 约翰福音 15:12'}
+      </p>
+    </div>
+  </footer>
+
+    <!-- ====== 购物车浮窗按钮 ====== -->
+  <!-- 【修改】位置: fixed bottom-36 right-6（底部留出 WhatsApp + Email 按钮空间） -->
+  <!-- 【修改】大小: w-14 h-14 -->
+  <!-- 【修改】背景: bg-charcoal-800 -->
+  <a href={`/${lang}/cart/`} id="cart-floating" class="fixed bottom-[9.5rem] right-6 z-50 w-14 h-14 bg-charcoal-800 hover:bg-charcoal-700 rounded-full flex items-center justify-center shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-110" aria-label="Cart">
+    <!-- 购物车图标（SVG） -->
+    <svg class="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 100 4 2 2 0 000-4z"/></svg>
+    <!-- 购物车数量角标，默认 hidden，通过 JS 读取 localStorage 后显示 -->
+    <!-- 【修改】角标颜色: bg-red-500 -->
+    <span id="cart-badge-main" class="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] w-5 h-5 rounded-full flex items-center justify-center font-bold hidden">0</span>
+  </a>
+
+  <!-- ====== Email 浮动按钮 ====== -->
+  <!-- 【修改】邮箱地址: site.email（在 site.json 中配置） -->
+  <!-- 【修改】位置: fixed bottom-24 right-6 -->
+  <!-- 【修改】背景: bg-blue-500 -->
+  <!-- 【修改】桌面端用 Gmail 写信链接，手机端自动打开系统邮件 App -->
+  <a
+    href={`https://mail.google.com/mail/?view=cm&fs=1&to=${site.email}`}
+    target="_blank" rel="noopener"
+    id="email-btn"
+    class="fixed bottom-[5.5rem] right-6 z-50 w-14 h-14 bg-blue-500 hover:bg-blue-400 rounded-full flex items-center justify-center shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-110"
+    aria-label="Email"
+  >
+    <!-- 邮件图标（SVG 信封） -->
+    <svg class="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+      <path stroke-linecap="round" stroke-linejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
+    </svg>
+  </a>
+
+  <!-- ====== WhatsApp 浮窗按钮 ====== -->
+  <!-- 【修改】号码: site.whatsapp（在 site.json 中配置） -->
+  <!-- 【修改】位置: fixed bottom-6 right-6 -->
+  <!-- 【修改】背景: bg-green-500（WhatsApp 品牌色） -->
+  <a
+    href={`https://wa.me/${site.whatsapp}?text=${lang === 'en' ? 'Hi! I visited your website and would like to know more.' : '你好！我访问了你的网站，想了解更多。'}`}
+    target="_blank" rel="noopener"
+    id="wa-btn"
+    class="fixed bottom-6 right-6 z-50 w-14 h-14 bg-green-500 hover:bg-green-400 rounded-full flex items-center justify-center shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-110"
+    aria-label="WhatsApp"
+  >
+    <!-- WhatsApp 图标（SVG path） -->
+    <svg class="w-7 h-7" viewBox="0 0 24 24" fill="white"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 0 1 2.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0 0 12.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 0 0 5.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 0 0-3.48-8.413z"/></svg>
+  </a>
+
+<!-- ====== 内联 JS（is:inline 确保不被 Astro 打包处理，原样保留在 HTML 中） ====== -->
+<script is:inline>
+  // 移动端菜单切换：点击汉堡按钮显示/隐藏下拉菜单，同时切换图标
+  document.getElementById('menu-toggle').onclick = function() {
+    var menu = document.getElementById('mobile-menu');
+    var open = document.getElementById('menu-icon-open');
+    var close = document.getElementById('menu-icon-close');
+    menu.classList.toggle('hidden');
+    open.classList.toggle('hidden');
+    close.classList.toggle('hidden');
+  };
+
+  // 购物车角标初始化：从 localStorage 读取购物车数据，更新浮窗上的数字角标
+  (function(){
+    // ps-cart 是购物车数据在 localStorage 中的 key
+    var c = JSON.parse(localStorage.getItem('ps-cart') || '[]');
+    // 累加所有商品数量
+    var n = c.reduce(function(s, i) { return s + i.quantity; }, 0);
+    var b = document.getElementById('cart-badge-main');
+    // 有商品时显示角标，否则隐藏
+    if (b && n > 0) { b.textContent = n; b.classList.remove('hidden'); }
+  })();
+</script>
+
+<script is:inline>
+(function(){
+  fetch("/api/site-config").then(function(r){return r.json()}).then(function(d){
+    if(!d.ok||!d.data)return; var s=d.data;
+    var wa=document.getElementById("wa-btn");
+    if(wa&&s.site_whatsapp) wa.href="https://wa.me/"+s.site_whatsapp.replace(/\D/g,"");
+    var em=document.querySelector("footer p:last-of-type");
+    if(em&&s.site_email) em.textContent=s.site_email;
+  });
+})();
+</script>
+</body>
+</html>

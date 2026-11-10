@@ -8,7 +8,7 @@
  * 🔧 修改指南:
  *   【修改】标签页 → 改 tab-btn 的 data-tab 名和对应的 div id
  *   【修改】Supabase 连接 → 改 createClient 参数
- *   【修改】API 端点 → 改 fetch URL（目前指向 admin.pastorjeffnchina.com）
+ *   【修改】API 端点 → 改 fetch URL（目前指向 pastorjeffnchina.com/admin）
  *   【修改】样式 → 所有 class 都加了注释
  * ============================================================================
  */
@@ -133,7 +133,7 @@ document.getElementById('btn-logout')?.addEventListener('click', function(){
 });
 
 async function loadPrayers() {
-  var res = await fetch('https://admin.pastorjeffnchina.com/api/prayers');
+  var res = await fetch('/api/prayers');
   if (!res.ok) { document.getElementById('prayer-list').innerHTML = '<p class="text-gray-400 text-sm">Backend not reachable.</p>'; return; }
   var data = await res.json();
   var filter = document.getElementById('prayer-filter').value;
@@ -155,7 +155,7 @@ async function loadPrayers() {
 }
 
 async function loadOrders() {
-  var res = await fetch('https://admin.pastorjeffnchina.com/api/orders');
+  var res = await fetch('/api/orders');
   if (!res.ok) { document.getElementById('order-list').innerHTML = '<p class="text-gray-400 text-sm">Backend not reachable.</p>'; return; }
   var data = await res.json();
   var filter = document.getElementById('order-filter').value;
@@ -179,7 +179,7 @@ async function loadOrders() {
   }).join('');
   document.querySelectorAll('.status-select').forEach(function(s){
     s.addEventListener('change', async function(){
-      await fetch('https://admin.pastorjeffnchina.com/api/orders/' + this.dataset.id + '/status', {
+      await fetch('/api/orders/' + this.dataset.id + '/status', {
         method: 'PUT', headers: {'Content-Type':'application/json'}, body: JSON.stringify({status: this.value})
       });
     });

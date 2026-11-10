@@ -4,7 +4,7 @@
 🌐 路由: /zh/vision/
 🎯 作用: 中文异象页 — 展示牧师的异象宣言全文
 📝 修改指南:
-   【修改】内容文本：编辑 src/content/vision.json 的 zh.content 字段
+   【修改】内容文本：编辑 src/features/vision/vision.json 的 zh.content 字段
    【修改】标题：编辑 vision.json 的 zh.title 字段
    【修改】页面样式：改 section/p/h1 的 Tailwind class
    【修改】段落分割逻辑：改 .split('\n\n') 分隔符
@@ -16,7 +16,7 @@ import BaseLayout from '../../../layouts/BaseLayout.astro'; // 全局布局
 // ⚡ 构建时从 API 获取异象
 let visionData = { en: {}, zh: {} };
 try {
-  const res = await fetch('http://localhost:5200/api/vision');
+  const res = await fetch('https://pastorjeffnchina.com/api/vision');
   if (res.ok) {
     const api = await res.json();
     visionData = {
@@ -26,7 +26,7 @@ try {
   }
 } catch(e) {}
 if (!visionData.en.content) {
-  visionData = (await import('../../../content/vision.json')).default;
+  visionData = (await import('../../../features/vision/vision.json')).default;
 }       // 异象内容数据（中/英）
 
 // 【数据】提取中文版异象数据
@@ -58,3 +58,17 @@ const paragraphs = v.content.split('\n\n').filter(p => p.trim());
     </div>
   </section>
 </BaseLayout>
+
+<script is:inline>
+(function(){try{
+  fetch("/api/vision").then(function(r){return r.json()}).then(function(d){
+    if(!d.ok||!d.data)return; var v=d.data;
+    var lang=document.documentElement.lang==="zh"?"zh":"en";
+    var h1=document.querySelector("h1");
+    if(h1) h1.textContent=v["title_"+lang]||h1.textContent;
+    var body=document.querySelector("[class*=\"prose\"], [class*=\"content\"], article");
+    if(body) body.innerHTML=(v["content_"+lang]||"").split("\n\n").map(function(p){return "<p>"+p+"</p>";}).join("");
+  });
+  });
+}catch(e){}})();
+</script>

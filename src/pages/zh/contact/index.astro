@@ -4,7 +4,7 @@
 🌐 路由: /zh/contact/
 🎯 作用: 联系我们页 — WhatsApp / 邮箱 / 代祷 三个联系方式卡片
 📝 修改指南:
-   【修改】WhatsApp号码：编辑 src/content/site.json 的 site.whatsapp
+   【修改】WhatsApp号码：编辑 src/features/site/site.json 的 site.whatsapp
    【修改】邮箱地址：编辑 site.json 的 site.email
    【修改】WhatsApp 消息模板：改 <a> 的 href 中 ?text= 参数
    【修改】卡片样式：改每个 <a> 卡片的 Tailwind class
@@ -14,7 +14,7 @@
 ---
 // ── 导入 ────────────────────────────────────────────────────
 import BaseLayout from '../../../layouts/BaseLayout.astro'; // 全局布局
-import siteData from '../../../content/site.json';           // 站点配置（WhatsApp/邮箱等）
+import siteData from '../../../features/site/site.json';           // 站点配置（WhatsApp/邮箱等）
 const { site } = siteData;
 ---
 

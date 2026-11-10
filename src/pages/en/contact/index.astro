@@ -2,9 +2,9 @@
 /**
  * 📍 文件位置: src/pages/en/contact/index.astro
  * 🌐 路由: /en/contact/
- * 🎯 作用: 英文联系我们页——展示 WhatsApp、Email、代祷三个联系入口卡片，数据来自 content/site.json
+ * 🎯 作用: 英文联系我们页——展示 WhatsApp、Email、代祷三个联系入口卡片，数据来自 features/site/site.json
  * 🔧 修改指南:
- *   - 修改 WhatsApp 号码 / Email：编辑 content/site.json → site.whatsapp / site.email
+ *   - 修改 WhatsApp 号码 / Email：编辑 features/site/site.json → site.whatsapp / site.email
  *   - 修改卡片文字：编辑下方 <h3> / <p> 标签
  *   - 增加/移除联系入口：增减 <a> 卡片，保持样式一致
  *   - section-title / section-subtitle 类名来自全局 CSS 样式
@@ -13,7 +13,7 @@
 // 【修改】引入基础布局
 import BaseLayout from '../../../layouts/BaseLayout.astro';
 // 【修改】引入站点数据（site.json 包含 site.whatsapp 和 site.email）
-import siteData from '../../../content/site.json';
+import siteData from '../../../features/site/site.json';
 // 🌐 提取 site 对象
 const { site } = siteData;
 ---
