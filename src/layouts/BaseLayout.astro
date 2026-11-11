@@ -79,8 +79,8 @@ const otherPath = `/${otherLang}${currentPathRaw}`;
 
 // 【修改】多语言标签字典：key 对应 navLinks 中的 key
 const labels = {
-  en: { home: 'Home', vision: 'Vision', products: 'Products', designer: 'Design', prayer: 'Prayer', testimonies: 'Testimonies', marketplace: 'Marketplace', courses: 'Courses', give: 'Give', auth: 'Account', langSwitch: '中文', menu: 'Menu' },
-  zh: { home: '首页', vision: '异象', products: '产品', designer: '设计', prayer: '代祷', testimonies: '见证', marketplace: '职场见证', courses: '课程', give: '奉献', auth: '账号', langSwitch: 'English', menu: '菜单' },
+  en: { home: 'Home', vision: 'Vision', products: 'Products', tools: 'Free Tools', designer: 'Design', prayer: 'Prayer', testimonies: 'Testimonies', marketplace: 'Marketplace', courses: 'Courses', give: 'Give', auth: 'Account', langSwitch: '中文', menu: 'Menu' },
+  zh: { home: '首页', vision: '异象', products: '产品', tools: '免费工具', designer: '设计', prayer: '代祷', testimonies: '见证', marketplace: '职场见证', courses: '课程', give: '奉献', auth: '账号', langSwitch: 'English', menu: '菜单' },
 };
 // 根据当前语言取出对应的标签
 const t = labels[lang];
@@ -90,6 +90,7 @@ const navLinks = [
   { key: 'home', href: `/${lang}/` },
   { key: 'vision', href: `/${lang}/vision/` },
   { key: 'products', href: `/${lang}/products/` },
+  { key: 'tools', href: `/${lang}/tools/` }, // 【2026-11-11】免费工具区（推广方案 §03）
   { key: 'designer', href: `/${lang}/designer/` },
   { key: 'prayer', href: `/${lang}/prayer/` },
   { key: 'testimonies', href: `/${lang}/testimonies/` },
@@ -274,7 +275,17 @@ const navLinks = [
       <!-- tagline -->
       <p class="text-sm text-beige-500 mb-2">{site.tagline[lang]}</p>
       <!-- 邮箱 -->
-      <p class="text-xs text-beige-400 mb-6">{site.email}</p>
+      <p class="text-xs text-beige-400 mb-4">{site.email}</p>
+      <!-- 【2026-11-11】订阅通讯 CTA（推广方案 §03）→ POST /api/leads -->
+      <div class="max-w-md mx-auto mb-8">
+        <p class="text-sm text-beige-300 mb-3">{lang === 'en' ? "Subscribe to Jeff's free tools & devotional newsletter" : '订阅 Jeff 的免费工具与灵修通讯'}</p>
+        <form id="footer-sub" class="flex gap-2 justify-center">
+          <input type="text" name="website" tabindex="-1" autocomplete="off" class="hidden" aria-hidden="true" />
+          <input type="text" name="contact" required maxlength="200" placeholder={lang === 'en' ? 'Email / WhatsApp' : '邮箱 / 微信 / WhatsApp'} class="flex-1 max-w-xs px-4 py-2 rounded-lg bg-white/10 border border-white/20 text-beige-100 placeholder-charcoal-400 text-xs focus:outline-none focus:border-sage-400" />
+          <button type="submit" class="bg-sage-600 hover:bg-sage-500 text-white text-xs font-medium px-4 py-2 rounded-lg transition-colors">{lang === 'en' ? 'Subscribe' : '订阅'}</button>
+        </form>
+        <p id="footer-sub-msg" class="hidden text-sage-300 text-xs mt-2"></p>
+      </div>
       <!-- 版权 + 经文 -->
             <p class="text-xs text-beige-600">
         &copy; {new Date().getFullYear()} {site.name.en}
@@ -286,6 +297,40 @@ const navLinks = [
       </p>
     </div>
   </footer>
+
+  <!-- ====== 【2026-11-11】页脚订阅提交（POST /api/leads, materials=['newsletter']） ====== -->
+  <script is:inline>
+    (function(){
+      var f = document.getElementById('footer-sub');
+      if (!f) return;
+      var msg = document.getElementById('footer-sub-msg');
+      f.addEventListener('submit', function(e){
+        e.preventDefault();
+        var fd = new FormData(f);
+        var isZh = document.documentElement.lang === 'zh';
+        fetch('/api/leads', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            website: fd.get('website') || '',
+            name: (fd.get('contact') || '').split('@')[0] || (isZh ? '页脚订阅者' : 'Footer subscriber'),
+            contact: fd.get('contact'),
+            materials: ['newsletter'],
+            message: isZh ? '页脚订阅：工具与灵修通讯' : 'Footer newsletter signup',
+            lang: isZh ? 'zh' : 'en'
+          })
+        }).then(function(r){ return r.json(); }).then(function(d){
+          var t = isZh ? ['已收到！欢迎入列。','提交失败，请稍后再试。'] : ["Got it! You're on the list.", 'Something went wrong — please try again.'];
+          msg.textContent = d && d.success ? t[0] : t[1];
+          msg.classList.remove('hidden');
+          if (d && d.success) f.reset();
+        }).catch(function(){
+          msg.textContent = isZh ? '提交失败，请稍后再试。' : 'Something went wrong — please try again.';
+          msg.classList.remove('hidden');
+        });
+      });
+    })();
+  </script>
 
     <!-- ====== 购物车浮窗按钮 ====== -->
   <!-- 【修改】位置: fixed bottom-36 right-6（底部留出 WhatsApp + Email 按钮空间） -->
