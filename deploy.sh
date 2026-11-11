@@ -15,7 +15,10 @@ cp functions/_routes.json dist/_routes.json
 
 # 3. Deploy
 echo "🌎 部署到 Cloudflare..."
-npx wrangler pages deploy dist --project-name pastorjeffnchina --branch main --commit-dirty=true
+# 【2026-11-11】项目名支持参数覆盖：bash deploy.sh [项目名]（默认 pastorjeffnchina）
+PROJECT_NAME="${1:-pastorjeffnchina}"
+echo "部署到 Pages 项目: $PROJECT_NAME"
+npx wrangler pages deploy dist --project-name "$PROJECT_NAME" --branch main --commit-dirty=true
 
 echo ""
 echo "✅ 全云端部署完成!"
