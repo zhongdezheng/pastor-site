@@ -1,0 +1,866 @@
+<!DOCTYPE html><!--
+============================================================
+📁 文件位置: src/pages/zh/designer/index.astro
+🌐 路由: /zh/designer/
+🎯 作用: 定制设计器 — Fabric.js 画布，上传图片/添加文字，预览并加入购物车
+📝 修改指南:
+   【修改】产品数据：编辑 src/features/products/products.json
+   【修改】画布背景色：改 backgroundColor: '#f8f6f0'（canvas初始化处）
+   【修改】对齐吸附阈值：改 SNAP_THRESHOLD（默认15px）
+   【修改】Canvas尺寸：改 style="width: ... aspect-ratio: 1/1"
+   【修改】删除快捷键：改 keydown 监听（当前Delete/Backspace）
+   【修改】字体列表：改 <select> 中的 option 列表
+   【修改】文字大小范围：改 Math.max(8, Math.min(200, ...)) 
+   【修改】产品图片映射：改 reloadColor() 中的图片路径逻辑
+   【修改】购物车存储结构：改 doAddCart() 的 item 对象
+   【修改】预览分辨率：改 toDataURL 的 multiplier 参数
+============================================================
+--><!-- ====== HTML 文档根，lang 属性用于 SEO 和可访问性 ====== --><html lang="zh"> <head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="Astro v5.18.2"><!-- ============================================================
+       📖 SEO 教程（本区块 = 搜索引擎 + 社交分享的全部配置）
+       ------------------------------------------------------------
+       ① 页面标题/描述（搜索引擎结果 + 浏览器标签页）
+         - 【修改】单页专属标题/描述：在该页面 <BaseLayout title="..." description="..."> 传参
+         - 【修改】全站默认标题/描述：改下面 og:title / og:description 的 fallback 值
+       ② 分享卡片（WhatsApp/Facebook/X/微信分享链接时显示的卡片）
+         - 封面图：替换 public/images/og-cover.jpg（1200×630 像素）
+         - 卡片标题 = 页面 <BaseLayout title="..."> 的传参（改页面即可，og:title 自动跟随）
+         - 卡片描述 = 页面 <BaseLayout description="..."> 的传参；页面没传才用下面 og:description 默认值
+         - 【注意】改完跑 bash deploy.sh；Facebook 缓存需用调试器 Scrape Again 刷新
+       ③ 换域名时必改（3 处）：
+         - 下面所有 https://pastorjeffnchina.com 硬编码 → 新域名
+         - astro.config.mjs 的 site 字段
+       ============================================================ --><!-- 页面标题：优先使用传入 title，否则用 site.name --><title>定制基督教服饰设计 | 活石</title><meta name="description" content="杰夫牧师 — 基督教信心服饰、见证与圣经学习。T恤、卫衣等，伴您信心之旅。"><meta name="keywords" content="Christian clothing, faith apparel, testimony, Bible study, pastor, worship, Christian T-shirt, hoodie, 基督教服饰, 信心见证, 圣经学习, 牧师, 主内服饰, 代祷"><!-- ============================================================
+       🧭 canonical + hreflang（搜索引擎规范链接 + 多语言对应）
+       - canonical：告诉 Google 本页面的"正版"URL，防止 ?v=1 等变体稀释权重
+       - hreflang：告诉 Google 中/英文版本互相对应，SEO 权重互通
+       - 【修改】换域名：替换下面 3 处 https://pastorjeffnchina.com
+       ============================================================ --><link rel="canonical" href="https://pastorjeffnchina.com/zh/designer/"><link rel="alternate" hreflang="en" href="https://pastorjeffnchina.com/en/designer/"><link rel="alternate" hreflang="zh" href="https://pastorjeffnchina.com/zh/designer/"><link rel="alternate" hreflang="x-default" href="https://pastorjeffnchina.com/en/designer/"><!-- ============================================================
+       🖼️ OpenGraph（WhatsApp / Facebook / 微信分享卡片）
+       平台不打开网页，只读这些标签拼卡片：
+         og:title        → 卡片标题（值 = {title || site.name[lang]}）
+                           【修改】单页标题：去该页面改 <BaseLayout title="...">，勿改此行
+                           【修改】全站默认：才改下面 og:title 的 fallback
+         og:description  → 卡片描述（值 = {description || 默认文案}）
+                           【修改】单页描述：去该页面改 <BaseLayout description="...">
+                           【修改】全站默认：改下面 og:description 的 fallback
+         og:image        → 卡片封面（【修改】替换 public/images/og-cover.jpg）
+         og:url          → 卡片点击跳转的地址
+         og:locale       → 语言区域（en_US / zh_CN）
+       ⚠️ 分享后修改内容，平台有缓存：Facebook 用调试器 Scrape Again 强制刷新
+       ============================================================ --><!-- fb:app_id — Facebook 应用身份（分享卡片图必须，缺了 Facebook 不渲染 og:image）
+       【修改】换 Facebook App 时改 content 里的数字 --><meta property="fb:app_id" content="1088771680156934"><meta property="og:type" content="website"><meta property="og:site_name" content="活石"><meta property="og:title" content="定制基督教服饰设计 | 活石"><meta property="og:description" content="杰夫牧师 — 基督教信心服饰、见证与圣经学习。T恤、卫衣等，伴您信心之旅。"><meta property="og:url" content="https://pastorjeffnchina.com/zh/designer/"><meta property="og:locale" content="zh_CN"><meta property="og:image" content="https://pastorjeffnchina.com/images/og-cover.jpg"><!-- og:image:alt — 卡片图描述（无障碍 + 部分平台展示用）
+       【修改】换封面图时同步改这里的文字 --><meta property="og:image:alt" content="Pastor Jeff — Livingstone 活石"><!-- ============================================================
+       🐦 Twitter / X 卡片（与 OG 同步；不认 twitter:* 的平台自动忽略）
+       ⚠️ 【修改】twitter:description 有独立 fallback 文案，
+          改默认描述时需与上面 og:description 同步修改（两处）！
+       ============================================================ --><meta name="twitter:card" content="summary_large_image"><meta name="twitter:title" content="定制基督教服饰设计 | 活石"><meta name="twitter:description" content="杰夫牧师 — 基督教信心服饰、见证与圣经学习。T恤、卫衣等，伴您信心之旅。"><meta name="twitter:image" content="https://pastorjeffnchina.com/images/og-cover.jpg"><!-- favicon + 移动端浏览器栏颜色（【修改】theme-color 换成品牌色） --><link rel="icon" type="image/svg+xml" href="/favicon.svg"><meta name="theme-color" content="#1a1a2e"><!-- GA4 预连接（加快统计脚本加载，对首屏无影响） --><link rel="preconnect" href="https://www.googletagmanager.com"><link rel="dns-prefetch" href="https://www.googletagmanager.com"><!-- ============================================================
+       📊 GA4 全站访问追踪
+       - 【修改】更换测量 ID：把三处 G-SDG26PJBZG 改为新的 ID
+       - 【修改】关闭统计：删除这两个 <script> 即可
+       ⚠️ 此 ID 绑定 pastorjeffnchina.com，换域名需重新创建数据流
+       ============================================================ --><script async src="https://www.googletagmanager.com/gtag/js?id=G-SDG26PJBZG"></script><script type="module">window.dataLayer=window.dataLayer||[];function a(){dataLayer.push(arguments)}a("js",new Date);a("config","G-SDG26PJBZG");</script><link rel="stylesheet" href="/_astro/index.G1gxf66k.css"></head> <body> <!-- ====== 导航栏：固定顶部、毛玻璃效果 ====== --> <!-- 【修改】背景色: bg-beige-50/95 控制透明度和玻璃效果 --> <!-- 【修改】边框: border-beige-200/50 控制底部分隔线 --> <nav class="fixed top-0 left-0 right-0 z-40 bg-beige-50/95 backdrop-blur-md border-b border-beige-200/50"> <div class="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between"> <!-- Logo + 站名，【修改】站名来自 site.json --> <a href="/zh/" class="font-serif text-lg sm:text-xl font-bold text-charcoal-800 tracking-tight">
+✝ 活石 </a> <!-- ====== 桌面端导航（md 及以上显示） ====== --> <!-- 【修改】导航链接样式: gap-6 控制间距, text-sm 控制字号 --> <div class="hidden md:flex items-center gap-6 text-sm font-medium text-charcoal-500"> <a href="/zh/" class="hover:text-charcoal-800 transition-colors ">首页</a><a href="/zh/vision/" class="hover:text-charcoal-800 transition-colors ">异象</a><a href="/zh/products/" class="hover:text-charcoal-800 transition-colors ">产品</a><a href="/zh/designer/" class="hover:text-charcoal-800 transition-colors font-bold text-charcoal-800">设计</a><a href="/zh/prayer/" class="hover:text-charcoal-800 transition-colors ">代祷</a><a href="/zh/testimonies/" class="hover:text-charcoal-800 transition-colors ">见证</a><a href="/zh/courses/" class="hover:text-charcoal-800 transition-colors ">课程</a><a href="/zh/give/" class="hover:text-charcoal-800 transition-colors ">奉献</a> <!-- 账号按钮 --> <a href="/zh/auth/" class="px-3 py-1.5 border border-charcoal-300 rounded-full text-xs text-charcoal-500 hover:text-charcoal-700 hover:border-charcoal-400 transition-colors">账号</a> <!-- 语言切换按钮 --> <a href="/en/designer/" class="px-3 py-1.5 border border-charcoal-300 rounded-full text-xs text-charcoal-500 hover:text-charcoal-700 hover:border-charcoal-400 transition-colors">English</a> </div> <!-- ====== 移动端：汉堡菜单 + 语言切换 ====== --> <div class="flex items-center gap-3 md:hidden"> <a href="/zh/auth/" class="text-xs text-charcoal-500 border border-charcoal-300 rounded-full px-2 py-1">账号</a> <a href="/en/designer/" class="text-xs text-charcoal-500 border border-charcoal-300 rounded-full px-2 py-1">English</a> <!-- 汉堡菜单按钮，点击切换 menu-icon-open/menu-icon-close 的 hidden 状态 --> <!-- 【修改】按钮样式: w-9 h-9 控制大小, rounded-lg 控制圆角 --> <button id="menu-toggle" class="w-9 h-9 flex items-center justify-center rounded-lg hover:bg-beige-100 transition-colors" aria-label="菜单"> <svg class="w-6 h-6 text-charcoal-700" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"> <!-- 打开图标（三条横线） --> <path id="menu-icon-open" stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16"></path> <!-- 关闭图标（X），默认隐藏 --> <path id="menu-icon-close" stroke-linecap="round" stroke-linejoin="round" d="M6 6l12 12M18 6L6 18" class="hidden"></path> </svg> </button> </div> </div> <!-- ====== 移动端下拉菜单（默认隐藏） ====== --> <!-- 【修改】背景色: bg-beige-50, 点击汉堡按钮切换 hidden --> <div id="mobile-menu" class="hidden md:hidden bg-beige-50 border-b border-beige-200/50 px-4 pb-4"> <div class="flex flex-col gap-1 pt-2"> <a href="/zh/" class="block px-3 py-2.5 rounded-lg text-sm font-medium text-charcoal-600 hover:bg-beige-100 hover:text-charcoal-800 transition-colors">首页</a><a href="/zh/vision/" class="block px-3 py-2.5 rounded-lg text-sm font-medium text-charcoal-600 hover:bg-beige-100 hover:text-charcoal-800 transition-colors">异象</a><a href="/zh/products/" class="block px-3 py-2.5 rounded-lg text-sm font-medium text-charcoal-600 hover:bg-beige-100 hover:text-charcoal-800 transition-colors">产品</a><a href="/zh/designer/" class="block px-3 py-2.5 rounded-lg text-sm font-bold text-charcoal-800 bg-beige-100 transition-colors">设计</a><a href="/zh/prayer/" class="block px-3 py-2.5 rounded-lg text-sm font-medium text-charcoal-600 hover:bg-beige-100 hover:text-charcoal-800 transition-colors">代祷</a><a href="/zh/testimonies/" class="block px-3 py-2.5 rounded-lg text-sm font-medium text-charcoal-600 hover:bg-beige-100 hover:text-charcoal-800 transition-colors">见证</a><a href="/zh/courses/" class="block px-3 py-2.5 rounded-lg text-sm font-medium text-charcoal-600 hover:bg-beige-100 hover:text-charcoal-800 transition-colors">课程</a><a href="/zh/give/" class="block px-3 py-2.5 rounded-lg text-sm font-medium text-charcoal-600 hover:bg-beige-100 hover:text-charcoal-800 transition-colors">奉献</a> </div> </div> </nav> <!-- ====== 主内容区：pt-16 给固定导航栏留出空间 ====== --> <main class="pt-16">   <script type="application/json" id="__designerProducts">[{"id":"prod-2","category":"apparel","name":{"en":"180g Men's Crew Neck T-Shirt","zh":"180g男士圆领短袖T恤"},"price":10,"currency":"USD","colors":["白色","黑色"],"sizes":["S","M","L","XL","2XL","3XL"],"weight":"100%棉（200gsm）","material":{"en":"100%棉（200gsm）","zh":"100%棉（200gsm）"},"description":{"en":"[Design] Area print on front\n[Material] 100% Cotton\n[Performance] Soft, comfortable, slight stretch.\n[Scenes] Daily, home, travel, fitness.\n[Target] Men\n[Wash] Hand/machine wash, ≤45°C, no bleach","zh":"【设计说明】前面区域印花\n【材质说明】100%棉\n【产品性能】手感柔软舒适，微弹，版型好穿又好搭，舒适又时尚，简约实用，不易缩水，耐穿，时尚潮流。\n【适用场景】日常，居家，旅行，健身运动等。\n【适用人群】男士\n【洗涤说明】可手洗可机洗，不要长时间浸泡，不可漂白，洗涤液温度不能超过45ºC。"},"images":["/images/products/180g-tee/962802505245275392_白色_3.jpeg","/images/products/180g-tee/962802505245275392_白色_5.jpeg","/images/products/180g-tee/962802505245275392_白色_7.jpeg","/images/products/180g-tee/962802505245275392_白色_8.png","/images/products/180g-tee/962802505245275392_白色_9.png","/images/products/180g-tee/962802505245275392_黑色_4.jpeg","/images/products/180g-tee/962802505245275392_黑色_6.jpeg","/images/products/180g-tee/962802505245275392_黑色_8.png","/images/products/180g-tee/black.jpeg","/images/products/180g-tee/black.png","/images/products/180g-tee/white.jpeg"],"stock":200,"details":{"en":"[Design] Area print on front\n[Material] 100% Cotton\n[Performance] Soft, comfortable, slight stretch.\n[Scenes] Daily, home, travel, fitness.\n[Target] Men\n[Wash] Hand/machine wash, ≤45°C, no bleach","zh":"【设计说明】前面区域印花\n【材质说明】100%棉\n【产品性能】手感柔软舒适，微弹，版型好穿又好搭，舒适又时尚，简约实用，不易缩水，耐穿，时尚潮流。\n【适用场景】日常，居家，旅行，健身运动等。\n【适用人群】男士\n【洗涤说明】可手洗可机洗，不要长时间浸泡，不可漂白，洗涤液温度不能超过45ºC。"}},{"id":"prod-5","category":"apparel","name":{"en":"180g Children's Pure Cotton Short-Sleeve T-Shirt","zh":"180g儿童纯棉短袖T恤"},"price":13,"currency":"USD","colors":["白色","黑色","杏色"],"sizes":["3-4Y（100cm）","4-5Y（110cm）","5-6Y（120cm）","7-8Y（130cm）","9-10Y（140cm）","11-12Y（150cm）","13Y（160cm）"],"weight":"100%棉","material":{"en":"100%棉","zh":"100%棉"},"description":{"en":"Material:\n100% Cotton\nProduct Features:\nSoft and comfortable fabric; slightly stretchy and breathable.\nSuitable Occasions:\nDaily wear, casual outings, sports, outdoor activities, travel, etc.\nWashing Instructions:\nHand or machine washable. Do not soak for extended periods; do not bleach. Water temperature should not exceed 45ºC.\nSpecial Notes:\nSize measurements are taken with the garment laid flat; a margin of error of 1–2 cm is normal due to different measurement methods. Please avoid using colors in your design that match the garment's base color, as this can prevent ink application during production; such issues are not covered by after-sales service.","zh":"材质说明：\n100%纯棉\n商品性能：\n面料柔软舒适，微弹，透气性好。\n适用场景：\n日常，外出，运动，户外活动，旅行等。\n洗涤说明：\n可手洗可机洗，不要长时间浸泡，不可漂白，洗涤液温度不能超过45ºC。\n特别说明：\n此尺码数据在平铺下测量所得，因测量方法不同，误差在1-2cm内的属于正常现象。设计图片请勿使用与衣服底色相同颜色，生产时会造成无法出墨情况，将不予纳入售后处理范畴。"},"images":["/images/products/kids-tee/20260713232848_962803060990588160_粉色_4.jpeg","/images/products/kids-tee/20260713232853_962803060990588160_粉色_5.jpeg","/images/products/kids-tee/20260713232918_962803060990588160_粉色_1.jpeg","/images/products/kids-tee/20260713233722_962803060990588160_粉色_6.jpeg","/images/products/kids-tee/20260713233737_962803060990588160_粉色_7.png","/images/products/kids-tee/20260713233741_962803060990588160_粉色_5.jpeg","/images/products/kids-tee/20260713233744_962803060990588160_粉色_8.png","/images/products/kids-tee/962803060990588160_粉色_2.jpeg","/images/products/kids-tee/20260713232856_962803060990588160_黑色_9.png","/images/products/kids-tee/20260713232924_962803060990588160_黑色_1.jpeg","/images/products/kids-tee/962803060990588160_黑色_1.jpeg","/images/products/kids-tee/20260713232855_962803060990588160_白色_8.png","/images/products/kids-tee/962803060990588160_白色_1.jpeg","/images/products/kids-tee/962803060990588160_白色_4.jpeg","/images/products/kids-tee/962803060990588160_白色_5.jpeg"],"stock":200,"details":{"en":"Material:\n100% Cotton\nProduct Features:\nSoft and comfortable fabric; slightly stretchy and breathable.\nSuitable Occasions:\nDaily wear, casual outings, sports, outdoor activities, travel, etc.\nWashing Instructions:\nHand or machine washable. Do not soak for extended periods; do not bleach. Water temperature should not exceed 45ºC.\nSpecial Notes:\nSize measurements are taken with the garment laid flat; a margin of error of 1–2 cm is normal due to different measurement methods. Please avoid using colors in your design that match the garment's base color, as this can prevent ink application during production; such issues are not covered by after-sales service.","zh":"材质说明：\n100%纯棉\n商品性能：\n面料柔软舒适，微弹，透气性好。\n适用场景：\n日常，外出，运动，户外活动，旅行等。\n洗涤说明：\n可手洗可机洗，不要长时间浸泡，不可漂白，洗涤液温度不能超过45ºC。\n特别说明：\n此尺码数据在平铺下测量所得，因测量方法不同，误差在1-2cm内的属于正常现象。设计图片请勿使用与衣服底色相同颜色，生产时会造成无法出墨情况，将不予纳入售后处理范畴。"}},{"id":"prod-4","category":"apparel","name":{"en":"Men's Polyester Hooded Sweatshirt","zh":"男士涤纶连帽卫衣"},"price":10,"currency":"USD","colors":["白色","黑色","红色","浅灰色"],"sizes":["S","M","L","XL","XXL","XXXL","XXXXL","XXXXXL"],"weight":"100%涤纶 (260g/m²)","material":{"en":"100%涤纶 (260g/m²)","zh":"100%涤纶 (260g/m²)"},"description":{"en":"Men's 260G polyester hooded sweatshirt. Loose fit with white ink heat transfer printing. All seasons. Soft, breathable, skin-friendly.","zh":"男士260g涤纶连帽卫衣。宽松版型，白墨烫画工艺，四季穿着。面料柔软透气亲肤。日常休闲、运动健身、旅游出行。"},"images":["/images/products/卫衣/Z5FVT7SN7W_浅灰色_25.jpg","/images/products/卫衣/Z5FVT7SN7W_浅灰色_26.jpg","/images/products/卫衣/Z5FVT7SN7W_浅灰色_27.jpg","/images/products/卫衣/Z5FVT7SN7W_浅灰色_28.jpg","/images/products/卫衣/Z5FVT7SN7W_浅灰色_29.jpg","/images/products/卫衣/Z5FVT7SN7W_浅灰色_30.jpg","/images/products/卫衣/Z5FVT7SN7W_浅灰色_32.jpg","/images/products/卫衣/Z5FVT7SN7W_白色_10.jpg","/images/products/卫衣/Z5FVT7SN7W_白色_11.jpg","/images/products/卫衣/Z5FVT7SN7W_白色_12.jpg","/images/products/卫衣/Z5FVT7SN7W_白色_13.jpg","/images/products/卫衣/Z5FVT7SN7W_白色_14.jpg","/images/products/卫衣/Z5FVT7SN7W_白色_16.jpg","/images/products/卫衣/Z5FVT7SN7W_白色_9.jpg","/images/products/卫衣/Z5FVT7SN7W_红色_17.jpg","/images/products/卫衣/Z5FVT7SN7W_红色_18.jpg","/images/products/卫衣/Z5FVT7SN7W_红色_19.jpg","/images/products/卫衣/Z5FVT7SN7W_红色_20.jpg","/images/products/卫衣/Z5FVT7SN7W_红色_21.jpg","/images/products/卫衣/Z5FVT7SN7W_红色_22.jpg","/images/products/卫衣/Z5FVT7SN7W_红色_24.jpg","/images/products/卫衣/Z5FVT7SN7W_黑色_1.jpg","/images/products/卫衣/Z5FVT7SN7W_黑色_2.jpg","/images/products/卫衣/Z5FVT7SN7W_黑色_3.jpg","/images/products/卫衣/Z5FVT7SN7W_黑色_4.jpg","/images/products/卫衣/Z5FVT7SN7W_黑色_5.jpg","/images/products/卫衣/Z5FVT7SN7W_黑色_6.jpg","/images/products/卫衣/Z5FVT7SN7W_黑色_8.jpg","/images/products/卫衣/Z5FVT7SN7W_尺寸表.jpg"],"stock":200,"details":{"en":"Men's 260G polyester hooded sweatshirt. Loose fit with white ink heat transfer printing. All seasons. Soft, breathable, skin-friendly.","zh":"男士260g涤纶连帽卫衣。宽松版型，白墨烫画工艺，四季穿着。面料柔软透气亲肤。日常休闲、运动健身、旅游出行。"}}]</script>  <style>
+  footer { display: none !important; }
+</style>  <section class="h-screen bg-gray-100 flex flex-col"> <!-- ============================================================
+  ===== 桌面端：三栏布局（左工具栏 / 中画布 / 右属性面板） =====
+  ============================================================ --> <div class="hidden md:flex flex-1 overflow-hidden"> <!-- =================== 左栏 (24%) =================== --> <div class="w-[24%] min-w-[260px] max-w-[340px] bg-white border-r border-gray-200 overflow-y-auto flex flex-col gap-2 p-3"> <!-- 【区块】产品选择器 --> <div class="bg-gray-50 rounded-xl p-3"> <h3 class="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">选择产品</h3> <div id="designer-products" class="space-y-1.5"></div> </div> <!-- 【区块】上传图片 --> <div class="bg-gray-50 rounded-xl p-3"> <h3 class="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">上传图片</h3> <div id="upload-zone" class="border-2 border-dashed border-gray-300 rounded-xl p-5 text-center cursor-pointer hover:border-gray-400 hover:bg-gray-100/50 transition-all"> <div class="w-10 h-10 mx-auto mb-1.5 rounded-full bg-gray-100 flex items-center justify-center text-xl">📁</div> <p class="text-xs text-gray-400 font-medium">点击上传</p> <input type="file" id="design-upload" accept="image/*" class="hidden"> </div> <div id="image-gallery" class="grid grid-cols-4 gap-1.5 mt-2"></div> </div> <!-- 【区块】文本工具 --> <div class="bg-gray-50 rounded-xl p-3"> <h3 class="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">文本</h3> <input type="text" id="text-input" placeholder="输入文字..." class="w-full px-3 py-2 bg-white border border-gray-200 rounded-lg text-sm text-gray-700 placeholder-gray-300 focus:outline-none focus:border-gray-400 focus:ring-1 focus:ring-gray-200 transition-all mb-2"> <div class="flex gap-2 mb-2"> <!-- 字体下拉 --> <div class="relative flex-1"> <label class="text-xs font-bold text-gray-500 uppercase tracking-wider block mb-1.5">字体</label> <select id="font-select" class="w-full px-3 py-2 bg-white border border-gray-200 rounded-lg text-sm text-gray-700 appearance-none cursor-pointer focus:outline-none focus:border-gray-400 focus:ring-1 focus:ring-gray-200 transition-all"> <option value="Arial">Arial</option> <option value="Georgia">Georgia</option> <option value="Impact">Impact</option> <option value="Courier New">Courier New</option> <option value="Times New Roman">Times New Roman</option> <option value="Verdana">Verdana</option> <option value="Trebuchet MS">Trebuchet MS</option> <option value="Comic Sans MS">Comic Sans MS</option> </select> </div> <!-- 字号 +/− --> <div class="flex flex-col items-center"> <label class="text-xs font-bold text-gray-500 uppercase tracking-wider block mb-1.5">大小</label> <div class="flex items-center gap-0"> <button class="w-7 h-7 rounded-l bg-white border border-gray-200 text-xs font-bold text-gray-600 hover:bg-gray-50" onclick="chgFontSize(-2)">−</button> <span class="w-8 h-7 flex items-center justify-center bg-white border-y border-gray-200 text-xs font-bold text-gray-700" id="font-size-display">28</span> <button class="w-7 h-7 rounded-r bg-white border border-gray-200 text-xs font-bold text-gray-600 hover:bg-gray-50" onclick="chgFontSize(2)">+</button> </div> </div> <!-- 颜色选择器 --> <div class="flex flex-col items-center"> <label class="text-xs font-bold text-gray-500 uppercase tracking-wider block mb-1.5">颜色</label> <input type="color" id="text-color" value="#333333" class="w-8 h-8 rounded cursor-pointer border-0 bg-transparent p-0"> </div> </div> <button class="w-full py-2.5 bg-gray-800 hover:bg-gray-700 active:bg-gray-900 text-white rounded-lg text-sm font-medium transition-all" onclick="addTextFromSelect()">添加文字</button> </div> <!-- 【操作按钮】重置 / 居中 --> <div class="flex gap-2"> <button id="btn-reset" class="flex-1 py-2.5 bg-white border border-gray-200 rounded-lg text-sm font-medium text-gray-500 hover:bg-gray-50 hover:border-gray-300 active:bg-gray-100 transition-all">重置</button> <button id="btn-center" class="flex-1 py-2.5 bg-white border border-gray-200 rounded-lg text-sm font-medium text-gray-500 hover:bg-gray-50 hover:border-gray-300 active:bg-gray-100 transition-all">居中</button> </div> </div> <!-- =================== 中间画布 =================== --> <div class="flex-1 bg-gray-200 flex items-center justify-center p-6"> <div class="relative bg-white rounded-2xl shadow-xl overflow-hidden" style="width: min(100%, 540px); aspect-ratio: 1/1;"> <canvas id="design-canvas" style="width:100%;height:100%;display:block"></canvas> </div> </div> <!-- =================== 右栏 (24%) =================== --> <div class="w-[24%] min-w-[260px] max-w-[340px] bg-white border-l border-gray-200 overflow-y-auto flex flex-col gap-2 p-3"> <!-- 【区块】已选产品信息 + 购物车 --> <div class="bg-gray-50 rounded-xl p-3"> <h3 class="text-xs font-bold text-gray-500 uppercase tracking-wider mb-1.5">已选</h3> <p class="text-sm font-bold text-gray-800" id="info-name">请选择产品</p> <p class="text-xs text-gray-400 mt-0.5" id="info-detail"></p> <div class="flex items-center justify-between mt-1"> <p class="text-xl font-bold text-gray-800" id="info-price"></p> <button id="btn-cart" class="px-3 py-1.5 bg-gray-800 hover:bg-gray-700 active:bg-gray-900 text-white rounded-lg text-xs font-semibold transition-all">购物车</button> </div> </div> <!-- 【区块】产品参数：颜色 / 尺码 / 数量（初始隐藏） --> <div class="bg-gray-50 rounded-xl p-3 hidden" id="product-params"> <div class="space-y-3"> <div> <label class="text-xs font-bold text-gray-500 uppercase tracking-wider">颜色</label> <div class="flex flex-wrap gap-2 mt-1.5" id="color-options"></div> </div> <div> <label class="text-xs font-bold text-gray-500 uppercase tracking-wider">尺码</label> <div class="flex flex-wrap gap-1.5 mt-1.5" id="size-options"></div> </div> <div class="flex items-center justify-between"> <label class="text-xs font-bold text-gray-500 uppercase tracking-wider">数量</label> <div class="flex items-center gap-0"> <button class="w-8 h-8 rounded-l-lg bg-white border border-gray-200 text-gray-600 hover:bg-gray-50 text-sm font-bold leading-none" onclick="chgQty(-1)">−</button> <span class="w-10 h-8 flex items-center justify-center bg-white border-y border-gray-200 text-sm font-bold text-gray-700" id="design-qty">1</span> <button class="w-8 h-8 rounded-r-lg bg-white border border-gray-200 text-gray-600 hover:bg-gray-50 text-sm font-bold leading-none" onclick="chgQty(1)">+</button> </div> </div> </div> </div> <!-- 【区块】预览缩略图 — 点击放大 --> <div class="bg-gray-50 rounded-xl p-3 flex flex-col"> <h3 class="text-xs font-bold text-gray-500 uppercase tracking-wider mb-1.5">预览</h3> <div id="preview-thumb" class="bg-white rounded-xl flex items-center justify-center overflow-hidden cursor-pointer border border-gray-100 hover:border-gray-300 transition-colors" style="height:308px;" onclick="openPreview()"> <span class="text-4xl opacity-10">👕</span> </div> <p class="text-[10px] text-gray-400 mt-1.5 text-center">点击放大</p> </div> </div> </div> <!-- ============================================================
+  ===== 移动端：单列布局（画布在上 / 工具栏在下） =====
+  ============================================================ --> <div class="md:hidden flex flex-col flex-1"> <!-- 【画布区域】 --> <div class="flex-1 bg-gray-200 flex items-center justify-center p-2"> <div class="relative bg-white rounded-2xl shadow-lg overflow-hidden w-full" style="max-width: min(92vw, 360px); aspect-ratio: 1/1;"> <canvas id="design-canvas-mobile" style="width:100%;height:100%;display:block"></canvas> </div> </div> <!-- 【底部工具栏】紧凑布局 --> <div class="bg-white border-t border-gray-200 px-2 py-2"> <!-- 行1：产品选择药片 --> <div class="flex items-center gap-1.5 mb-2"> <span class="text-[10px] font-bold text-gray-400 uppercase flex-shrink-0 w-10">产品</span> <div id="designer-products-mobile" class="flex gap-1 overflow-x-auto flex-1"></div> </div> <!-- 行2：颜色 / 尺码 / 数量（初始隐藏） --> <div id="product-params-mobile" class="hidden flex items-center gap-1.5 mb-2 flex-wrap"> <span class="text-[10px] font-bold text-gray-400 uppercase flex-shrink-0">颜色</span> <div id="color-options-mobile" class="flex gap-1 flex-shrink-0"></div> <span class="text-gray-300 flex-shrink-0">|</span> <span class="text-[10px] font-bold text-gray-400 uppercase flex-shrink-0">尺码</span> <select id="size-select-mobile" class="px-2 py-1.5 bg-white border border-gray-200 rounded text-xs text-gray-700 flex-shrink-0 focus:outline-none focus:border-gray-400" style="min-width: 80px; -webkit-appearance: menulist; appearance: menulist; cursor: pointer;"></select> <span class="text-gray-300 flex-shrink-0">|</span> <span class="text-[10px] font-bold text-gray-400 uppercase flex-shrink-0">数量</span> <button class="w-5 h-5 bg-white border border-gray-200 rounded text-xs font-bold flex-shrink-0" onclick="chgQty(-1)">−</button> <span class="text-sm font-bold flex-shrink-0" id="design-qty-mobile">1</span> <button class="w-5 h-5 bg-white border border-gray-200 rounded text-xs font-bold flex-shrink-0" onclick="chgQty(1)">+</button> </div> <!-- 行3：文字输入 / 字体 / 字号 / 颜色 / 添加按钮 / 上传 --> <div class="flex gap-1 items-center mb-2"> <input type="text" id="text-input-mobile" placeholder="输入文字..." class="flex-1 min-w-0 px-2 py-2 bg-gray-50 border border-gray-200 rounded-lg text-[11px] text-gray-700 placeholder-gray-400 focus:outline-none focus:border-gray-400"> <select id="font-select-mobile" class="px-1.5 py-2 bg-white border border-gray-200 rounded-lg text-[10px] text-gray-600 flex-shrink-0 max-w-[60px] focus:outline-none"> <option value="Arial">Arial</option> <option value="Georgia">Georgia</option> <option value="Impact">Impact</option> <option value="Courier New">Courier</option> <option value="Times New Roman">Times</option> <option value="Verdana">Verdana</option> <option value="Trebuchet MS">Trebuc</option> <option value="Comic Sans MS">Comic</option> </select> <button class="w-5 h-6 bg-white border border-gray-200 rounded text-[10px] font-bold text-gray-600 flex-shrink-0" onclick="chgFontSize(-2)">−</button> <span class="text-[10px] font-bold text-gray-700 flex-shrink-0" id="font-size-display-mobile">28</span> <button class="w-5 h-6 bg-white border border-gray-200 rounded text-[10px] font-bold text-gray-600 flex-shrink-0" onclick="chgFontSize(2)">+</button> <input type="color" id="text-color-mobile" value="#333333" class="w-8 h-8 rounded cursor-pointer border border-gray-200 bg-white p-0.5 flex-shrink-0"> <button class="px-2 py-2 bg-gray-800 text-white rounded-lg text-[10px] font-semibold flex-shrink-0" onclick="addTextFromSelect(true)">+</button> <button class="w-8 h-8 bg-gray-100 border border-gray-200 rounded-lg text-xs flex items-center justify-center flex-shrink-0" onclick="document.getElementById('design-upload-mobile').click()">📁</button> <input type="file" id="design-upload-mobile" accept="image/*" class="hidden"> </div> <!-- 操作栏：已选信息 + 重置 / 居中 / 购物车 --> <div class="flex items-center gap-2"> <div class="flex-1 min-w-0"> <p class="text-xs font-bold text-gray-800 truncate" id="info-name-mobile">请选择产品</p> <p class="text-[10px] text-gray-400" id="info-detail-mobile"></p> <p class="text-sm font-bold text-gray-800" id="info-price-mobile"></p> </div> <button id="btn-reset-mobile" class="px-3 py-2 bg-white border border-gray-200 rounded-lg text-[11px] font-medium text-gray-500 hover:bg-gray-50 flex-shrink-0">重置</button> <button id="btn-center-mobile" class="px-3 py-2 bg-white border border-gray-200 rounded-lg text-[11px] font-medium text-gray-500 hover:bg-gray-50 flex-shrink-0">居中</button> <button id="btn-cart-mobile" class="px-4 py-2.5 bg-gray-800 hover:bg-gray-700 active:bg-gray-900 text-white rounded-lg text-xs font-semibold flex-shrink-0">购物车</button> </div> </div> </div> </section>  <div id="preview-modal" class="fixed inset-0 z-50 bg-black/80 hidden flex items-center justify-center p-6" onclick="closePreview()"> <div class="relative max-w-[90vw] max-h-[90vh]" onclick="event.stopPropagation()"> <img id="preview-modal-img" class="max-w-full max-h-[85vh] object-contain rounded-xl shadow-2xl" src="" alt="Preview"> <button class="absolute -top-3 -right-3 w-9 h-9 bg-white rounded-full shadow-lg flex items-center justify-center text-base font-bold text-gray-600 hover:bg-gray-100 transition-colors" onclick="closePreview()">✕</button> </div> </div>  <script src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/5.3.1/fabric.min.js"></script>  <script>
+(function() {
+  // 【预热】预加载产品图片到浏览器缓存，加速首次切换
+  ['/images/products/180g-tee/black.jpeg','/images/products/180g-tee/white.jpeg','/images/products/kids-tee/black.jpeg','/images/products/kids-tee/white.jpeg','/images/products/kids-tee/pink.jpeg'].forEach(function(u){ new Image().src = u; });
+
+  // ── 全局状态 ──────────────────────────────────────────────
+  var state = {
+    currentProduct: null,  // 当前选中的产品对象
+    currentColor: '',      // 当前颜色
+    currentSize: '',       // 当前尺码
+    qty: 1,               // 数量
+    galleryImages: [],     // 用户上传的图片缓存
+    fontSize: 28           // 默认字号
+  };
+  var canvas = null, baseImg = null, isMobile = false; // canvas实例 / 产品底图 / 是否移动端
+  var snapGuidelines = null; // 对齐辅助线对象
+  var SNAP_THRESHOLD = 15;   // 【修改】中心吸附阈值（px）
+
+  // 【工具】根据设备返回正确的canvas ID
+  function getCanvasId() { return isMobile ? 'design-canvas-mobile' : 'design-canvas'; }
+
+  // ╔══════════════════════════════════════════════════════════╗
+  // ║  画布初始化 — 创建 Fabric.js Canvas 实例                ║
+  // ╚══════════════════════════════════════════════════════════╝
+  function initCanvas() {
+    isMobile = window.innerWidth < 768;
+    var el = document.getElementById(getCanvasId());
+    if (!el) return;
+    var wrap = el.parentElement;
+    var size = wrap.clientWidth; // 正方形画布，边长取容器宽度
+    el.width = size;
+    el.height = size;
+
+    // 【创建】Fabric Canvas — 【修改】背景色改 backgroundColor
+    canvas = new fabric.Canvas(getCanvasId(), {
+      width: size,
+      height: size,
+      backgroundColor: '#f8f6f0', // 米白色底
+      selection: true,
+      preserveObjectStacking: true,
+      selectionColor: 'rgba(91,109,97,0.15)',
+      selectionBorderColor: '#5B6D61',
+      selectionLineWidth: 1,
+      cornerColor: '#5B6D61',        // 选中框角点颜色
+      cornerSize: 8,                 // 角点大小
+      cornerStyle: 'circle',         // 角点样式：圆形
+      transparentCorners: false,
+      cornerStrokeColor: '#5B6D61',
+    });
+
+    // 【事件】对象拖拽中 → 绘制对齐辅助线
+    canvas.on('object:moving', function(e) {
+      drawGuidelines(e.target);
+    });
+    // 【事件】对象修改完成 → 清除辅助线 + 更新预览
+    canvas.on('object:modified', function() {
+      clearGuidelines();
+      updatePreview();
+    });
+    canvas.on('before:selection:cleared', clearGuidelines);
+    canvas.on('selection:cleared', clearGuidelines);
+
+    // 【删除控件】每个 Fabric 对象右上角的红色 ✕ 删除按钮
+    fabric.Object.prototype.controls.deleteControl = new fabric.Control({
+      x: 0.5,
+      y: -0.5,
+      offsetY: -12,
+      offsetX: 12,
+      sizeX: 24,
+      sizeY: 24,
+      cursorStyle: 'pointer',
+      actionHandler: function(evt, transform) {
+        canvas.remove(transform.target);
+        canvas.requestRenderAll();
+        clearGuidelines();
+        updatePreview();
+        return true;
+      },
+      mouseUpHandler: function(evt, transform) {
+        canvas.remove(transform.target);
+        canvas.requestRenderAll();
+        clearGuidelines();
+        updatePreview();
+        return true;
+      },
+      // 【渲染】绘制红色圆形✕图标
+      render: function(ctx, left, top, styleOverride, fabricObject) {
+        var size = 14;
+        ctx.save();
+        ctx.translate(left, top);
+        ctx.beginPath();
+        ctx.arc(0, 0, size, 0, Math.PI * 2);
+        ctx.fillStyle = '#ef4444';
+        ctx.fill();
+        ctx.closePath();
+        ctx.strokeStyle = '#fff';
+        ctx.lineWidth = 1.5;
+        ctx.stroke();
+        ctx.fillStyle = '#fff';
+        ctx.font = 'bold 12px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText('✕', 0, 1);
+        ctx.restore();
+      }
+    });
+
+    // 【键盘】Delete / Backspace 删除选中对象
+    document.addEventListener('keydown', function(e) {
+      if ((e.key === 'Delete' || e.key === 'Backspace') && canvas) {
+        var active = canvas.getActiveObject();
+        if (active && active !== baseImg) { // 不能删除产品底图
+          canvas.remove(active);
+          canvas.requestRenderAll();
+          clearGuidelines();
+          updatePreview();
+          e.preventDefault();
+        }
+      }
+    });
+
+    // 【效】字体/颜色实时更新 — 选中文字对象时立即生效
+    function onFontColorChange() {
+      if (!canvas) return;
+      var obj = canvas.getActiveObject();
+      if (obj && obj.type === 'i-text') {
+        var f = document.getElementById('font-select');
+        var c = document.getElementById('text-color');
+        var fm = document.getElementById('font-select-mobile');
+        var cm = document.getElementById('text-color-mobile');
+        if (f) obj.set('fontFamily', f.value);
+        if (c) obj.set('fill', c.value);
+        canvas.requestRenderAll();
+        updatePreview();
+      }
+    }
+    var fontSel = document.getElementById('font-select');
+    var colorPick = document.getElementById('text-color');
+    var fontSelM = document.getElementById('font-select-mobile');
+    var colorPickM = document.getElementById('text-color-mobile');
+    if (fontSel) fontSel.addEventListener('change', onFontColorChange);
+    if (colorPick) colorPick.addEventListener('input', onFontColorChange);
+    if (fontSelM) fontSelM.addEventListener('change', onFontColorChange);
+    if (colorPickM) colorPickM.addEventListener('input', onFontColorChange);
+
+    // 加载产品列表
+    loadProducts();
+  }
+
+  // ╔══════════════════════════════════════════════════════════╗
+  // ║  中心对齐辅助线 — 拖拽对象靠近画布中心时吸附            ║
+  // ╚══════════════════════════════════════════════════════════╝
+  function drawGuidelines(obj) {
+    clearGuidelines();
+    if (!obj || obj === baseImg) return; // 跳过产品底图
+    var cw = canvas.width, ch = canvas.height;
+    var centerX = cw / 2;
+    var centerY = ch / 2;
+
+    var cp = obj.getCenterPoint(); // 获取对象视觉中心（忽略 originX/originY）
+    var cx = cp.x;
+    var cy = cp.y;
+
+    var dx = 0, dy = 0;
+    snapGuidelines = [];
+
+    // X轴中心 → 绘制竖线 + 计算偏移
+    if (Math.abs(cx - centerX) <= SNAP_THRESHOLD) {
+      snapGuidelines.push(
+        new fabric.Line([centerX, 0, centerX, ch], {
+          stroke: '#a0a0a0', strokeWidth: 1.5, strokeDashArray: [6,4],
+          selectable: false, evented: false, excludeFromExport: true
+        })
+      );
+      dx = centerX - cx;
+    }
+
+    // Y轴中心 → 绘制横线 + 计算偏移
+    if (Math.abs(cy - centerY) <= SNAP_THRESHOLD) {
+      snapGuidelines.push(
+        new fabric.Line([0, centerY, cw, centerY], {
+          stroke: '#a0a0a0', strokeWidth: 1.5, strokeDashArray: [6,4],
+          selectable: false, evented: false, excludeFromExport: true
+        })
+      );
+      dy = centerY - cy;
+    }
+
+    if (dx !== 0 || dy !== 0) {
+      obj.set({ left: obj.left + dx, top: obj.top + dy });
+      obj.setCoords();
+    }
+
+    snapGuidelines.forEach(function(g) { canvas.add(g); g.moveTo(999); });
+    canvas.requestRenderAll();
+  }
+
+  function clearGuidelines() {
+    if (snapGuidelines) {
+      snapGuidelines.forEach(function(g) { canvas.remove(g); });
+      snapGuidelines = null;
+      canvas.requestRenderAll();
+    }
+  }
+
+  // ╔══════════════════════════════════════════════════════════╗
+  // ║  产品底图 — 在画布上放置产品照片作为背景               ║
+  // ╚══════════════════════════════════════════════════════════╝
+  function addBaseImage(src) {
+    if (!canvas) return;
+    if (baseImg) { canvas.remove(baseImg); baseImg = null; } // 先清除旧图
+    fabric.Image.fromURL(src, function(img) {
+      var cw = canvas.width, ch = canvas.height;
+      // 缩放至完全覆盖画布（Math.max确保全覆盖）
+      var s = Math.max(cw / img.width, ch / img.height);
+      img.set({
+        left: (cw - img.width * s) / 2,
+        top: (ch - img.height * s) / 2,
+        scaleX: s,
+        scaleY: s,
+        selectable: false,  // 不可选中
+        evented: false,     // 不响应事件
+        excludeFromExport: false,
+      });
+      canvas.add(img);
+      canvas.moveTo(img, 0); // 移到最底层
+      baseImg = img;
+      canvas.requestRenderAll();
+      updatePreview();
+    }, { crossOrigin: 'anonymous' });
+  }
+
+  // ╔══════════════════════════════════════════════════════════╗
+  // ║  设计元素：添加图片 / 添加文字                          ║
+  // ╚══════════════════════════════════════════════════════════╝
+  function addDesignImage(src) {
+    if (!canvas) return;
+    fabric.Image.fromURL(src, function(img) {
+      var s = Math.min(canvas.width, canvas.height) * 0.3 / Math.max(img.width, img.height);
+      img.set({
+        left: canvas.width / 2,
+        top: canvas.height * 0.35,
+        scaleX: s,
+        scaleY: s,
+        originX: 'center',
+        originY: 'center',
+        cornerColor: '#5B6D61',
+        cornerSize: 8,
+        cornerStyle: 'circle',
+        transparentCorners: false,
+      });
+      canvas.add(img);
+      canvas.setActiveObject(img);
+      canvas.requestRenderAll();
+      updatePreview();
+    }, { crossOrigin: 'anonymous' });
+  }
+
+  function addTextFromSelect(fromMobile) {
+    var sel = document.getElementById(fromMobile ? 'font-select-mobile' : 'font-select');
+    var font = sel ? sel.value : 'Arial';
+    var colorEl = document.getElementById(fromMobile ? 'text-color-mobile' : 'text-color');
+    var fill = colorEl ? colorEl.value : '#333333';
+    var inputEl = isMobile ? document.getElementById('text-input-mobile') : document.getElementById('text-input');
+    var txt = (inputEl ? inputEl.value.trim() : '') || 'Your text';
+    addTextObj(font, txt, fill);
+  }
+
+  function addTextObj(font, txt, fill) {
+    if (!canvas) return;
+    if (!fill) {
+      var colorEl = document.getElementById('text-color');
+      fill = colorEl ? colorEl.value : '#333333';
+    }
+    var t = new fabric.IText(txt, {
+      left: canvas.width / 2,
+      top: canvas.height * 0.3,
+      originX: 'center',
+      fontFamily: font,
+      fontSize: state.fontSize,
+      fill: fill,
+      cornerColor: '#5B6D61',
+      cornerSize: 8,
+      cornerStyle: 'circle',
+      transparentCorners: false,
+    });
+    canvas.add(t);
+    canvas.setActiveObject(t);
+    canvas.requestRenderAll();
+    updatePreview();
+  }
+
+  // ╔══════════════════════════════════════════════════════════╗
+  // ║  预览 — canvas → PNG → 缩略图 / 弹窗大图                   ║
+  // ╚══════════════════════════════════════════════════════════╝
+  function updatePreview() {
+    if (!canvas) return;
+    var dataUrl = canvas.toDataURL({ format: 'png', multiplier: 0.5 }); // 【修改】缩略图分辨率
+    var thumb = document.getElementById('preview-thumb');
+    if (thumb) {
+      thumb.innerHTML = '<img src="' + dataUrl + '" class="w-full h-full object-contain" alt="Preview" />';
+    }
+  }
+
+  function openPreview() {
+    if (!canvas) return;
+    var d = canvas.toDataURL({ format: 'png', multiplier: 1.5 }); // 【修改】全屏预览分辨率
+    document.getElementById('preview-modal-img').src = d;
+    document.getElementById('preview-modal').classList.remove('hidden');
+  }
+
+  function closePreview() {
+    document.getElementById('preview-modal').classList.add('hidden');
+  }
+
+  // ╔══════════════════════════════════════════════════════════╗
+  // ║  全局交互函数 — window 暴露给 onclick 调用              ║
+  // ╚══════════════════════════════════════════════════════════╝
+  window.chgQty = function(d) {
+    state.qty = Math.max(1, state.qty + d);
+    document.getElementById('design-qty').textContent = state.qty;
+    var m = document.getElementById('design-qty-mobile');
+    if (m) m.textContent = state.qty;
+    updateDetail();
+  };
+  window.chgFontSize = function(d) {
+    state.fontSize = Math.max(8, Math.min(200, state.fontSize + d)); // 【修改】字号范围 8-200
+    document.getElementById('font-size-display').textContent = state.fontSize;
+    var fm = document.getElementById('font-size-display-mobile');
+    if (fm) fm.textContent = state.fontSize;
+    if (canvas) {
+      var active = canvas.getActiveObject();
+      if (active && active.type === 'i-text') {
+        active.set('fontSize', state.fontSize);
+        canvas.requestRenderAll();
+        updatePreview();
+      }
+    }
+  };
+
+  window.addTextFromSelect = addTextFromSelect;
+  window.addDesignImage = addDesignImage;
+  window.openPreview = openPreview;
+  window.closePreview = closePreview;
+
+  // ╔══════════════════════════════════════════════════════════╗
+  // ║  产品加载 — 解析JSON，渲染产品列表                      ║
+  // ╚══════════════════════════════════════════════════════════╝
+  function loadProducts() {
+    var el = document.getElementById('__designerProducts');
+    if (!el) return;
+    var raw = el.textContent || el.innerText || '';
+    var prods;
+    try { prods = JSON.parse(raw); } catch(e) { console.error('Failed to parse products JSON:', e); return; }
+    if (!prods || !prods.length) return;
+
+    // 【去重】同一id多次出现（多颜色变体），合并为一个产品组
+    var map = {};
+    prods.forEach(function(p) {
+      var id = p.id;
+      if (!map[id]) {
+        map[id] = {
+          id: id,
+          name: p.name,           // {zh, en} 对象
+          price: p.price,
+          colors: Array.isArray(p.colors) ? p.colors : [],
+          sizes: Array.isArray(p.sizes) ? p.sizes : [],
+          allImages: Array.isArray(p.images) ? p.images : [],
+          stock: p.stock || 0,
+        };
+      }
+    });
+
+    // ── 桌面端产品列表 ──
+    var items = document.getElementById('designer-products');
+    if (items) {
+      var first = true;
+      var html = '';
+      Object.values(map).forEach(function(g) {
+        var displayName = (g.name && g.name.zh) || (g.name && g.name.en) || g.id;
+        var thumb = g.allImages[0] || '';
+        html += '<div class="product-item bg-white rounded-xl p-2 flex items-center gap-3 cursor-pointer border-2 transition-all ' +
+          (first ? 'border-gray-700 shadow-sm' : 'border-transparent hover:border-gray-300 hover:shadow-sm') +
+          '" data-id="' + g.id + '">' +
+          (thumb
+            ? '<img src="' + thumb + '" class="w-12 h-12 rounded-lg object-cover bg-gray-100 flex-shrink-0" onerror="this.style.display=\'none\'" alt="" />'
+            : '<div class="w-12 h-12 rounded-lg bg-gray-100 flex items-center justify-center text-xl flex-shrink-0">👕</div>') +
+          '<div class="min-w-0 flex-1">' +
+          '<p class="text-xs font-bold text-gray-800 truncate">' + displayName + '</p>' +
+          '<p class="text-xs text-green-600 font-semibold mt-0.5">$' + g.price + '</p>' +
+          '</div></div>';
+        if (first) first = false;
+      });
+      items.innerHTML = html || '<p class="text-xs text-gray-400 italic">No products</p>';
+
+      items.querySelectorAll('.product-item').forEach(function(el) {
+        el.addEventListener('click', function() {
+          items.querySelectorAll('.product-item').forEach(function(e) {
+            e.classList.remove('border-gray-700', 'shadow-sm');
+            e.classList.add('border-transparent');
+          });
+          el.classList.add('border-gray-700', 'shadow-sm');
+          el.classList.remove('border-transparent');
+          selectProduct(el.dataset.id, map);
+        });
+      });
+    }
+
+    // ── 移动端产品药片 ──
+    var pills = document.getElementById('designer-products-mobile');
+    if (pills) {
+      var first = true;
+      var mhtml = '';
+      Object.values(map).forEach(function(g) {
+        var displayName = (g.name && g.name.zh) || (g.name && g.name.en) || g.id;
+        mhtml += '<button class="prod-pill flex-shrink-0 px-3 py-1.5 rounded-full text-xs font-medium border-2 transition-all ' +
+          (first ? 'bg-gray-700 text-white border-gray-700' : 'bg-white text-gray-600 border-gray-300') +
+          '" data-id="' + g.id + '">' + displayName + '</button>';
+        if (first) first = false;
+      });
+      pills.innerHTML = mhtml || '<span class="text-xs text-gray-400 italic">No products</span>';
+
+      pills.querySelectorAll('.prod-pill').forEach(function(el) {
+        el.addEventListener('click', function() {
+          pills.querySelectorAll('.prod-pill').forEach(function(e) {
+            e.classList.remove('bg-gray-700', 'text-white', 'border-gray-700');
+            e.classList.add('bg-white', 'text-gray-600', 'border-gray-300');
+          });
+          el.classList.add('bg-gray-700', 'text-white', 'border-gray-700');
+          el.classList.remove('bg-white', 'text-gray-600', 'border-gray-300');
+          selectProduct(el.dataset.id, map);
+        });
+      });
+    }
+
+    // 自动选中第一个产品
+    var keys = Object.keys(map);
+    if (keys.length > 0) {
+      selectProduct(keys[0], map);
+    }
+  }
+
+  function selectProduct(id, map) {
+    var g = map[id];
+    if (!g) return;
+
+    state.currentProduct = g;
+    state.currentColor = g.colors[0] || ''; // 默认第一个颜色
+    state.currentSize = g.sizes[0] || '';   // 默认第一个尺码
+
+    // 显示产品参数区域
+    var pp = document.getElementById('product-params');
+    if (pp) pp.classList.remove('hidden');
+    var ppm = document.getElementById('product-params-mobile');
+    if (ppm) ppm.classList.remove('hidden');
+
+    // 更新信息面板
+    var displayName = (g.name && g.name.zh) || (g.name && g.name.en) || g.id;
+    document.getElementById('info-name').textContent = displayName;
+    document.getElementById('info-price').textContent = '$' + g.price;
+    var inm = document.getElementById('info-name-mobile');
+    if (inm) inm.textContent = displayName;
+    var ipm = document.getElementById('info-price-mobile');
+    if (ipm) ipm.textContent = '$' + g.price;
+    updateDetail();
+
+    // 渲染颜色色块 + 尺码选项
+    var colorMap = { '白色': '#f0f0f0', '黑色': '#222', '红色': '#dc2626', '浅灰色': '#d1d5db', '杏色': '#f5deb3', '粉色': '#ffb6c1' };
+    var colors = g.colors || [];
+    renderColorSwatches(colors, colorMap);
+
+    var sizes = g.sizes || [];
+    renderSizeOptions(sizes);
+
+    // 【关键】点击产品后立即加载对应图片
+    loadProductImage();
+  }
+
+  function renderColorSwatches(colors, colorMap) {
+    var sel = state.currentColor;
+    var chtml = colors.map(function(c) {
+      var bg = colorMap[c] || c;
+      return '<div class="w-7 h-7 rounded-full cursor-pointer border-2 ' +
+        (c === sel ? 'border-gray-700 ring-2 ring-gray-400 ring-offset-1' : 'border-gray-300 hover:border-gray-500') +
+        '" style="background:' + bg + '" title="' + c + '" data-c="' + c + '"></div>';
+    }).join('');
+    document.getElementById('color-options').innerHTML = chtml;
+    var co = document.getElementById('color-options-mobile');
+    if (co) co.innerHTML = chtml;
+    document.querySelectorAll('#color-options > div, #color-options-mobile > div').forEach(function(el) {
+      el.addEventListener('click', function() {
+        state.currentColor = el.dataset.c;
+        updateDetail();
+        reloadColor(); // 切换产品图片
+        renderColorSwatches(colors, colorMap);
+      });
+    });
+  }
+
+  function renderSizeOptions(sizes) {
+    var sel = state.currentSize;
+    // 桌面端：药片按钮
+    var shtml = sizes.map(function(s) {
+      return '<div class="px-2.5 py-1 border rounded-full text-xs cursor-pointer transition-all ' +
+        (s === sel ? 'bg-gray-700 text-white border-gray-700' : 'bg-white text-gray-600 border-gray-300 hover:border-gray-500') +
+        '" data-s="' + s + '">' + s + '</div>';
+    }).join('');
+    document.getElementById('size-options').innerHTML = shtml;
+    // 移动端：下拉 select
+    var sm = document.getElementById('size-select-mobile');
+    if (sm) {
+      sm.innerHTML = sizes.map(function(s) {
+        return '<option value="' + s + '"' + (s === sel ? ' selected' : '') + '>' + s + '</option>';
+      }).join('');
+      sm.onchange = function() {
+        state.currentSize = this.value;
+        updateDetail();
+      };
+      sm.style.pointerEvents = 'auto';
+    }
+    document.querySelectorAll('#size-options > div').forEach(function(el) {
+      el.addEventListener('click', function() {
+        state.currentSize = el.dataset.s;
+        updateDetail();
+        renderSizeOptions(sizes);
+      });
+    });
+  }
+
+  function updateDetail() {
+    var txt = (state.currentColor || '?') + ' / ' + (state.currentSize || '?') + ' × ' + state.qty; // 【修改】详情文本格式
+    document.getElementById('info-detail').textContent = txt;
+    var dm = document.getElementById('info-detail-mobile');
+    if (dm) dm.textContent = txt;
+  }
+
+  function loadProductImage() { reloadColor(); }
+
+  // 【图片映射】根据产品类型 + 颜色选择对应的产品图片 — 【修改】新增产品时在此添加路径
+  function reloadColor() {
+    if (!state.currentProduct) return;
+    var name = (state.currentProduct.name && state.currentProduct.name.en) || '';
+    var zhName = (state.currentProduct.name && state.currentProduct.name.zh) || '';
+    var isKids = name.toLowerCase().includes('children') || name.toLowerCase().includes('kid') || zhName.includes('儿童');
+    var c = state.currentColor || '白色';
+
+    var baseSrc;
+    if (isKids) {
+      // 儿童T恤颜色映射
+      if (c === '杏色' || c === '粉色') {
+        baseSrc = '/images/products/kids-tee/pink.jpeg';
+      } else if (c === '黑色') {
+        baseSrc = '/images/products/kids-tee/black.jpeg';
+      } else {
+        baseSrc = '/images/products/kids-tee/white.jpeg';
+      }
+    } else if (name.toLowerCase().includes('hoodie') || name.toLowerCase().includes('hooded') || zhName.includes('卫衣')) {
+      // 卫衣颜色映射
+      if (c === '黑色') {
+        baseSrc = '/images/products/卫衣/Z5FVT7SN7W_黑色_3.jpg';
+      } else if (c === '红色') {
+        baseSrc = '/images/products/卫衣/Z5FVT7SN7W_红色_19.jpg';
+      } else if (c === '浅灰色') {
+        baseSrc = '/images/products/卫衣/Z5FVT7SN7W_浅灰色_27.jpg';
+      } else {
+        baseSrc = '/images/products/卫衣/Z5FVT7SN7W_白色_11.jpg';
+      }
+    } else {
+      // 成人T恤颜色映射
+      if (c === '黑色') {
+        baseSrc = '/images/products/180g-tee/black.jpeg';
+      } else {
+        baseSrc = '/images/products/180g-tee/white.jpeg';
+      }
+    }
+    addBaseImage(baseSrc);
+  }
+
+  // ╔══════════════════════════════════════════════════════════╗
+  // ║  图片上传 — 桌面端 + 移动端                             ║
+  // ╚══════════════════════════════════════════════════════════╝
+  var uploadZone = document.getElementById('upload-zone');
+  if (uploadZone) {
+    uploadZone.addEventListener('click', function() {
+      document.getElementById('design-upload').click();
+    });
+  }
+
+  var uploadInput = document.getElementById('design-upload');
+  if (uploadInput) {
+    uploadInput.addEventListener('change', function(e) {
+      var file = e.target.files[0];
+      if (!file) return;
+      var reader = new FileReader();
+      reader.onload = function(ev) {
+        var src = ev.target.result;
+        state.galleryImages.push(src); // 加入图片库
+        renderGallery();
+        addDesignImage(src);           // 立即添加到画布
+      };
+      reader.readAsDataURL(file);
+      uploadInput.value = '';
+    });
+  }
+
+  var uploadMobile = document.getElementById('design-upload-mobile');
+  if (uploadMobile) {
+    uploadMobile.addEventListener('change', function(e) {
+      var file = e.target.files[0];
+      if (!file) return;
+      var reader = new FileReader();
+      reader.onload = function(ev) {
+        var src = ev.target.result;
+        state.galleryImages.push(src);
+        addDesignImage(src);
+      };
+      reader.readAsDataURL(file);
+      uploadMobile.value = '';
+    });
+  }
+
+  // 渲染图片库缩略图（4列网格）
+  function renderGallery() {
+    var gal = document.getElementById('image-gallery');
+    if (!gal) return;
+    gal.innerHTML = state.galleryImages.map(function(src, i) {
+      return '<div class="aspect-square bg-gray-100 rounded-lg overflow-hidden border border-gray-200 hover:border-gray-500 transition-colors relative group">' +
+        '<img src="' + src + '" class="w-full h-full object-cover cursor-pointer" alt="" onclick="addDesignImage(\'' + src.replace(/'/g, "\\'").replace(/"/g, '&quot;') + '\')" />' +
+        '<button class="absolute -top-1.5 -right-1.5 w-5 h-5 bg-red-500 text-white rounded-full text-[10px] leading-none flex items-center justify-center shadow-md opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-600"' +
+        ' onclick="event.stopPropagation();removeGalleryImage(' + i + ')">✕</button>' +
+        '</div>';
+    }).join('');
+  }
+
+  window.removeGalleryImage = function(i) {
+    var removed = state.galleryImages.splice(i, 1);
+    if (removed[0] && removed[0].startsWith('blob:')) {
+      URL.revokeObjectURL(removed[0]); // 释放内存
+    }
+    renderGallery();
+  };
+
+  // ╔══════════════════════════════════════════════════════════╗
+  // ║  按钮操作：重置 / 居中 / 加入购物车                     ║
+  // ╚══════════════════════════════════════════════════════════╝
+  document.getElementById('btn-reset').addEventListener('click', doReset);
+  document.getElementById('btn-center').addEventListener('click', doCenter);
+  document.getElementById('btn-cart').addEventListener('click', doAddCart);
+
+  var brm = document.getElementById('btn-reset-mobile');
+  if (brm) brm.addEventListener('click', doReset);
+  var bcm = document.getElementById('btn-center-mobile');
+  if (bcm) bcm.addEventListener('click', doCenter);
+  var bcarm = document.getElementById('btn-cart-mobile');
+  if (bcarm) bcarm.addEventListener('click', doAddCart);
+
+  function doReset() {
+    if (!canvas) return;
+    var objs = canvas.getObjects();
+    // 删除所有对象，保留产品底图
+    for (var i = objs.length - 1; i >= 0; i--) {
+      if (objs[i] !== baseImg) {
+        canvas.remove(objs[i]);
+      }
+    }
+    clearGuidelines();
+    canvas.requestRenderAll();
+    updatePreview();
+  }
+
+  function doCenter() {
+    if (!canvas) return;
+    var cw = canvas.width / 2;
+    var ch = canvas.height / 2;
+    var moved = false;
+    var objs = canvas.getObjects();
+    for (var i = 0; i < objs.length; i++) {
+      var o = objs[i];
+      if (o === baseImg) continue;
+      var cp = o.getCenterPoint();
+      var dx = cw - cp.x;
+      var dy = ch - cp.y;
+      if (Math.abs(dx) > 1 || Math.abs(dy) > 1) {
+        o.set({ left: o.left + dx, top: o.top + dy });
+        o.setCoords();
+        moved = true;
+      }
+    }
+    if (moved) {
+      canvas.requestRenderAll();
+      updatePreview();
+    }
+  }
+
+  function doAddCart() {
+    if (!state.currentProduct) {
+      alert('请先选择产品。');
+      return;
+    }
+    // 生成画布预览图
+    var preview = '';
+    if (canvas) {
+      preview = canvas.toDataURL({ format: 'png', multiplier: 0.5 });
+    }
+    // 【购物车数据】— 【修改】storage结构在此调整
+    var item = {
+      id: 'custom-' + Date.now(),
+      name: (state.currentProduct.name && state.currentProduct.name.en) || state.currentProduct.id,
+      nameZh: (state.currentProduct.name && state.currentProduct.name.zh) || '',
+      color: state.currentColor,
+      size: state.currentSize,
+      quantity: state.qty,
+      price: state.currentProduct.price,
+      preview: preview,
+    };
+    var cart = [];
+    try {
+      cart = JSON.parse(localStorage.getItem('ps-cart') || '[]');
+    } catch(e) { cart = []; }
+    cart.push(item);
+    localStorage.setItem('ps-cart', JSON.stringify(cart));
+    alert('已加入购物车！');
+  }
+
+  // ╔══════════════════════════════════════════════════════════╗
+  // ║  初始化 — 等待 Fabric.js CDN 加载完成                   ║
+  // ╚══════════════════════════════════════════════════════════╝
+  var checkCount = 0;
+  function waitForFabric() {
+    checkCount++;
+    if (typeof fabric !== 'undefined' && fabric.Canvas) {
+      initCanvas();
+    } else if (checkCount < 50) {
+      setTimeout(waitForFabric, 100); // 每100ms 检查一次
+    } else {
+      console.error('Fabric.js failed to load after 5 seconds.');
+    }
+  }
+  waitForFabric();
+
+  // 【窗口缩放】响应式重建画布
+  window.addEventListener('resize', function() {
+    var newIsMobile = window.innerWidth < 768;
+    if (newIsMobile !== isMobile) {
+      // 屏幕模式切换 → 销毁旧canvas，重建新canvas
+      isMobile = newIsMobile;
+      if (canvas) {
+        canvas.dispose();
+        canvas = null;
+        baseImg = null;
+      }
+      initCanvas();
+      return;
+    }
+    if (canvas) {
+      var el = document.getElementById(getCanvasId());
+      if (!el) return;
+      var size = el.parentElement.clientWidth;
+      canvas.setDimensions({ width: size, height: size });
+      clearGuidelines();
+      canvas.requestRenderAll();
+      updatePreview();
+    }
+  });
+
+})();
+</script>  </main> <!-- ====== 页脚 ====== --> <!-- 【修改】背景: bg-charcoal-900, 文字: text-beige-300 --> <!-- 【修改】padding: py-12 控制上下间距 --> <footer class="bg-charcoal-900 text-beige-300 py-12 px-4 sm:px-6"> <div class="max-w-4xl mx-auto text-center"> <!-- 站名 --> <p class="font-serif text-xl sm:text-2xl font-bold text-beige-100 mb-2">✝ 活石</p> <!-- tagline --> <p class="text-sm text-beige-500 mb-2"></p> <!-- 邮箱 --> <p class="text-xs text-beige-400 mb-6">pastorjeffinchina@gmail.com</p> <!-- 版权 + 经文 --> <p class="text-xs text-beige-600">
+&copy; 2026 Livingstone </p> <p class="text-xs text-beige-600 mt-1"> 「你们要彼此相爱，像我爱你们一样。」— 约翰福音 15:12 </p> </div> </footer> <!-- ====== 购物车浮窗按钮 ====== --> <!-- 【修改】位置: fixed bottom-36 right-6（底部留出 WhatsApp + Email 按钮空间） --> <!-- 【修改】大小: w-14 h-14 --> <!-- 【修改】背景: bg-charcoal-800 --> <a href="/zh/cart/" id="cart-floating" class="fixed bottom-[9.5rem] right-6 z-50 w-14 h-14 bg-charcoal-800 hover:bg-charcoal-700 rounded-full flex items-center justify-center shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-110" aria-label="Cart"> <!-- 购物车图标（SVG） --> <svg class="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 100 4 2 2 0 000-4z"></path></svg> <!-- 购物车数量角标，默认 hidden，通过 JS 读取 localStorage 后显示 --> <!-- 【修改】角标颜色: bg-red-500 --> <span id="cart-badge-main" class="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] w-5 h-5 rounded-full flex items-center justify-center font-bold hidden">0</span> </a> <!-- ====== Email 浮动按钮 ====== --> <!-- 【修改】邮箱地址: site.email（在 site.json 中配置） --> <!-- 【修改】位置: fixed bottom-24 right-6 --> <!-- 【修改】背景: bg-blue-500 --> <!-- 【修改】桌面端用 Gmail 写信链接，手机端自动打开系统邮件 App --> <a href="https://mail.google.com/mail/?view=cm&fs=1&to=pastorjeffinchina@gmail.com" target="_blank" rel="noopener" id="email-btn" class="fixed bottom-[5.5rem] right-6 z-50 w-14 h-14 bg-blue-500 hover:bg-blue-400 rounded-full flex items-center justify-center shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-110" aria-label="Email"> <!-- 邮件图标（SVG 信封） --> <svg class="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"> <path stroke-linecap="round" stroke-linejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path> </svg> </a> <!-- ====== WhatsApp 浮窗按钮 ====== --> <!-- 【修改】号码: site.whatsapp（在 site.json 中配置） --> <!-- 【修改】位置: fixed bottom-6 right-6 --> <!-- 【修改】背景: bg-green-500（WhatsApp 品牌色） --> <a href="https://wa.me/85297094785?text=你好！我访问了你的网站，想了解更多。" target="_blank" rel="noopener" id="wa-btn" class="fixed bottom-6 right-6 z-50 w-14 h-14 bg-green-500 hover:bg-green-400 rounded-full flex items-center justify-center shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-110" aria-label="WhatsApp"> <!-- WhatsApp 图标（SVG path） --> <svg class="w-7 h-7" viewBox="0 0 24 24" fill="white"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 0 1 2.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0 0 12.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 0 0 5.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 0 0-3.48-8.413z"></path></svg> </a> <!-- ====== 内联 JS（is:inline 确保不被 Astro 打包处理，原样保留在 HTML 中） ====== --> <script>
+  // 移动端菜单切换：点击汉堡按钮显示/隐藏下拉菜单，同时切换图标
+  document.getElementById('menu-toggle').onclick = function() {
+    var menu = document.getElementById('mobile-menu');
+    var open = document.getElementById('menu-icon-open');
+    var close = document.getElementById('menu-icon-close');
+    menu.classList.toggle('hidden');
+    open.classList.toggle('hidden');
+    close.classList.toggle('hidden');
+  };
+
+  // 购物车角标初始化：从 localStorage 读取购物车数据，更新浮窗上的数字角标
+  (function(){
+    // ps-cart 是购物车数据在 localStorage 中的 key
+    var c = JSON.parse(localStorage.getItem('ps-cart') || '[]');
+    // 累加所有商品数量
+    var n = c.reduce(function(s, i) { return s + i.quantity; }, 0);
+    var b = document.getElementById('cart-badge-main');
+    // 有商品时显示角标，否则隐藏
+    if (b && n > 0) { b.textContent = n; b.classList.remove('hidden'); }
+  })();
+</script> <script>
+(function(){
+  fetch("/api/site-config").then(function(r){return r.json()}).then(function(d){
+    if(!d.ok||!d.data)return; var s=d.data;
+    var wa=document.getElementById("wa-btn");
+    if(wa&&s.site_whatsapp) wa.href="https://wa.me/"+s.site_whatsapp.replace(/\D/g,"");
+    var em=document.querySelector("footer p:last-of-type");
+    if(em&&s.site_email) em.textContent=s.site_email;
+  });
+})();
+</script> </body> </html>

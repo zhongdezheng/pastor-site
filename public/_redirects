@@ -12,3 +12,9 @@
 /zh/blog/*            /zh/            301
 /en/blog/*            /en/            301
 /reports/*            /zh/            301
+
+# ── 2026-11-11 职场见证专栏下线 ──
+/zh/marketplace/*       /zh/            301
+/en/marketplace/*       /en/            301
+/zh/marketplace         /zh/            301
+/en/marketplace         /en/            301

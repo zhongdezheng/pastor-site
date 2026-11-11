@@ -1,0 +1,559 @@
+<!DOCTYPE html><!--
+============================================================
+📁 文件位置: src/pages/zh/index.astro
+🌐 路由: /zh/
+🎯 作用: 中文首页 — 组合 Hero/Scripture3D/Vision/Product/Prayer 五个板块
+📝 修改指南:
+   【修改】页面标题 (title): 改 BaseLayout 的 title 属性
+   【修改】板块顺序：调整组件顺序即可重排首页
+   【修改】移除板块：注释掉对应组件行
+   【修改】每个板块的 lang="zh" 确保中文内容渲染
+============================================================
+--><!-- 【布局】中文首页：语言=zh，标题显示在浏览器标签 --><!-- ====== HTML 文档根，lang 属性用于 SEO 和可访问性 ====== --><html lang="zh"> <head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="Astro v5.18.2"><!-- ============================================================
+       📖 SEO 教程（本区块 = 搜索引擎 + 社交分享的全部配置）
+       ------------------------------------------------------------
+       ① 页面标题/描述（搜索引擎结果 + 浏览器标签页）
+         - 【修改】单页专属标题/描述：在该页面 <BaseLayout title="..." description="..."> 传参
+         - 【修改】全站默认标题/描述：改下面 og:title / og:description 的 fallback 值
+       ② 分享卡片（WhatsApp/Facebook/X/微信分享链接时显示的卡片）
+         - 封面图：替换 public/images/og-cover.jpg（1200×630 像素）
+         - 卡片标题 = 页面 <BaseLayout title="..."> 的传参（改页面即可，og:title 自动跟随）
+         - 卡片描述 = 页面 <BaseLayout description="..."> 的传参；页面没传才用下面 og:description 默认值
+         - 【注意】改完跑 bash deploy.sh；Facebook 缓存需用调试器 Scrape Again 刷新
+       ③ 换域名时必改（3 处）：
+         - 下面所有 https://pastorjeffnchina.com 硬编码 → 新域名
+         - astro.config.mjs 的 site 字段
+       ============================================================ --><!-- 页面标题：优先使用传入 title，否则用 site.name --><title>杰夫牧师 | 一位牧者的信心之旅</title><meta name="description" content="杰夫牧师 — 基督教信心服饰、见证与圣经学习。T恤、卫衣等，伴您信心之旅。"><meta name="keywords" content="Christian clothing, faith apparel, testimony, Bible study, pastor, worship, Christian T-shirt, hoodie, 基督教服饰, 信心见证, 圣经学习, 牧师, 主内服饰, 代祷"><!-- ============================================================
+       🧭 canonical + hreflang（搜索引擎规范链接 + 多语言对应）
+       - canonical：告诉 Google 本页面的"正版"URL，防止 ?v=1 等变体稀释权重
+       - hreflang：告诉 Google 中/英文版本互相对应，SEO 权重互通
+       - 【修改】换域名：替换下面 3 处 https://pastorjeffnchina.com
+       ============================================================ --><link rel="canonical" href="https://pastorjeffnchina.com/zh/"><link rel="alternate" hreflang="en" href="https://pastorjeffnchina.com/en/"><link rel="alternate" hreflang="zh" href="https://pastorjeffnchina.com/zh/"><link rel="alternate" hreflang="x-default" href="https://pastorjeffnchina.com/en/"><!-- ============================================================
+       🖼️ OpenGraph（WhatsApp / Facebook / 微信分享卡片）
+       平台不打开网页，只读这些标签拼卡片：
+         og:title        → 卡片标题（值 = {title || site.name[lang]}）
+                           【修改】单页标题：去该页面改 <BaseLayout title="...">，勿改此行
+                           【修改】全站默认：才改下面 og:title 的 fallback
+         og:description  → 卡片描述（值 = {description || 默认文案}）
+                           【修改】单页描述：去该页面改 <BaseLayout description="...">
+                           【修改】全站默认：改下面 og:description 的 fallback
+         og:image        → 卡片封面（【修改】替换 public/images/og-cover.jpg）
+         og:url          → 卡片点击跳转的地址
+         og:locale       → 语言区域（en_US / zh_CN）
+       ⚠️ 分享后修改内容，平台有缓存：Facebook 用调试器 Scrape Again 强制刷新
+       ============================================================ --><!-- fb:app_id — Facebook 应用身份（分享卡片图必须，缺了 Facebook 不渲染 og:image）
+       【修改】换 Facebook App 时改 content 里的数字 --><meta property="fb:app_id" content="1088771680156934"><meta property="og:type" content="website"><meta property="og:site_name" content="活石"><meta property="og:title" content="杰夫牧师 | 一位牧者的信心之旅"><meta property="og:description" content="杰夫牧师 — 基督教信心服饰、见证与圣经学习。T恤、卫衣等，伴您信心之旅。"><meta property="og:url" content="https://pastorjeffnchina.com/zh/"><meta property="og:locale" content="zh_CN"><meta property="og:image" content="https://pastorjeffnchina.com/images/og-cover.jpg"><!-- og:image:alt — 卡片图描述（无障碍 + 部分平台展示用）
+       【修改】换封面图时同步改这里的文字 --><meta property="og:image:alt" content="Pastor Jeff — Livingstone 活石"><!-- ============================================================
+       🐦 Twitter / X 卡片（与 OG 同步；不认 twitter:* 的平台自动忽略）
+       ⚠️ 【修改】twitter:description 有独立 fallback 文案，
+          改默认描述时需与上面 og:description 同步修改（两处）！
+       ============================================================ --><meta name="twitter:card" content="summary_large_image"><meta name="twitter:title" content="杰夫牧师 | 一位牧者的信心之旅"><meta name="twitter:description" content="杰夫牧师 — 基督教信心服饰、见证与圣经学习。T恤、卫衣等，伴您信心之旅。"><meta name="twitter:image" content="https://pastorjeffnchina.com/images/og-cover.jpg"><!-- favicon + 移动端浏览器栏颜色（【修改】theme-color 换成品牌色） --><link rel="icon" type="image/svg+xml" href="/favicon.svg"><meta name="theme-color" content="#1a1a2e"><!-- GA4 预连接（加快统计脚本加载，对首屏无影响） --><link rel="preconnect" href="https://www.googletagmanager.com"><link rel="dns-prefetch" href="https://www.googletagmanager.com"><!-- ============================================================
+       📊 GA4 全站访问追踪
+       - 【修改】更换测量 ID：把三处 G-SDG26PJBZG 改为新的 ID
+       - 【修改】关闭统计：删除这两个 <script> 即可
+       ⚠️ 此 ID 绑定 pastorjeffnchina.com，换域名需重新创建数据流
+       ============================================================ --><script async src="https://www.googletagmanager.com/gtag/js?id=G-SDG26PJBZG"></script><script type="module">window.dataLayer=window.dataLayer||[];function a(){dataLayer.push(arguments)}a("js",new Date);a("config","G-SDG26PJBZG");</script><link rel="stylesheet" href="/_astro/index.G1gxf66k.css">
+<style>.scr-card[data-astro-cid-t2ex6yqd]{width:280px;height:380px;display:flex;flex-direction:column;justify-content:space-between;flex-shrink:0}@media(min-width:768px){.scr-card[data-astro-cid-t2ex6yqd]{width:340px;height:440px}}.scr-track[data-astro-cid-t2ex6yqd]{gap:20px;animation:scr-scroll 40s linear infinite}@media(min-width:768px){.scr-track[data-astro-cid-t2ex6yqd]{gap:28px;animation-duration:35s}}@keyframes scr-scroll{0%{transform:translate(0)}to{transform:translate(-50%)}}.scr-viewport[data-astro-cid-t2ex6yqd]:hover .scr-track[data-astro-cid-t2ex6yqd]{animation-play-state:paused}.scr-dot[data-astro-cid-t2ex6yqd].active{background-color:#564e47;transform:scale(1.25)}
+</style></head> <body> <!-- ====== 导航栏：固定顶部、毛玻璃效果 ====== --> <!-- 【修改】背景色: bg-beige-50/95 控制透明度和玻璃效果 --> <!-- 【修改】边框: border-beige-200/50 控制底部分隔线 --> <nav class="fixed top-0 left-0 right-0 z-40 bg-beige-50/95 backdrop-blur-md border-b border-beige-200/50"> <div class="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between"> <!-- Logo + 站名，【修改】站名来自 site.json --> <a href="/zh/" class="font-serif text-lg sm:text-xl font-bold text-charcoal-800 tracking-tight">
+✝ 活石 </a> <!-- ====== 桌面端导航（md 及以上显示） ====== --> <!-- 【修改】导航链接样式: gap-6 控制间距, text-sm 控制字号 --> <div class="hidden md:flex items-center gap-6 text-sm font-medium text-charcoal-500"> <a href="/zh/" class="hover:text-charcoal-800 transition-colors font-bold text-charcoal-800">首页</a><a href="/zh/vision/" class="hover:text-charcoal-800 transition-colors ">异象</a><a href="/zh/products/" class="hover:text-charcoal-800 transition-colors ">产品</a><a href="/zh/designer/" class="hover:text-charcoal-800 transition-colors ">设计</a><a href="/zh/prayer/" class="hover:text-charcoal-800 transition-colors ">代祷</a><a href="/zh/testimonies/" class="hover:text-charcoal-800 transition-colors ">见证</a><a href="/zh/courses/" class="hover:text-charcoal-800 transition-colors ">课程</a><a href="/zh/give/" class="hover:text-charcoal-800 transition-colors ">奉献</a> <!-- 账号按钮 --> <a href="/zh/auth/" class="px-3 py-1.5 border border-charcoal-300 rounded-full text-xs text-charcoal-500 hover:text-charcoal-700 hover:border-charcoal-400 transition-colors">账号</a> <!-- 语言切换按钮 --> <a href="/en/" class="px-3 py-1.5 border border-charcoal-300 rounded-full text-xs text-charcoal-500 hover:text-charcoal-700 hover:border-charcoal-400 transition-colors">English</a> </div> <!-- ====== 移动端：汉堡菜单 + 语言切换 ====== --> <div class="flex items-center gap-3 md:hidden"> <a href="/zh/auth/" class="text-xs text-charcoal-500 border border-charcoal-300 rounded-full px-2 py-1">账号</a> <a href="/en/" class="text-xs text-charcoal-500 border border-charcoal-300 rounded-full px-2 py-1">English</a> <!-- 汉堡菜单按钮，点击切换 menu-icon-open/menu-icon-close 的 hidden 状态 --> <!-- 【修改】按钮样式: w-9 h-9 控制大小, rounded-lg 控制圆角 --> <button id="menu-toggle" class="w-9 h-9 flex items-center justify-center rounded-lg hover:bg-beige-100 transition-colors" aria-label="菜单"> <svg class="w-6 h-6 text-charcoal-700" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"> <!-- 打开图标（三条横线） --> <path id="menu-icon-open" stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16"></path> <!-- 关闭图标（X），默认隐藏 --> <path id="menu-icon-close" stroke-linecap="round" stroke-linejoin="round" d="M6 6l12 12M18 6L6 18" class="hidden"></path> </svg> </button> </div> </div> <!-- ====== 移动端下拉菜单（默认隐藏） ====== --> <!-- 【修改】背景色: bg-beige-50, 点击汉堡按钮切换 hidden --> <div id="mobile-menu" class="hidden md:hidden bg-beige-50 border-b border-beige-200/50 px-4 pb-4"> <div class="flex flex-col gap-1 pt-2"> <a href="/zh/" class="block px-3 py-2.5 rounded-lg text-sm font-bold text-charcoal-800 bg-beige-100 transition-colors">首页</a><a href="/zh/vision/" class="block px-3 py-2.5 rounded-lg text-sm font-medium text-charcoal-600 hover:bg-beige-100 hover:text-charcoal-800 transition-colors">异象</a><a href="/zh/products/" class="block px-3 py-2.5 rounded-lg text-sm font-medium text-charcoal-600 hover:bg-beige-100 hover:text-charcoal-800 transition-colors">产品</a><a href="/zh/designer/" class="block px-3 py-2.5 rounded-lg text-sm font-medium text-charcoal-600 hover:bg-beige-100 hover:text-charcoal-800 transition-colors">设计</a><a href="/zh/prayer/" class="block px-3 py-2.5 rounded-lg text-sm font-medium text-charcoal-600 hover:bg-beige-100 hover:text-charcoal-800 transition-colors">代祷</a><a href="/zh/testimonies/" class="block px-3 py-2.5 rounded-lg text-sm font-medium text-charcoal-600 hover:bg-beige-100 hover:text-charcoal-800 transition-colors">见证</a><a href="/zh/courses/" class="block px-3 py-2.5 rounded-lg text-sm font-medium text-charcoal-600 hover:bg-beige-100 hover:text-charcoal-800 transition-colors">课程</a><a href="/zh/give/" class="block px-3 py-2.5 rounded-lg text-sm font-medium text-charcoal-600 hover:bg-beige-100 hover:text-charcoal-800 transition-colors">奉献</a> </div> </div> </nav> <!-- ====== 主内容区：pt-16 给固定导航栏留出空间 ====== --> <main class="pt-16">   <!-- ====== Hero 区域：最小高度满屏，垂直居中 ====== --><!-- 【修改】背景/间距: min-h-screen pt-8 --><section id="hero" class="min-h-screen pt-8 flex items-center"> <div class="max-w-7xl mx-auto px-6 w-full"> <!-- 双列布局：左侧文字 + 右侧照片 --> <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-16 items-center py-8 lg:py-12"> <!-- ====== 左侧：文字区（移动端排在照片下方，桌面端在左） ====== --> <div class="order-2 lg:order-1"> <!-- 牧师名字（大标题） --> <h1 class="text-3xl sm:text-4xl lg:text-5xl font-serif font-bold text-charcoal-900 leading-tight mb-6"> 杰夫牧师 </h1> <!-- 头衔/副标题 --> <p class="text-lg text-charcoal-500 font-serif italic mb-8">一位来自中国的年轻牧师</p> <!-- 简介段落 --> <div class="space-y-4 text-charcoal-600 leading-relaxed max-w-lg mb-6"> <p>在我很年轻的时候，神便将我从一条完全不寻常的道路上召引出来。我出生在一个充满了偶像崇拜与民间迷信的环境里。</p> </div> <!-- 经文引用块 --> <blockquote class="border-l-2 border-beige-400 pl-6 mb-6"> <p class="text-charcoal-500 italic font-serif">「我的恩典够你用的...」 </p> <!-- 经文出处 --> <cite class="text-sm text-charcoal-400 not-italic mt-2 block"></cite> </blockquote> <!-- "更多"链接 --> <div class="text-right"> <a href="/zh/testimonies/1/" class="inline-flex items-center gap-1 text-sage-500 hover:text-sage-600 font-medium text-sm transition-colors"> 更多 <span class="text-lg">&rarr;</span> </a> </div> </div> <!-- ====== 右侧：照片轮播（自定义 Web Component） ====== --> <!-- 【修改】容器比例: aspect-[4/5] 控制宽高比 --> <!-- 【修改】背景占位色: bg-beige-200 --> <div class="order-1 lg:order-2"> <photo-carousel class="block relative w-full aspect-[4/5] rounded-2xl overflow-hidden bg-beige-200 shadow-xl"> <img src="/images/hero-1.jpg" alt="Pastor Jeff" class="absolute inset-0 w-full h-full object-cover transition-opacity duration-[1200ms] ease-in-out opacity-100" data-photo-index="0" loading="eager"><img src="/images/hero-2.jpg" alt="Ministry" class="absolute inset-0 w-full h-full object-cover transition-opacity duration-[1200ms] ease-in-out opacity-0" data-photo-index="1" loading="lazy"><img src="/images/hero-3.jpg" alt="Faith" class="absolute inset-0 w-full h-full object-cover transition-opacity duration-[1200ms] ease-in-out opacity-0" data-photo-index="2" loading="lazy"><img src="/images/hero-4.jpg" alt="Worship" class="absolute inset-0 w-full h-full object-cover transition-opacity duration-[1200ms] ease-in-out opacity-0" data-photo-index="3" loading="lazy"> <!-- ====== 轮播指示点 ====== --> <!-- 位置: 绝对定位在容器底部中央，通过 JS 控制激活状态 --> <div class="absolute bottom-6 left-1/2 -translate-x-1/2 flex gap-2 z-10"> <button class="w-2.5 h-2.5 rounded-full transition-all duration-300 bg-white w-6" data-dot="0" aria-label="Photo 1"></button><button class="w-2.5 h-2.5 rounded-full transition-all duration-300 bg-white/50" data-dot="1" aria-label="Photo 2"></button><button class="w-2.5 h-2.5 rounded-full transition-all duration-300 bg-white/50" data-dot="2" aria-label="Photo 3"></button><button class="w-2.5 h-2.5 rounded-full transition-all duration-300 bg-white/50" data-dot="3" aria-label="Photo 4"></button> </div> </photo-carousel> </div> </div> </div> </section> <!-- ====== 内联 JS：照片轮播逻辑 ====== --> <script>
+  (function(){
+    // 获取轮播容器
+    var container = document.querySelector('photo-carousel');
+    if (!container) return;
+
+    // 获取所有照片和指示点
+    var photos = container.querySelectorAll('[data-photo-index]');
+    var dots = container.querySelectorAll('[data-dot]');
+    if (photos.length < 2) return; // 只有一张照片时不需要轮播
+
+    var current = 0, interval;
+
+    // 【修改】核心切换函数：根据 index 显示对应照片，更新指示点样式
+    function show(idx){
+      photos.forEach(function(p, i){
+        p.classList.toggle('opacity-100', i===idx);
+        p.classList.toggle('opacity-0', i!==idx);
+      });
+      dots.forEach(function(d, i){
+        d.classList.toggle('bg-white', i===idx);       // 激活的白色
+        d.classList.toggle('bg-white/50', i!==idx);     // 未激活的半透明
+        d.classList.toggle('w-6', i===idx);             // 激活的宽一点
+        d.classList.toggle('w-2.5', i!==idx);           // 未激活的标准宽度
+      });
+      current = idx;
+    }
+
+    // 下一张
+    function next(){ show((current + 1) % photos.length); }
+
+    // 点击指示点切换
+    dots.forEach(function(dot){
+      dot.addEventListener('click', function(){
+        show(parseInt(dot.getAttribute('data-dot') || '0'));
+        clearInterval(interval);
+        interval = setInterval(next, 5000); // 【修改】轮播间隔: 5000ms → 改成想要的时间
+      });
+    });
+
+    // 自动轮播
+    interval = setInterval(next, 5000); // 【修改】轮播间隔同上
+
+    // 鼠标悬停时暂停，离开后继续
+    container.addEventListener('mouseenter', function(){ clearInterval(interval); });
+    container.addEventListener('mouseleave', function(){ interval = setInterval(next, 5000); });
+  })();
+</script> <script>
+(function(){
+  fetch("/api/hero").then(function(r){return r.json()}).then(function(d){
+    if(!d.ok||!d.data||!d.data.length)return;
+    var items=d.data;
+    // Update hero images if available
+    var carousel=document.querySelector("photo-carousel");
+    if(carousel&&items.length){
+      carousel.setAttribute("images",JSON.stringify(items.map(function(i){return i.url||i;})));
+    }
+  });
+})();
+</script>  <section id="scriptures" class="py-24 lg:py-32 px-4 sm:px-6 bg-gradient-to-b from-white to-beige-100 overflow-hidden" data-astro-cid-t2ex6yqd> <div class="max-w-7xl mx-auto" data-astro-cid-t2ex6yqd> <div class="scr-viewport relative overflow-hidden" data-astro-cid-t2ex6yqd> <!-- 左渐变遮罩 --> <div class="absolute inset-y-0 left-0 w-12 md:w-20 z-10 pointer-events-none bg-gradient-to-r from-white/90 to-transparent" data-astro-cid-t2ex6yqd></div> <!-- 右渐变遮罩 --> <div class="absolute inset-y-0 right-0 w-12 md:w-20 z-10 pointer-events-none bg-gradient-to-l from-white/90 to-transparent" data-astro-cid-t2ex6yqd></div> <!-- 滚动轨道：两遍经文实现无缝循环 --> <div class="scr-track flex items-center" data-astro-cid-t2ex6yqd> <div class="scr-card shrink-0 bg-white rounded-2xl shadow-lg border border-beige-200 p-8 md:p-10 flex flex-col justify-between" data-astro-cid-t2ex6yqd> <p class="text-base md:text-xl leading-relaxed font-serif italic text-charcoal-700 mb-5 line-clamp-6" data-astro-cid-t2ex6yqd> 「所以，不要为明天忧虑，因为明天自有明天的忧虑；一天的难处一天当就够了。」 </p> <p class="text-sm text-charcoal-400 font-medium tracking-wide border-t border-beige-200 pt-4" data-astro-cid-t2ex6yqd>
+— 马太福音 6:34 </p> </div><div class="scr-card shrink-0 bg-white rounded-2xl shadow-lg border border-beige-200 p-8 md:p-10 flex flex-col justify-between" data-astro-cid-t2ex6yqd> <p class="text-base md:text-xl leading-relaxed font-serif italic text-charcoal-700 mb-5 line-clamp-6" data-astro-cid-t2ex6yqd> 「我岂没有吩咐你吗？你当刚强壮胆！不要惧怕，也不要惊惶；因为你无论往哪里去，耶和华你的神必与你同在。」 </p> <p class="text-sm text-charcoal-400 font-medium tracking-wide border-t border-beige-200 pt-4" data-astro-cid-t2ex6yqd>
+— 约书亚记 1:9 </p> </div><div class="scr-card shrink-0 bg-white rounded-2xl shadow-lg border border-beige-200 p-8 md:p-10 flex flex-col justify-between" data-astro-cid-t2ex6yqd> <p class="text-base md:text-xl leading-relaxed font-serif italic text-charcoal-700 mb-5 line-clamp-6" data-astro-cid-t2ex6yqd> 「耶和华是我的牧者，我必不至缺乏。他使我躺卧在青草地上，领我在可安歇的水边。他使我的灵魂苏醒。」 </p> <p class="text-sm text-charcoal-400 font-medium tracking-wide border-t border-beige-200 pt-4" data-astro-cid-t2ex6yqd>
+— 诗篇 23:1-3 </p> </div><div class="scr-card shrink-0 bg-white rounded-2xl shadow-lg border border-beige-200 p-8 md:p-10 flex flex-col justify-between" data-astro-cid-t2ex6yqd> <p class="text-base md:text-xl leading-relaxed font-serif italic text-charcoal-700 mb-5 line-clamp-6" data-astro-cid-t2ex6yqd> 「我靠着那加给我力量的，凡事都能做。」 </p> <p class="text-sm text-charcoal-400 font-medium tracking-wide border-t border-beige-200 pt-4" data-astro-cid-t2ex6yqd>
+— 腓立比书 4:13 </p> </div><div class="scr-card shrink-0 bg-white rounded-2xl shadow-lg border border-beige-200 p-8 md:p-10 flex flex-col justify-between" data-astro-cid-t2ex6yqd> <p class="text-base md:text-xl leading-relaxed font-serif italic text-charcoal-700 mb-5 line-clamp-6" data-astro-cid-t2ex6yqd> 「你们要休息，要知道我是神！我必在外邦中被尊崇，在遍地上也被尊崇。」 </p> <p class="text-sm text-charcoal-400 font-medium tracking-wide border-t border-beige-200 pt-4" data-astro-cid-t2ex6yqd>
+— 诗篇 46:10 </p> </div><div class="scr-card shrink-0 bg-white rounded-2xl shadow-lg border border-beige-200 p-8 md:p-10 flex flex-col justify-between" data-astro-cid-t2ex6yqd> <p class="text-base md:text-xl leading-relaxed font-serif italic text-charcoal-700 mb-5 line-clamp-6" data-astro-cid-t2ex6yqd> 「但那等候耶和华的，必从新得力。他们必如鹰展翅上腾，他们奔跑却不困倦，行走却不疲乏。」 </p> <p class="text-sm text-charcoal-400 font-medium tracking-wide border-t border-beige-200 pt-4" data-astro-cid-t2ex6yqd>
+— 以赛亚书 40:31 </p> </div><div class="scr-card shrink-0 bg-white rounded-2xl shadow-lg border border-beige-200 p-8 md:p-10 flex flex-col justify-between" data-astro-cid-t2ex6yqd> <p class="text-base md:text-xl leading-relaxed font-serif italic text-charcoal-700 mb-5 line-clamp-6" data-astro-cid-t2ex6yqd> 「我们不至消灭，是出于耶和华诸般的慈爱，是因他的怜悯不至断绝。每早晨这都是新的。你的诚实极其广大！」 </p> <p class="text-sm text-charcoal-400 font-medium tracking-wide border-t border-beige-200 pt-4" data-astro-cid-t2ex6yqd>
+— 耶利米哀歌 3:22-23 </p> </div><div class="scr-card shrink-0 bg-white rounded-2xl shadow-lg border border-beige-200 p-8 md:p-10 flex flex-col justify-between" data-astro-cid-t2ex6yqd> <p class="text-base md:text-xl leading-relaxed font-serif italic text-charcoal-700 mb-5 line-clamp-6" data-astro-cid-t2ex6yqd> 「你要专心仰赖耶和华，不可倚靠自己的聪明，在你一切所行的事上都要认定他，他必指引你的路。」 </p> <p class="text-sm text-charcoal-400 font-medium tracking-wide border-t border-beige-200 pt-4" data-astro-cid-t2ex6yqd>
+— 箴言 3:5-6 </p> </div><div class="scr-card shrink-0 bg-white rounded-2xl shadow-lg border border-beige-200 p-8 md:p-10 flex flex-col justify-between" data-astro-cid-t2ex6yqd> <p class="text-base md:text-xl leading-relaxed font-serif italic text-charcoal-700 mb-5 line-clamp-6" data-astro-cid-t2ex6yqd> 「所以，不要为明天忧虑，因为明天自有明天的忧虑；一天的难处一天当就够了。」 </p> <p class="text-sm text-charcoal-400 font-medium tracking-wide border-t border-beige-200 pt-4" data-astro-cid-t2ex6yqd>
+— 马太福音 6:34 </p> </div><div class="scr-card shrink-0 bg-white rounded-2xl shadow-lg border border-beige-200 p-8 md:p-10 flex flex-col justify-between" data-astro-cid-t2ex6yqd> <p class="text-base md:text-xl leading-relaxed font-serif italic text-charcoal-700 mb-5 line-clamp-6" data-astro-cid-t2ex6yqd> 「我岂没有吩咐你吗？你当刚强壮胆！不要惧怕，也不要惊惶；因为你无论往哪里去，耶和华你的神必与你同在。」 </p> <p class="text-sm text-charcoal-400 font-medium tracking-wide border-t border-beige-200 pt-4" data-astro-cid-t2ex6yqd>
+— 约书亚记 1:9 </p> </div><div class="scr-card shrink-0 bg-white rounded-2xl shadow-lg border border-beige-200 p-8 md:p-10 flex flex-col justify-between" data-astro-cid-t2ex6yqd> <p class="text-base md:text-xl leading-relaxed font-serif italic text-charcoal-700 mb-5 line-clamp-6" data-astro-cid-t2ex6yqd> 「耶和华是我的牧者，我必不至缺乏。他使我躺卧在青草地上，领我在可安歇的水边。他使我的灵魂苏醒。」 </p> <p class="text-sm text-charcoal-400 font-medium tracking-wide border-t border-beige-200 pt-4" data-astro-cid-t2ex6yqd>
+— 诗篇 23:1-3 </p> </div><div class="scr-card shrink-0 bg-white rounded-2xl shadow-lg border border-beige-200 p-8 md:p-10 flex flex-col justify-between" data-astro-cid-t2ex6yqd> <p class="text-base md:text-xl leading-relaxed font-serif italic text-charcoal-700 mb-5 line-clamp-6" data-astro-cid-t2ex6yqd> 「我靠着那加给我力量的，凡事都能做。」 </p> <p class="text-sm text-charcoal-400 font-medium tracking-wide border-t border-beige-200 pt-4" data-astro-cid-t2ex6yqd>
+— 腓立比书 4:13 </p> </div><div class="scr-card shrink-0 bg-white rounded-2xl shadow-lg border border-beige-200 p-8 md:p-10 flex flex-col justify-between" data-astro-cid-t2ex6yqd> <p class="text-base md:text-xl leading-relaxed font-serif italic text-charcoal-700 mb-5 line-clamp-6" data-astro-cid-t2ex6yqd> 「你们要休息，要知道我是神！我必在外邦中被尊崇，在遍地上也被尊崇。」 </p> <p class="text-sm text-charcoal-400 font-medium tracking-wide border-t border-beige-200 pt-4" data-astro-cid-t2ex6yqd>
+— 诗篇 46:10 </p> </div><div class="scr-card shrink-0 bg-white rounded-2xl shadow-lg border border-beige-200 p-8 md:p-10 flex flex-col justify-between" data-astro-cid-t2ex6yqd> <p class="text-base md:text-xl leading-relaxed font-serif italic text-charcoal-700 mb-5 line-clamp-6" data-astro-cid-t2ex6yqd> 「但那等候耶和华的，必从新得力。他们必如鹰展翅上腾，他们奔跑却不困倦，行走却不疲乏。」 </p> <p class="text-sm text-charcoal-400 font-medium tracking-wide border-t border-beige-200 pt-4" data-astro-cid-t2ex6yqd>
+— 以赛亚书 40:31 </p> </div><div class="scr-card shrink-0 bg-white rounded-2xl shadow-lg border border-beige-200 p-8 md:p-10 flex flex-col justify-between" data-astro-cid-t2ex6yqd> <p class="text-base md:text-xl leading-relaxed font-serif italic text-charcoal-700 mb-5 line-clamp-6" data-astro-cid-t2ex6yqd> 「我们不至消灭，是出于耶和华诸般的慈爱，是因他的怜悯不至断绝。每早晨这都是新的。你的诚实极其广大！」 </p> <p class="text-sm text-charcoal-400 font-medium tracking-wide border-t border-beige-200 pt-4" data-astro-cid-t2ex6yqd>
+— 耶利米哀歌 3:22-23 </p> </div><div class="scr-card shrink-0 bg-white rounded-2xl shadow-lg border border-beige-200 p-8 md:p-10 flex flex-col justify-between" data-astro-cid-t2ex6yqd> <p class="text-base md:text-xl leading-relaxed font-serif italic text-charcoal-700 mb-5 line-clamp-6" data-astro-cid-t2ex6yqd> 「你要专心仰赖耶和华，不可倚靠自己的聪明，在你一切所行的事上都要认定他，他必指引你的路。」 </p> <p class="text-sm text-charcoal-400 font-medium tracking-wide border-t border-beige-200 pt-4" data-astro-cid-t2ex6yqd>
+— 箴言 3:5-6 </p> </div> </div> </div> <!-- Dots：全部初始灰色，JS 激活第一个 --> <div class="flex justify-center gap-2 mt-8" id="scr-dots" data-astro-cid-t2ex6yqd> <span class="scr-dot w-2.5 h-2.5 rounded-full cursor-pointer bg-charcoal-300 hover:bg-charcoal-400" data-sdot="0" data-astro-cid-t2ex6yqd></span><span class="scr-dot w-2.5 h-2.5 rounded-full cursor-pointer bg-charcoal-300 hover:bg-charcoal-400" data-sdot="1" data-astro-cid-t2ex6yqd></span><span class="scr-dot w-2.5 h-2.5 rounded-full cursor-pointer bg-charcoal-300 hover:bg-charcoal-400" data-sdot="2" data-astro-cid-t2ex6yqd></span><span class="scr-dot w-2.5 h-2.5 rounded-full cursor-pointer bg-charcoal-300 hover:bg-charcoal-400" data-sdot="3" data-astro-cid-t2ex6yqd></span><span class="scr-dot w-2.5 h-2.5 rounded-full cursor-pointer bg-charcoal-300 hover:bg-charcoal-400" data-sdot="4" data-astro-cid-t2ex6yqd></span><span class="scr-dot w-2.5 h-2.5 rounded-full cursor-pointer bg-charcoal-300 hover:bg-charcoal-400" data-sdot="5" data-astro-cid-t2ex6yqd></span><span class="scr-dot w-2.5 h-2.5 rounded-full cursor-pointer bg-charcoal-300 hover:bg-charcoal-400" data-sdot="6" data-astro-cid-t2ex6yqd></span><span class="scr-dot w-2.5 h-2.5 rounded-full cursor-pointer bg-charcoal-300 hover:bg-charcoal-400" data-sdot="7" data-astro-cid-t2ex6yqd></span> </div> </div> </section>  <script>
+  (function(){
+    var track = document.querySelector('.scr-track');
+    var dots = document.getElementById('scr-dots');
+    if (!track || !dots) return;
+    var dotEls = dots.querySelectorAll('.scr-dot');
+    var total = dotEls.length;
+
+    // 初始化：激活第一个 dot
+    dotEls[0].classList.add('active');
+
+    // Dot 点击：暂停动画，手动跳到目标位置
+    dotEls.forEach(function(dot, i){
+      dot.addEventListener('click', function(){
+        var cardEl = track.querySelector('.scr-card');
+        if (!cardEl) return;
+        var cardW = cardEl.offsetWidth;
+        var gap = parseInt(getComputedStyle(track).gap) || 20;
+        var unit = cardW + gap;
+
+        // 暂停 CSS animation
+        track.style.animation = 'none';
+        // 设 transform 跳到目标位置（只偏移第一组距离）
+        track.style.transform = 'translateX(-' + (i * unit) + 'px)';
+        // 强制重排
+        track.offsetHeight;
+
+        // 更新 dot 状态
+        dotEls.forEach(function(d, j){ d.classList.toggle('active', j === i); });
+
+        // 3s 后恢复动画
+        clearTimeout(window.__scrResume);
+        window.__scrResume = setTimeout(function(){
+          track.style.animation = '';
+          track.style.transform = '';
+        }, 3000);
+      });
+    });
+
+    // 实时同步 dot：对比 transform 偏移量
+    var cardEl = track.querySelector('.scr-card');
+    if (!cardEl) return;
+    var activeIdx = 0;
+    var lastTx = 0;
+    function syncDot(){
+      var cardW = cardEl.offsetWidth;
+      var gap = parseInt(getComputedStyle(track).gap) || 20;
+      var unit = cardW + gap;
+      // 从 computed transform 矩阵读取 translateX
+      var m = new DOMMatrixReadOnly(getComputedStyle(track).transform);
+      var tx = -m.m41;
+      if (tx < 0) tx = 0;
+      var idx = Math.floor(((tx % (total * unit)) + (total * unit)) % (total * unit) / unit) % total;
+      if (idx !== activeIdx) {
+        activeIdx = idx;
+        dotEls.forEach(function(d, j){ d.classList.toggle('active', j === idx); });
+      }
+      requestAnimationFrame(syncDot);
+    }
+    syncDot();
+  })();
+</script> <script>
+(function(){try{
+  fetch("/api/carousel").then(function(r){return r.json()}).then(function(d){
+    if(!d.ok||!d.data||!d.data.length)return; var verses=d.data;
+    var track=document.querySelector(".scr-track, [class*=\"carousel\"], [class*=\"scr-\"]");
+    if(!track) return;
+    track.innerHTML=verses.map(function(v){return '<div class="scr-card"><p class="scr-zh">'+(v.content_zh||"")+'</p><p class="scr-en">'+(v.content_en||"")+'</p><p class="scr-ref">'+(v.title_zh||v.title_en||"")+'</p></div>';}).join("");
+  });
+  });
+}catch(e){}})();
+</script>  <!-- ====== 异象区域：米色调渐变背景 ====== --><!-- 【修改】背景渐变: from #f7f3e8 to #fefcf5，修改颜色值改变氛围 --><section class="py-12 lg:py-16 px-4 sm:px-6" style="background: linear-gradient(180deg, #f7f3e8 0%, #fefcf5 100%);"> <div class="max-w-4xl mx-auto text-center"> <!-- ====== 装饰性分隔线 + 星号 ====== --> <!-- 【修改】线颜色: bg-beige-400, 星号颜色: text-beige-400 --> <div class="flex items-center justify-center gap-3 mb-4"> <span class="block w-10 h-px bg-beige-400"></span> <span class="text-beige-400 text-base">✦</span> <span class="block w-10 h-px bg-beige-400"></span> </div> <!-- 异象标题 --> <h2 class="text-xl sm:text-2xl lg:text-3xl font-serif font-bold text-charcoal-800 mb-6"> 全球异象 </h2> <!-- ====== 预览段落（始终可见） ====== --> <!-- 【修改】字号: text-[15px] sm:text-base, 行距: leading-relaxed --> <div class="text-charcoal-600 leading-relaxed font-serif max-w-4xl mx-auto space-y-4 text-[15px] sm:text-base"> <p>今天，中国正在以前所未有的姿态全面影响着整个世界——无论是在经济巨浪、科技创新还是文化输出的各个领域，全球都无法忽视这股力量。然而，在属灵与宗教的版图上，世界往往只能看到一片迷雾。你或许常常听到外界的论调，认为这里是一片无神论的荒漠，或者只能看到福音事工在这里所面对的重重限制、围墙与极大的不易。是的，在这片土地上开展福音工作绝非易事。但纵观圣经救赎史，当神的子民在旷野中面对最严苛的逼迫与试炼时，往往正是万军之耶和华要在危机中掀起历史性大复兴的开端！在这里，有无数在大逼迫中淬炼出大信心的基督徒；在这里，有无数家庭教会已经传承了超过三代人，他们的信仰不是温室里的花朵，而是从烈火中走出来的精金。在这场波澜壮阔的现代复兴运动中，中国的基督徒正在圣灵的膏沐中站立起来——我们不仅在这片土地上守望服侍，更被差遣走向列国列邦，在全地所有的领域中深扎、渗透，预备将天国的荣耀带下！</p><p>出埃及记 1:12 —— 只是越发苦害他们，他们越发多起来，越发蔓延开来。</p><p>国度策略：
+我们的宣教不仅发生在教堂的围墙之内，更发生在时代的各行各业之中。面对新一代的年轻人，我们核心的国度策略是：在职场与商业的第一线，建立完全属于天国的文化与生命样式。</p><p>马太福音 5:14-16 —— 你们是世上的光。城造在山上是不能隐藏的……你们的光也当这样照在人前，叫他们看见你们的好行为，便将荣耀归给你们在天上的父。</p> </div> <!-- ====== 可展开的更多段落（默认隐藏） ====== --> <div> <div id="vision-more" class="hidden text-charcoal-600 leading-relaxed font-serif max-w-4xl mx-auto space-y-4 text-[15px] sm:text-base mt-4"> <p>在职场中，我们通过卓越的专业能力、公义的商业诚实、以及活泼的见证故事，成为世界的光与盐。我们要进入文化的上游，在科技、创意、和产业的赛道上开疆拓土，用天国的价值观去夺回、去影响、去塑造正在迷失的新一代年轻人，让职场成为宣教的第一宣教工场。</p><p>行动：
+代祷合一与财务互助</p><p>祭坛上的合一： 
+我们要在教会与团契的深层代祷中保持高度合一，打破地域的局限，不断在祭坛前寻求神对于跨国宣教与技术赋能的最新时代带领。
+财务上的互助： 
+我们要建立坚固的国度供求与奉献网络，在财务、物资和供应链资源上，去全力支持、安慰、帮助那些在患难、逼迫和缺乏中的弟兄姊妹。用实实在在的国度相爱，见证那不可震动的国。</p> </div> <button id="vision-toggle" class="inline-flex items-center gap-1 mt-4 px-4 py-1.5 text-sm text-sage-600 hover:text-sage-700 border border-sage-300 rounded-full transition-colors">展开更多 ↓</button> </div> <!-- ====== "阅读完整异象"链接按钮 ====== --> <!-- 【修改】链接目标: /{lang}/vision/ --> <!-- 【修改】按钮样式: bg-charcoal-800 深色背景, 圆角 full --> <div class="mt-5"> <a href="/zh/vision/" class="inline-flex items-center gap-1 px-5 py-2 bg-charcoal-800 hover:bg-charcoal-700 text-white text-sm rounded-full transition-colors"> 阅读完整异象 → </a> </div> </div> </section> <!-- ====== 内联 JS：展开/收起逻辑 ====== --> <script>
+  (function(){
+    var btn = document.getElementById('vision-toggle');
+    var more = document.getElementById('vision-more');
+    if (!btn || !more) return; // 元素不存在则跳过
+
+    // 点击切换 hidden 类，同时更新按钮文案
+    btn.onclick = function(){
+      var hidden = more.classList.toggle('hidden');
+      // 【修改】按钮文案：隐藏时显示"展开"，显示时显示"收起"
+      btn.textContent = hidden ? 'Read More ↓' : 'Show Less ↑';
+    };
+  })();
+</script> <script>
+(function(){try{
+  fetch("/api/vision").then(function(r){return r.json()}).then(function(d){
+    if(!d.ok||!d.data)return; var v=d.data;
+    var lang=document.documentElement.lang==="zh"?"zh":"en";
+    var h2=document.querySelector("#vision-section h2, [class*=\"vision\"] h2, section h2");
+    if(h2) h2.textContent=v["title_"+lang]||h2.textContent;
+    var body=document.querySelector("#vision-body:not(#vision-more)");
+    if(body) body.textContent=(v["content_"+lang]||"").substring(0,200)+"...";
+    var more=document.getElementById("vision-more");
+    if(more) more.textContent=(v["content_"+lang]||"").substring(200);
+  });
+  });
+}catch(e){}})();
+</script>  <!-- ====== 产品区域 ====== --><section id="products" class="py-24 lg:py-32 px-4 sm:px-6 bg-white"> <div class="max-w-5xl mx-auto"> <!-- ====== 分类筛选按钮（Pills） ====== --> <!-- 【修改】按钮样式: rounded-full（胶囊形）, 激活: bg-charcoal-800 text-white --> <!-- 【修改】data-cat: 'all' | 'apparel' | 'accessories'，需与 products.json 中 category 字段一致 --> <div class="flex gap-3 mb-8"> <!-- "全部"按钮（默认激活） --> <button class="carousel-cat-btn px-5 py-2 rounded-full text-sm font-medium transition-colors bg-charcoal-800 text-white" data-cat="all">全部</button> <!-- "服装"按钮 --> <button class="carousel-cat-btn px-5 py-2 rounded-full text-sm font-medium transition-colors border border-charcoal-300 text-charcoal-500 hover:border-charcoal-500" data-cat="apparel">服装</button> <!-- "首饰"按钮 --> <button class="carousel-cat-btn px-5 py-2 rounded-full text-sm font-medium transition-colors border border-charcoal-300 text-charcoal-500 hover:border-charcoal-500" data-cat="accessories">首饰</button> </div> <!-- ====== 产品网格 ====== --> <!-- 【修改】列数: grid-cols-2 sm:3 lg:4 --> <div id="product-grid" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4"> <a href="/zh/products/2/" class="product-card-item block bg-white rounded-xl border border-beige-200 overflow-hidden cursor-pointer hover:shadow-2xl transition-all duration-500 hover:-translate-y-4 hover:scale-[1.02]" data-category="apparel" data-id="2"> <div class="aspect-square bg-beige-100 flex items-center justify-center relative"> <img src="/images/products/180g-tee/962802505245275392_白色_3.jpeg" alt="" class="w-full h-full object-cover" loading="lazy">  </div> <div class="p-4 flex flex-col gap-1.5"> <h3 class="font-serif font-bold text-xs text-charcoal-800 leading-tight line-clamp-2 flex-shrink-0">180g男士圆领短袖T恤</h3> <div class="flex items-center gap-2 flex-shrink-0"> <span class="font-bold text-sm text-charcoal-700">$10</span> <div class="flex items-center gap-1"> <button class="carousel-qty-btn w-6 h-6 sm:w-5 sm:h-5 border border-charcoal-300 rounded-full flex items-center justify-center text-xs sm:text-[10px] text-charcoal-500 hover:bg-charcoal-100 leading-none" data-id="2" data-action="minus">−</button> <span class="carousel-qty-val text-xs text-charcoal-700 font-medium min-w-[16px] text-center" data-id="2">1</span> <button class="carousel-qty-btn w-6 h-6 sm:w-5 sm:h-5 border border-charcoal-300 rounded-full flex items-center justify-center text-xs sm:text-[10px] text-charcoal-500 hover:bg-charcoal-100 leading-none" data-id="2" data-action="plus">+</button> </div> </div> <div class="flex flex-wrap gap-1 flex-shrink-0" data-id="2" style="min-height:20px">  </div> <div class="flex items-center gap-1.5 flex-wrap" data-id="2"> <div class="flex gap-1.5">  </div> <button class="carousel-add-cart-btn py-1 px-3 ml-auto bg-charcoal-800 hover:bg-charcoal-700 text-white rounded-lg text-[10px] font-medium transition-colors flex-shrink-0" data-id="2">购物车</button> </div> </div> </a><a href="/zh/products/4/" class="product-card-item block bg-white rounded-xl border border-beige-200 overflow-hidden cursor-pointer hover:shadow-2xl transition-all duration-500 hover:-translate-y-4 hover:scale-[1.02]" data-category="apparel" data-id="4"> <div class="aspect-square bg-beige-100 flex items-center justify-center relative"> <img src="/images/products/卫衣/Z5FVT7SN7W_浅灰色_25.jpg" alt="" class="w-full h-full object-cover" loading="lazy">  </div> <div class="p-4 flex flex-col gap-1.5"> <h3 class="font-serif font-bold text-xs text-charcoal-800 leading-tight line-clamp-2 flex-shrink-0">男士涤纶连帽卫衣</h3> <div class="flex items-center gap-2 flex-shrink-0"> <span class="font-bold text-sm text-charcoal-700">$10</span> <div class="flex items-center gap-1"> <button class="carousel-qty-btn w-6 h-6 sm:w-5 sm:h-5 border border-charcoal-300 rounded-full flex items-center justify-center text-xs sm:text-[10px] text-charcoal-500 hover:bg-charcoal-100 leading-none" data-id="4" data-action="minus">−</button> <span class="carousel-qty-val text-xs text-charcoal-700 font-medium min-w-[16px] text-center" data-id="4">1</span> <button class="carousel-qty-btn w-6 h-6 sm:w-5 sm:h-5 border border-charcoal-300 rounded-full flex items-center justify-center text-xs sm:text-[10px] text-charcoal-500 hover:bg-charcoal-100 leading-none" data-id="4" data-action="plus">+</button> </div> </div> <div class="flex flex-wrap gap-1 flex-shrink-0" data-id="4" style="min-height:20px">  </div> <div class="flex items-center gap-1.5 flex-wrap" data-id="4"> <div class="flex gap-1.5">  </div> <button class="carousel-add-cart-btn py-1 px-3 ml-auto bg-charcoal-800 hover:bg-charcoal-700 text-white rounded-lg text-[10px] font-medium transition-colors flex-shrink-0" data-id="4">购物车</button> </div> </div> </a><a href="/zh/products/5/" class="product-card-item block bg-white rounded-xl border border-beige-200 overflow-hidden cursor-pointer hover:shadow-2xl transition-all duration-500 hover:-translate-y-4 hover:scale-[1.02]" data-category="apparel" data-id="5"> <div class="aspect-square bg-beige-100 flex items-center justify-center relative"> <img src="/images/products/kids-tee/20260713232848_962803060990588160_粉色_4.jpeg" alt="" class="w-full h-full object-cover" loading="lazy">  </div> <div class="p-4 flex flex-col gap-1.5"> <h3 class="font-serif font-bold text-xs text-charcoal-800 leading-tight line-clamp-2 flex-shrink-0">180g儿童纯棉短袖T恤</h3> <div class="flex items-center gap-2 flex-shrink-0"> <span class="font-bold text-sm text-charcoal-700">$13</span> <div class="flex items-center gap-1"> <button class="carousel-qty-btn w-6 h-6 sm:w-5 sm:h-5 border border-charcoal-300 rounded-full flex items-center justify-center text-xs sm:text-[10px] text-charcoal-500 hover:bg-charcoal-100 leading-none" data-id="5" data-action="minus">−</button> <span class="carousel-qty-val text-xs text-charcoal-700 font-medium min-w-[16px] text-center" data-id="5">1</span> <button class="carousel-qty-btn w-6 h-6 sm:w-5 sm:h-5 border border-charcoal-300 rounded-full flex items-center justify-center text-xs sm:text-[10px] text-charcoal-500 hover:bg-charcoal-100 leading-none" data-id="5" data-action="plus">+</button> </div> </div> <div class="flex flex-wrap gap-1 flex-shrink-0" data-id="5" style="min-height:20px">  </div> <div class="flex items-center gap-1.5 flex-wrap" data-id="5"> <div class="flex gap-1.5">  </div> <button class="carousel-add-cart-btn py-1 px-3 ml-auto bg-charcoal-800 hover:bg-charcoal-700 text-white rounded-lg text-[10px] font-medium transition-colors flex-shrink-0" data-id="5">购物车</button> </div> </div> </a> </div> </div> </section> <!-- ====== JSON 数据注入（供下面内联 JS 读取） ====== --> <script type="application/json" id="__carouselLabels">{"sizes":"尺码","weight":"克重","stock":"库存","outOfStock":"已售罄","addToCart":"购物车","all":"全部","clothing":"服装","jewelry":"首饰"}</script> <script type="application/json" id="__carouselProducts">[{"id":"2","category":"apparel","name":{"en":"180g Men's Crew Neck T-Shirt","zh":"180g男士圆领短袖T恤"},"price":10,"currency":"USD","colors":[],"sizes":[],"weight":"100%棉（200gsm）","material":{"en":"100%棉（200gsm）","zh":"100%棉（200gsm）"},"description":{"en":"[Design] Area print on front\n[Material] 100% Cotton\n[Performance] Soft, comfortable, slight stretch.\n[Scenes] Daily, home, travel, fitness.\n[Target] Men\n[Wash] Hand/machine wash, ≤45°C, no bleach","zh":"【设计说明】前面区域印花\n【材质说明】100%棉\n【产品性能】手感柔软舒适，微弹，版型好穿又好搭，舒适又时尚，简约实用，不易缩水，耐穿，时尚潮流。\n【适用场景】日常，居家，旅行，健身运动等。\n【适用人群】男士\n【洗涤说明】可手洗可机洗，不要长时间浸泡，不可漂白，洗涤液温度不能超过45ºC。"},"details":{"en":"[Design] Area print on front\n[Material] 100% Cotton\n[Performance] Soft, comfortable, slight stretch.\n[Scenes] Daily, home, travel, fitness.\n[Target] Men\n[Wash] Hand/machine wash, ≤45°C, no bleach","zh":"【设计说明】前面区域印花\n【材质说明】100%棉\n【产品性能】手感柔软舒适，微弹，版型好穿又好搭，舒适又时尚，简约实用，不易缩水，耐穿，时尚潮流。\n【适用场景】日常，居家，旅行，健身运动等。\n【适用人群】男士\n【洗涤说明】可手洗可机洗，不要长时间浸泡，不可漂白，洗涤液温度不能超过45ºC。"},"images":["/images/products/180g-tee/962802505245275392_白色_3.jpeg","/images/products/180g-tee/962802505245275392_白色_5.jpeg","/images/products/180g-tee/962802505245275392_白色_7.jpeg","/images/products/180g-tee/962802505245275392_白色_8.png","/images/products/180g-tee/962802505245275392_白色_9.png","/images/products/180g-tee/962802505245275392_黑色_4.jpeg","/images/products/180g-tee/962802505245275392_黑色_6.jpeg","/images/products/180g-tee/962802505245275392_黑色_8.png","/images/products/180g-tee/black.jpeg","/images/products/180g-tee/black.png","/images/products/180g-tee/white.jpeg"],"stock":999},{"id":"4","category":"apparel","name":{"en":"Men's Polyester Hooded Sweatshirt","zh":"男士涤纶连帽卫衣"},"price":10,"currency":"USD","colors":[],"sizes":[],"weight":"100%涤纶 (260g/m²)","material":{"en":"100%涤纶 (260g/m²)","zh":"100%涤纶 (260g/m²)"},"description":{"en":"Men's 260G polyester hooded sweatshirt. Loose fit with white ink heat transfer printing. All seasons. Soft, breathable, skin-friendly.","zh":"男士260g涤纶连帽卫衣。宽松版型，白墨烫画工艺，四季穿着。面料柔软透气亲肤。日常休闲、运动健身、旅游出行。"},"details":{"en":"Men's 260G polyester hooded sweatshirt. Loose fit with white ink heat transfer printing. All seasons. Soft, breathable, skin-friendly.","zh":"男士260g涤纶连帽卫衣。宽松版型，白墨烫画工艺，四季穿着。面料柔软透气亲肤。日常休闲、运动健身、旅游出行。"},"images":["/images/products/卫衣/Z5FVT7SN7W_浅灰色_25.jpg","/images/products/卫衣/Z5FVT7SN7W_浅灰色_26.jpg","/images/products/卫衣/Z5FVT7SN7W_浅灰色_27.jpg","/images/products/卫衣/Z5FVT7SN7W_浅灰色_28.jpg","/images/products/卫衣/Z5FVT7SN7W_浅灰色_29.jpg","/images/products/卫衣/Z5FVT7SN7W_浅灰色_30.jpg","/images/products/卫衣/Z5FVT7SN7W_浅灰色_32.jpg","/images/products/卫衣/Z5FVT7SN7W_白色_10.jpg","/images/products/卫衣/Z5FVT7SN7W_白色_11.jpg","/images/products/卫衣/Z5FVT7SN7W_白色_12.jpg","/images/products/卫衣/Z5FVT7SN7W_白色_13.jpg","/images/products/卫衣/Z5FVT7SN7W_白色_14.jpg","/images/products/卫衣/Z5FVT7SN7W_白色_16.jpg","/images/products/卫衣/Z5FVT7SN7W_白色_9.jpg","/images/products/卫衣/Z5FVT7SN7W_红色_17.jpg","/images/products/卫衣/Z5FVT7SN7W_红色_18.jpg","/images/products/卫衣/Z5FVT7SN7W_红色_19.jpg","/images/products/卫衣/Z5FVT7SN7W_红色_20.jpg","/images/products/卫衣/Z5FVT7SN7W_红色_21.jpg","/images/products/卫衣/Z5FVT7SN7W_红色_22.jpg","/images/products/卫衣/Z5FVT7SN7W_红色_24.jpg","/images/products/卫衣/Z5FVT7SN7W_黑色_1.jpg","/images/products/卫衣/Z5FVT7SN7W_黑色_2.jpg","/images/products/卫衣/Z5FVT7SN7W_黑色_3.jpg","/images/products/卫衣/Z5FVT7SN7W_黑色_4.jpg","/images/products/卫衣/Z5FVT7SN7W_黑色_5.jpg","/images/products/卫衣/Z5FVT7SN7W_黑色_6.jpg","/images/products/卫衣/Z5FVT7SN7W_黑色_8.jpg","/images/products/卫衣/Z5FVT7SN7W_尺寸表.jpg"],"stock":999},{"id":"5","category":"apparel","name":{"en":"180g Children's Pure Cotton Short-Sleeve T-Shirt","zh":"180g儿童纯棉短袖T恤"},"price":13,"currency":"USD","colors":[],"sizes":[],"weight":"100%棉","material":{"en":"100%棉","zh":"100%棉"},"description":{"en":"Material:\n100% Cotton\nProduct Features:\nSoft and comfortable fabric; slightly stretchy and breathable.\nSuitable Occasions:\nDaily wear, casual outings, sports, outdoor activities, travel, etc.\nWashing Instructions:\nHand or machine washable. Do not soak for extended periods; do not bleach. Water temperature should not exceed 45ºC.\nSpecial Notes:\nSize measurements are taken with the garment laid flat; a margin of error of 1–2 cm is normal due to different measurement methods. Please avoid using colors in your design that match the garment's base color, as this can prevent ink application during production; such issues are not covered by after-sales service.","zh":"材质说明：\n100%纯棉\n商品性能：\n面料柔软舒适，微弹，透气性好。\n适用场景：\n日常，外出，运动，户外活动，旅行等。\n洗涤说明：\n可手洗可机洗，不要长时间浸泡，不可漂白，洗涤液温度不能超过45ºC。\n特别说明：\n此尺码数据在平铺下测量所得，因测量方法不同，误差在1-2cm内的属于正常现象。设计图片请勿使用与衣服底色相同颜色，生产时会造成无法出墨情况，将不予纳入售后处理范畴。"},"details":{"en":"Material:\n100% Cotton\nProduct Features:\nSoft and comfortable fabric; slightly stretchy and breathable.\nSuitable Occasions:\nDaily wear, casual outings, sports, outdoor activities, travel, etc.\nWashing Instructions:\nHand or machine washable. Do not soak for extended periods; do not bleach. Water temperature should not exceed 45ºC.\nSpecial Notes:\nSize measurements are taken with the garment laid flat; a margin of error of 1–2 cm is normal due to different measurement methods. Please avoid using colors in your design that match the garment's base color, as this can prevent ink application during production; such issues are not covered by after-sales service.","zh":"材质说明：\n100%纯棉\n商品性能：\n面料柔软舒适，微弹，透气性好。\n适用场景：\n日常，外出，运动，户外活动，旅行等。\n洗涤说明：\n可手洗可机洗，不要长时间浸泡，不可漂白，洗涤液温度不能超过45ºC。\n特别说明：\n此尺码数据在平铺下测量所得，因测量方法不同，误差在1-2cm内的属于正常现象。设计图片请勿使用与衣服底色相同颜色，生产时会造成无法出墨情况，将不予纳入售后处理范畴。"},"images":["/images/products/kids-tee/20260713232848_962803060990588160_粉色_4.jpeg","/images/products/kids-tee/20260713232853_962803060990588160_粉色_5.jpeg","/images/products/kids-tee/20260713232918_962803060990588160_粉色_1.jpeg","/images/products/kids-tee/20260713233722_962803060990588160_粉色_6.jpeg","/images/products/kids-tee/20260713233737_962803060990588160_粉色_7.png","/images/products/kids-tee/20260713233741_962803060990588160_粉色_5.jpeg","/images/products/kids-tee/20260713233744_962803060990588160_粉色_8.png","/images/products/kids-tee/962803060990588160_粉色_2.jpeg","/images/products/kids-tee/20260713232856_962803060990588160_黑色_9.png","/images/products/kids-tee/20260713232924_962803060990588160_黑色_1.jpeg","/images/products/kids-tee/962803060990588160_黑色_1.jpeg","/images/products/kids-tee/20260713232855_962803060990588160_白色_8.png","/images/products/kids-tee/962803060990588160_白色_1.jpeg","/images/products/kids-tee/962803060990588160_白色_4.jpeg","/images/products/kids-tee/962803060990588160_白色_5.jpeg"],"stock":999}]</script> <!-- ====== 内联 JS：产品交互逻辑 ====== --> <script>
+  (function() {
+    // 从注入的 JSON 中读取标签和产品数据
+    var LABELS = JSON.parse(document.getElementById('__carouselLabels').textContent);
+    var PRODUCTS = JSON.parse(document.getElementById('__carouselProducts').textContent);
+    var WHATSAPP = '85297094785'; // 【修改】WhatsApp 号（用于"立即下单"跳转）
+    var activeCat = 'all';        // 当前激活的分类
+
+    // 从 localStorage 加载购物车数据
+    var cartItems = [];
+    try { var s = localStorage.getItem('ps-cart'); if (s) cartItems = JSON.parse(s); } catch(e) {}
+
+    // 更新分类按钮文案（多语言）
+    document.querySelectorAll('.carousel-cat-btn').forEach(function(b){
+      if (b.dataset.cat === 'all') b.textContent = LABELS.all;
+      if (b.dataset.cat === 'apparel') b.textContent = LABELS.clothing;
+      if (b.dataset.cat === 'accessories') b.textContent = LABELS.jewelry;
+    });
+
+    // ====== 分类筛选逻辑 ======
+    document.querySelectorAll('.carousel-cat-btn').forEach(function(btn) {
+      btn.onclick = function() {
+        activeCat = btn.dataset.cat;
+        // 更新按钮样式：激活态 = 深色背景 + 白色文字
+        document.querySelectorAll('.carousel-cat-btn').forEach(function(b) {
+          b.classList.toggle('bg-charcoal-800', b.dataset.cat === activeCat);
+          b.classList.toggle('text-white', b.dataset.cat === activeCat);
+        });
+        // 显示/隐藏对应分类的产品卡片
+        document.querySelectorAll('#product-grid > .product-card-item').forEach(function(card) {
+          card.style.display = (activeCat === 'all' || card.dataset.category === activeCat) ? '' : 'none';
+        });
+      };
+    });
+
+    // 保存购物车到 localStorage
+    function saveCart() { localStorage.setItem('ps-cart', JSON.stringify(cartItems)); }
+
+    // ====== 数量按钮 ======
+    document.querySelectorAll('.carousel-qty-btn').forEach(function(btn) {
+      btn.addEventListener('click', function(e) {
+        e.stopPropagation();  // 阻止冒泡到卡片链接
+        e.preventDefault();
+        var id = btn.dataset.id;
+        var action = btn.dataset.action;
+        var valEl = document.querySelector('.carousel-qty-val[data-id="' + id + '"]');
+        if (!valEl) return;
+        var val = parseInt(valEl.textContent) || 1;
+        if (action === 'plus') val++;
+        else if (action === 'minus') val = Math.max(1, val - 1); // 最少为 1
+        valEl.textContent = val;
+      });
+    });
+
+    // ====== 颜色选择 ======
+    document.querySelectorAll('.carousel-color-dot').forEach(function(dot) {
+      dot.addEventListener('click', function(e) {
+        e.stopPropagation();
+        e.preventDefault();
+        var pid = dot.dataset.id;
+        var color = dot.dataset.color;
+        // 同一产品的所有颜色圆点：选中高亮，其他变灰
+        document.querySelectorAll('.carousel-color-dot[data-id="' + pid + '"]').forEach(function(d) {
+          d.style.borderColor = d.dataset.color === color ? '#333' : '#d1d5db';
+        });
+      });
+    });
+
+    // ====== 尺码选择 ======
+    document.querySelectorAll('.carousel-sz-opt').forEach(function(el) {
+      el.addEventListener('click', function(e) {
+        e.stopPropagation();
+        e.preventDefault();
+        var pid = el.dataset.id;
+        var size = el.dataset.size;
+        // 同一产品的所有尺码标签：选中变深色，其他变浅色
+        document.querySelectorAll('.carousel-sz-opt[data-id="' + pid + '"]').forEach(function(s) {
+          s.style.borderColor = s.dataset.size === size ? '#333' : '#d1d5db';
+          s.style.color = s.dataset.size === size ? '#1f2937' : '#6b7280';
+        });
+      });
+    });
+
+    // ====== 加入购物车按钮 ======
+    document.querySelectorAll('.carousel-add-cart-btn').forEach(function(btn) {
+      btn.addEventListener('click', function(e) {
+        e.stopPropagation();
+        e.preventDefault();
+        var id = btn.dataset.id;
+        var prod = PRODUCTS.find(function(p) { return p.id === id; });
+        if (!prod) return;
+
+        // 获取当前选中的颜色
+        var colorDots = document.querySelectorAll('.carousel-color-dot[data-id="' + id + '"]');
+        var selColor = '';
+        colorDots.forEach(function(d) { if (d.style.borderColor === 'rgb(51, 51, 51)' || d.style.borderColor === '#333') selColor = d.dataset.color; });
+        if (!selColor) selColor = prod.colors[0]; // 默认第一个颜色
+
+        // 获取当前选中的尺码
+        var szOpts = document.querySelectorAll('.carousel-sz-opt[data-id="' + id + '"]');
+        var selSize = '';
+        szOpts.forEach(function(s) { if (s.style.borderColor === 'rgb(51, 51, 51)' || s.style.borderColor === '#333') selSize = s.dataset.size; });
+        if (!selSize) selSize = prod.sizes[0]; // 默认第一个尺码
+
+        // 获取当前数量
+        var qtyEl = document.querySelector('.carousel-qty-val[data-id="' + id + '"]');
+        var qty = qtyEl ? parseInt(qtyEl.textContent) || 1 : 1;
+
+        // 查找购物车中是否已有相同商品（同 id + 同色 + 同尺码），有则累加数量，无则新增
+        var existing = cartItems.find(function(i) { return i.id === id && i.size === selSize && i.color === selColor; });
+        if (existing) existing.quantity += qty;
+        else cartItems.push({ id: id, name: { en: prod.name.en, zh: prod.name.zh }, image: prod.images[0], price: prod.price, size: selSize, color: selColor, quantity: qty });
+
+        saveCart();
+
+        // 视觉反馈：按钮短暂变绿 + 显示 ✓
+        btn.textContent = '✓ ' + LABELS.addToCart;
+        btn.classList.add('bg-green-600');
+        setTimeout(function() { btn.textContent = LABELS.addToCart; btn.classList.remove('bg-green-600'); }, 1200); // 【修改】反馈时长: 1200ms
+      });
+    });
+  })();
+</script> <script>
+(function(){try{
+  var xhr=new XMLHttpRequest();
+  xhr.open("GET","/api/products",true);
+  xhr.onload=function(){try{
+    var d=JSON.parse(xhr.responseText);
+    if(d.ok&&d.data&&d.data.length){
+      window.__liveProducts=d.data;
+      var evt=new CustomEvent("productsUpdated",{detail:d.data});
+      document.dispatchEvent(evt);
+    }
+  }catch(e){}}
+  xhr.send();
+}catch(e){}})();
+</script>  <script>(function(){
+  // ⚡ 实时同步（2026-08-25 重写）：拉取最新产品 → 重建整个卡片网格
+  //   后台改产品（上架/下架/编辑）→ 前台刷新即生效，无需重新部署
+  //   空态：全部下架时显示"暂无产品"，不残留旧卡片
+  setTimeout(function(){
+    try {
+      fetch("/api/products").then(function(r){return r.json()}).then(function(d){
+        if(!d.ok || !d.data) return;
+        // 【2026-11-10 皮料下线】实时同步同样过滤皮料类目（category_id=3）
+        renderCarousel(d.data.filter(function(p){ return p.category_id !== 3; }));
+      });
+    } catch(e) {}
+  }, 200);
+
+  function renderCarousel(items) {
+    var lang = document.documentElement.lang === 'zh' ? 'zh' : 'en';
+    var grid = document.getElementById('product-grid');
+    if (!grid) return;
+    // 【修改】空态处理：无上架产品时清空网格
+    if (!items.length) {
+      grid.innerHTML = '<p class="col-span-full text-center text-charcoal-400 py-8">' + (lang === 'zh' ? '暂无产品' : 'No products available') + '</p>';
+      return;
+    }
+    var colorMap = { '白色': '#f0f0f0', '黑色': '#222', '灰色': '#999', '深蓝': '#1e3a5f', '米白': '#f5f0e8', '粉色': '#ffb6c1', '杏色': '#f5deb3', '红色': '#dc2626', '浅灰色': '#d1d5db' };
+    var data = items.map(function(p){
+      var pid = 'prod-' + p.id;  // 与静态卡片一致（详情页路由 prod-2 格式）
+      var img = (p.images && p.images[0]) ? '<img src="' + p.images[0] + '" alt="" class="w-full h-full object-cover" loading="lazy" />' : '<span class="text-3xl">👕</span>';
+      var sizes = (p.sizes || []).map(function(s, i){ return '<span class="carousel-sz-opt text-[9px] border rounded px-1 py-0 whitespace-nowrap cursor-pointer transition-colors" style="border-color:' + (i===0 ? '#333' : '#d1d5db') + ';color:' + (i===0 ? '#1f2937' : '#6b7280') + '" data-id="' + pid + '" data-size="' + s + '">' + s + '</span>'; }).join('');
+      var colors = (p.colors || []).map(function(cl, i){ return '<span class="carousel-color-dot inline-block w-5 h-5 sm:w-4 sm:h-4 rounded-full cursor-pointer border-2 transition-colors" style="background:' + (colorMap[cl] || cl) + ';border-color:' + (i===0 ? '#333' : '#d1d5db') + '" data-id="' + pid + '" data-color="' + cl + '" title="' + cl + '"></span>'; }).join('');
+      var name = p['name_' + lang] || p.name_en || p.name_zh || '';
+      return '<a href="/' + lang + '/products/' + pid + '/" class="product-card-item block bg-white rounded-xl border border-beige-200 overflow-hidden cursor-pointer hover:shadow-2xl transition-all duration-500 hover:-translate-y-4 hover:scale-[1.02]" data-category="' + (({1:'apparel',2:'accessories'})[p.category_id] || 'accessories') + '" data-id="' + pid + '">' +
+        '<div class="aspect-square bg-beige-100 flex items-center justify-center relative">' + img + '</div>' +
+        '<div class="p-4 flex flex-col gap-1.5">' +
+        '<h3 class="font-serif font-bold text-xs text-charcoal-800 leading-tight line-clamp-2 flex-shrink-0">' + name + '</h3>' +
+        '<div class="flex items-center gap-2 flex-shrink-0">' +
+        '<span class="font-bold text-sm text-charcoal-700">$' + p.price + '</span>' +
+        '<div class="flex items-center gap-1">' +
+        '<button class="carousel-qty-btn w-6 h-6 sm:w-5 sm:h-5 border border-charcoal-300 rounded-full flex items-center justify-center text-xs sm:text-[10px] text-charcoal-500 hover:bg-charcoal-100 leading-none" data-id="' + pid + '" data-action="minus">−</button>' +
+        '<span class="carousel-qty-val text-xs text-charcoal-700 font-medium min-w-[16px] text-center" data-id="' + pid + '">1</span>' +
+        '<button class="carousel-qty-btn w-6 h-6 sm:w-5 sm:h-5 border border-charcoal-300 rounded-full flex items-center justify-center text-xs sm:text-[10px] text-charcoal-500 hover:bg-charcoal-100 leading-none" data-id="' + pid + '" data-action="plus">+</button>' +
+        '</div></div>' +
+        '<div class="flex flex-wrap gap-1 flex-shrink-0" data-id="' + pid + '" style="min-height:20px">' + sizes + '</div>' +
+        '<div class="flex items-center gap-1.5 flex-wrap" data-id="' + pid + '">' +
+        '<div class="flex gap-1.5">' + colors + '</div>' +
+        '<button class="carousel-add-cart-btn py-1 px-3 ml-auto bg-charcoal-800 hover:bg-charcoal-700 text-white rounded-lg text-[10px] font-medium transition-colors flex-shrink-0" data-id="' + pid + '">' + (lang === 'zh' ? '购物车' : 'Cart') + '</button>' +
+        '</div></div></a>';
+    }).join('');
+    grid.innerHTML = data;
+    window.__carouselRendered = true;  // 重建成功 → 启用事件委托
+    // 更新全局 PRODUCTS（供主脚本加购逻辑使用，id 用 prod- 前缀）
+    if (typeof PRODUCTS !== 'undefined') {
+      PRODUCTS = items.map(function(p){ return { id: 'prod-' + p.id, category: ({1:'apparel',2:'accessories'})[p.category_id] || 'accessories', name: {}, name_zh: p.name_zh, name_en: p.name_en, price: p.price, colors: p.colors || [], sizes: p.sizes || [], images: p.images || [], stock: 200 }; });
+    }
+  }
+
+  // 事件委托（挂在 document 上，网格重建后依然有效）：
+  // 数量 +/-, 颜色点, 尺码标签, 加购按钮
+  // 【修改】标志位：仅当网格已由本脚本重建后才启用委托 ——
+  //   避免 fetch 失败（API 异常）时与主脚本的旧绑定重复触发（数量 +2/购物车两份）
+  window.__carouselRendered = false;
+  document.addEventListener('click', function(e){
+    if (!window.__carouselRendered) return;
+    var t = e.target;
+    var grid = document.getElementById('product-grid');
+    if (!grid || !grid.contains(t)) return;
+    if (t.classList.contains('carousel-qty-btn')) {
+      e.stopPropagation(); e.preventDefault();
+      var id = t.dataset.id, action = t.dataset.action;
+      var valEl = document.querySelector('.carousel-qty-val[data-id="' + id + '"]');
+      if (!valEl) return;
+      var val = parseInt(valEl.textContent) || 1;
+      if (action === 'plus') val++; else val = Math.max(1, val - 1);
+      valEl.textContent = val;
+      return;
+    }
+    if (t.classList.contains('carousel-color-dot')) {
+      e.stopPropagation(); e.preventDefault();
+      var pid2 = t.dataset.id, color = t.dataset.color;
+      document.querySelectorAll('.carousel-color-dot[data-id="' + pid2 + '"]').forEach(function(d){ d.style.borderColor = d.dataset.color === color ? '#333' : '#d1d5db'; });
+      return;
+    }
+    if (t.classList.contains('carousel-sz-opt')) {
+      e.stopPropagation(); e.preventDefault();
+      var sid = t.dataset.id, size = t.dataset.size;
+      document.querySelectorAll('.carousel-sz-opt[data-id="' + sid + '"]').forEach(function(s){ var on = s.dataset.size === size; s.style.borderColor = on ? '#333' : '#d1d5db'; s.style.color = on ? '#1f2937' : '#6b7280'; });
+      return;
+    }
+    if (t.classList.contains('carousel-add-cart-btn')) {
+      e.stopPropagation(); e.preventDefault();
+      var aid = t.dataset.id;
+      var prod = (typeof PRODUCTS !== 'undefined') ? PRODUCTS.find(function(p){ return p.id === aid; }) : null;
+      if (!prod) return;
+      var colorDots = document.querySelectorAll('.carousel-color-dot[data-id="' + aid + '"]');
+      var selColor = '';
+      colorDots.forEach(function(d){ if (d.style.borderColor === 'rgb(51, 51, 51)') selColor = d.dataset.color; });
+      if (!selColor && colorDots.length) selColor = colorDots[0].dataset.color;
+      var szOpts = document.querySelectorAll('.carousel-sz-opt[data-id="' + aid + '"]');
+      var selSize = '';
+      szOpts.forEach(function(s){ if (s.style.borderColor === 'rgb(51, 51, 51)') selSize = s.dataset.size; });
+      if (!selSize && szOpts.length) selSize = szOpts[0].dataset.size;
+      var cartItems = [];
+      try { var sv = localStorage.getItem('ps-cart'); if (sv) cartItems = JSON.parse(sv); } catch(e) {}
+      cartItems.push({ id: aid, name: prod.name_zh || prod.name_en || '', price: prod.price, color: selColor, size: selSize, quantity: 1 });
+      localStorage.setItem('ps-cart', JSON.stringify(cartItems));
+      t.textContent = '✓';
+      setTimeout(function(){ t.textContent = document.documentElement.lang === 'zh' ? '购物车' : 'Cart'; }, 800);
+      var badge = document.getElementById('cart-badge-main') || document.getElementById('cart-badge');
+      if (badge) { var n = cartItems.reduce(function(s2, i){ return s2 + (i.quantity || 1); }, 0); badge.textContent = n; badge.classList.remove('hidden'); }
+      return;
+    }
+  });
+})();</script>  <!-- ====== 代祷区域：暖色渐变背景 ====== --><!-- 【修改】背景渐变: from #fefcf5 to #f0ece0（暖米色到浅灰米色） --><section id="prayer" class="py-16 lg:py-20 px-4 sm:px-6" style="background: linear-gradient(180deg, #fefcf5 0%, #f0ece0 100%);"> <div class="max-w-6xl mx-auto"> <!-- 标题 --> <h2 class="text-2xl sm:text-3xl font-serif font-bold text-charcoal-900 text-center mb-3">代祷</h2> <!-- 引用的经文 --> <p class="text-center text-sm text-charcoal-500 italic leading-relaxed max-w-xl mx-auto mb-8">加拉太书 6:2 —「你们各人的重担要互相担当，如此，就完全了基督的律法。」</p> <!-- 双列布局 --> <div class="grid grid-cols-1 lg:grid-cols-2 gap-10 items-start"> <!-- ====== 左侧：3D 祷告地球（比 PrayerGlobe 略大） ====== --> <div class="flex justify-center"> <!-- 【修改】iframe 大小: max-w-[480px]，比 PrayerGlobe 的 440px 大 --> <iframe src="/prayer-globe.html" class="w-full max-w-[480px] aspect-square border-0" style="background:transparent;" title="Prayer Globe"></iframe> </div> <!-- ====== 右侧：代祷表单（简化版，无国家字段的 datalist） ====== --> <div class="w-full max-w-md mx-auto"> <!-- 【修改】表单样式: 白色背景 + 圆角 + 阴影 --> <form id="prayer-home-form" class="bg-white rounded-2xl shadow-lg p-6 md:p-8 border border-beige-200 space-y-3"> <!-- 姓名 --> <div> <label class="block text-xs font-medium text-charcoal-500 mb-1">姓名</label> <input type="text" name="name" placeholder="你的名字（选填）" class="w-full px-4 py-2.5 rounded-lg border border-beige-300 bg-beige-50 focus:outline-none focus:ring-2 focus:ring-sage-400 text-charcoal-800 text-sm"> </div> <!-- 邮箱 --> <div> <label class="block text-xs font-medium text-charcoal-500 mb-1">邮箱</label> <input type="email" name="email" placeholder="你的邮箱" class="w-full px-4 py-2.5 rounded-lg border border-beige-300 bg-beige-50 focus:outline-none focus:ring-2 focus:ring-sage-400 text-charcoal-800 text-sm"> </div> <!-- 国家（必填） --> <div> <label class="block text-xs font-medium text-charcoal-500 mb-1">你的国家 *</label> <input type="text" name="country" required placeholder="例如：中国、美国、肯尼亚..." class="w-full px-4 py-2.5 rounded-lg border border-beige-300 bg-beige-50 focus:outline-none focus:ring-2 focus:ring-sage-400 text-charcoal-800 text-sm"> </div> <!-- 代祷事项（必填，比 PrayerGlobe 多 2 行） --> <div> <label class="block text-xs font-medium text-charcoal-500 mb-1">代祷事项 *</label> <textarea name="request" rows="6" required placeholder="分享你心中所想..." class="w-full px-4 py-3 rounded-lg border border-beige-300 bg-beige-50 focus:outline-none focus:ring-2 focus:ring-sage-400 text-charcoal-800 text-sm resize-none"></textarea> </div> <!-- 提交按钮 --> <button type="submit" class="w-full py-3 bg-sage-500 hover:bg-sage-600 text-white font-medium rounded-xl transition-colors text-base">发送代祷</button> </form> <!-- 成功消息 --> <div id="prayer-home-success" class="hidden mt-4 bg-sage-50 border border-sage-200 rounded-2xl p-6 text-center"> <p class="text-4xl mb-2">🙏</p><p class="text-sage-600 text-sm">你的代祷已收到。我们在为你祷告。</p> </div> </div> </div> </div> </section> <!-- ====== 内联 JS：表单提交（is:inline 保持独立运行） ====== --> <!-- 注意：与 PrayerGlobe 不同，此组件的 JS 更简洁，没有错误消息区域 --> <script>
+  (function(){
+    var form = document.getElementById('prayer-home-form');
+    if (!form) return;
+    var success = document.getElementById('prayer-home-success');
+    var btn = form.querySelector('button');
+
+    form.addEventListener('submit', async function(e){
+      e.preventDefault();
+      var fd = new FormData(form);
+      var country = (fd.get('country') || '').toString().trim();
+      var request = (fd.get('request') || '').toString().trim();
+      // 验证必填字段
+      if (!country || !request) { return; }
+
+      // 进入提交状态
+      btn.textContent = '...'; btn.disabled = true;
+
+      try {
+        // 提交到后端 API
+        var res = await fetch('/api/prayer', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            name: fd.get('name') || '',
+            email: fd.get('email') || '',
+            country: country,
+            request: request,
+            lang: '{lang}'
+          })
+        });
+        if (!res.ok) throw new Error('fail');
+        // 成功：隐藏表单，显示感谢消息
+        form.classList.add('hidden');
+        success.classList.remove('hidden');
+      } catch(e) {
+        // 失败：静默处理（重回表单状态）
+      } finally {
+        // 恢复按钮
+        btn.textContent = '{t.submit}';
+        btn.disabled = false;
+      }
+    });
+  })();
+</script>  </main> <!-- ====== 页脚 ====== --> <!-- 【修改】背景: bg-charcoal-900, 文字: text-beige-300 --> <!-- 【修改】padding: py-12 控制上下间距 --> <footer class="bg-charcoal-900 text-beige-300 py-12 px-4 sm:px-6"> <div class="max-w-4xl mx-auto text-center"> <!-- 站名 --> <p class="font-serif text-xl sm:text-2xl font-bold text-beige-100 mb-2">✝ 活石</p> <!-- tagline --> <p class="text-sm text-beige-500 mb-2"></p> <!-- 邮箱 --> <p class="text-xs text-beige-400 mb-6">pastorjeffinchina@gmail.com</p> <!-- 版权 + 经文 --> <p class="text-xs text-beige-600">
+&copy; 2026 Livingstone </p> <p class="text-xs text-beige-600 mt-1"> 「你们要彼此相爱，像我爱你们一样。」— 约翰福音 15:12 </p> </div> </footer> <!-- ====== 购物车浮窗按钮 ====== --> <!-- 【修改】位置: fixed bottom-36 right-6（底部留出 WhatsApp + Email 按钮空间） --> <!-- 【修改】大小: w-14 h-14 --> <!-- 【修改】背景: bg-charcoal-800 --> <a href="/zh/cart/" id="cart-floating" class="fixed bottom-[9.5rem] right-6 z-50 w-14 h-14 bg-charcoal-800 hover:bg-charcoal-700 rounded-full flex items-center justify-center shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-110" aria-label="Cart"> <!-- 购物车图标（SVG） --> <svg class="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 100 4 2 2 0 000-4z"></path></svg> <!-- 购物车数量角标，默认 hidden，通过 JS 读取 localStorage 后显示 --> <!-- 【修改】角标颜色: bg-red-500 --> <span id="cart-badge-main" class="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] w-5 h-5 rounded-full flex items-center justify-center font-bold hidden">0</span> </a> <!-- ====== Email 浮动按钮 ====== --> <!-- 【修改】邮箱地址: site.email（在 site.json 中配置） --> <!-- 【修改】位置: fixed bottom-24 right-6 --> <!-- 【修改】背景: bg-blue-500 --> <!-- 【修改】桌面端用 Gmail 写信链接，手机端自动打开系统邮件 App --> <a href="https://mail.google.com/mail/?view=cm&fs=1&to=pastorjeffinchina@gmail.com" target="_blank" rel="noopener" id="email-btn" class="fixed bottom-[5.5rem] right-6 z-50 w-14 h-14 bg-blue-500 hover:bg-blue-400 rounded-full flex items-center justify-center shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-110" aria-label="Email"> <!-- 邮件图标（SVG 信封） --> <svg class="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"> <path stroke-linecap="round" stroke-linejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path> </svg> </a> <!-- ====== WhatsApp 浮窗按钮 ====== --> <!-- 【修改】号码: site.whatsapp（在 site.json 中配置） --> <!-- 【修改】位置: fixed bottom-6 right-6 --> <!-- 【修改】背景: bg-green-500（WhatsApp 品牌色） --> <a href="https://wa.me/85297094785?text=你好！我访问了你的网站，想了解更多。" target="_blank" rel="noopener" id="wa-btn" class="fixed bottom-6 right-6 z-50 w-14 h-14 bg-green-500 hover:bg-green-400 rounded-full flex items-center justify-center shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-110" aria-label="WhatsApp"> <!-- WhatsApp 图标（SVG path） --> <svg class="w-7 h-7" viewBox="0 0 24 24" fill="white"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 0 1 2.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0 0 12.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 0 0 5.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 0 0-3.48-8.413z"></path></svg> </a> <!-- ====== 内联 JS（is:inline 确保不被 Astro 打包处理，原样保留在 HTML 中） ====== --> <script>
+  // 移动端菜单切换：点击汉堡按钮显示/隐藏下拉菜单，同时切换图标
+  document.getElementById('menu-toggle').onclick = function() {
+    var menu = document.getElementById('mobile-menu');
+    var open = document.getElementById('menu-icon-open');
+    var close = document.getElementById('menu-icon-close');
+    menu.classList.toggle('hidden');
+    open.classList.toggle('hidden');
+    close.classList.toggle('hidden');
+  };
+
+  // 购物车角标初始化：从 localStorage 读取购物车数据，更新浮窗上的数字角标
+  (function(){
+    // ps-cart 是购物车数据在 localStorage 中的 key
+    var c = JSON.parse(localStorage.getItem('ps-cart') || '[]');
+    // 累加所有商品数量
+    var n = c.reduce(function(s, i) { return s + i.quantity; }, 0);
+    var b = document.getElementById('cart-badge-main');
+    // 有商品时显示角标，否则隐藏
+    if (b && n > 0) { b.textContent = n; b.classList.remove('hidden'); }
+  })();
+</script> <script>
+(function(){
+  fetch("/api/site-config").then(function(r){return r.json()}).then(function(d){
+    if(!d.ok||!d.data)return; var s=d.data;
+    var wa=document.getElementById("wa-btn");
+    if(wa&&s.site_whatsapp) wa.href="https://wa.me/"+s.site_whatsapp.replace(/\D/g,"");
+    var em=document.querySelector("footer p:last-of-type");
+    if(em&&s.site_email) em.textContent=s.site_email;
+  });
+})();
+</script> </body> </html>

@@ -1,0 +1,120 @@
+<!--
+  =================================================================
+  文件：public/prayer-globe.html
+  位置：/public/prayer-globe.html
+  =================================================================
+
+  作用：3D 旋转地球仪独立页面（84 行），使用 Three.js (CDN) 渲染。
+        蓝色大理石纹理地球 + 半透明蓝色大气层光晕。
+        背景透明（alpha: true），适合嵌入其他页面。
+
+  被谁调用：
+    被 src/components/PrayerHomeSection.astro 通过 <iframe> 嵌入。
+    在首页的"代祷"区域展示交互式 3D 地球。
+
+  技术栈：
+    - Three.js (v0.160, CDN import map)
+    - WebGL 渲染器（带透明背景）
+
+  修改指南：
+    - 修改地球纹理：更改 earthTex 加载的图片 URL
+      当前：https://unpkg.com/three-globe/example/img/earth-blue-marble.jpg
+    - 修改地球大小：调整 SphereGeometry 第一个参数（当前 1.8）
+    - 修改大气光晕颜色：调整 atmMat.color（当前 0x4488ff 蓝色）
+    - 修改大气透明度：调整 atmMat.opacity（当前 0.08）
+    - 修改旋转速度：调整 animate() 中的 tRy+=0.003 增量
+    - 修改背景色：当前为透明（alpha: true, scene.background=null），若需深色背景改为 scene.background = new THREE.Color(0x000010)
+    - 修改光照：调整 AmbientLight/DirectionalLight 的颜色和强度
+    - 交互：支持鼠标拖拽旋转和触摸拖拽旋转
+
+  注意事项：
+    - 此文件独立于 Astro 构建流程，直接放在 public/ 目录
+    - 三.js 通过 CDN 加载，需网络连接
+    - iframe 嵌入时注意宽高自适应（当前使用 body.clientWidth/Height）
+    - 修改后刷新浏览器即可看到效果（无需重新构建）
+  =================================================================
+-->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style>
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{background:transparent;overflow:hidden;display:flex;align-items:center;justify-content:center;width:100vw;height:100vh}
+  canvas{display:block}
+</style>
+</head><body>
+<script type="importmap">
+{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js"}}
+</script>
+<script type="module">
+import * as THREE from 'three';
+const body=document.body,W=body.clientWidth||440,H=body.clientHeight||440;
+
+const scene=new THREE.Scene();
+scene.background=null;
+const renderer=new THREE.WebGLRenderer({antialias:true,alpha:true});
+renderer.setSize(W,H);renderer.setPixelRatio(Math.min(devicePixelRatio,2));
+body.appendChild(renderer.domElement);
+
+const camera=new THREE.PerspectiveCamera(45,W/Math.max(H,1),0.1,100);
+camera.position.z=5.5;
+
+const globe=new THREE.Group();
+scene.add(globe);
+
+// Earth texture sphere
+const texLoader=new THREE.TextureLoader();
+const earthTex=texLoader.load('https://unpkg.com/three-globe/example/img/earth-blue-marble.jpg');
+const geo=new THREE.SphereGeometry(1.8,64,64);
+const mat=new THREE.MeshPhongMaterial({map:earthTex,specular:0x111111,shininess:5});
+globe.add(new THREE.Mesh(geo,mat));
+
+// Atmosphere glow
+const atmGeo=new THREE.SphereGeometry(1.81,64,64);
+const atmMat=new THREE.MeshPhongMaterial({color:0x4488ff,specular:0x000000,shininess:0,transparent:true,opacity:0.08});
+globe.add(new THREE.Mesh(atmGeo,atmMat));
+
+// Lights
+scene.add(new THREE.AmbientLight(0x404060,1.8));
+const sun=new THREE.DirectionalLight(0xffffff,1.5);
+sun.position.set(5,2,5);
+scene.add(sun);
+
+let rotX=0.3,rotY=0,tRx=rotX,tRy=rotY,drag=false,px=0,py=0;
+
+document.addEventListener('mousedown',e=>{drag=true;px=e.clientX;py=e.clientY});
+window.addEventListener('mouseup',()=>drag=false);
+window.addEventListener('mousemove',e=>{
+  if(!drag)return;tRy+=(e.clientX-px)*0.005;tRx+=(e.clientY-py)*0.005;
+  px=e.clientX;py=e.clientY;tRx=Math.max(-1.5,Math.min(1.5,tRx));
+});
+document.addEventListener('touchstart',e=>{
+  if(e.touches.length===1){drag=true;px=e.touches[0].clientX;py=e.touches[0].clientY;}
+},{passive:true});
+window.addEventListener('touchend',()=>drag=false);
+window.addEventListener('touchmove',e=>{
+  if(!drag||e.touches.length!==1)return;
+  tRy+=(e.touches[0].clientX-px)*0.005;tRx+=(e.touches[0].clientY-py)*0.005;
+  px=e.touches[0].clientX;py=e.touches[0].clientY;tRx=Math.max(-1.5,Math.min(1.5,tRx));
+},{passive:true});
+
+window.addEventListener('resize',()=>{
+  const nw=body.clientWidth||440,nh=body.clientHeight||440;
+  renderer.setSize(nw,nh);
+  camera.aspect=nw/Math.max(nh,1);
+  camera.updateProjectionMatrix();
+});
+
+function animate(){
+  requestAnimationFrame(animate);
+  if(!drag)tRy+=0.003;
+  rotX+=(tRx-rotX)*0.08;rotY+=(tRy-rotY)*0.08;
+  globe.rotation.x=rotX;globe.rotation.y=rotY;
+  renderer.render(scene,camera);
+}
+animate();
+</script>
+</body>
+</html>
