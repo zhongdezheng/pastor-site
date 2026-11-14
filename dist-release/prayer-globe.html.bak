@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style>
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{background:transparent;overflow:hidden;display:flex;align-items:center;justify-content:center;width:100vw;height:100vh}
+  canvas{display:block}
+</style>
+</head><body>
+<script type="importmap">
+{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js"}}
+</script>
+<script type="module">
+import * as THREE from 'three';
+const body=document.body,W=body.clientWidth||440,H=body.clientHeight||440;
+
+const scene=new THREE.Scene();
+scene.background=null;
+const renderer=new THREE.WebGLRenderer({antialias:true,alpha:true});
+renderer.setSize(W,H);renderer.setPixelRatio(Math.min(devicePixelRatio,2));
+body.appendChild(renderer.domElement);
+
+const camera=new THREE.PerspectiveCamera(45,W/Math.max(H,1),0.1,100);
+camera.position.z=5.5;
+
+const globe=new THREE.Group();
+scene.add(globe);
+
+// Earth texture sphere
+const texLoader=new THREE.TextureLoader();
+const earthTex=texLoader.load('https://unpkg.com/three-globe/example/img/earth-blue-marble.jpg');
+const geo=new THREE.SphereGeometry(1.8,64,64);
+const mat=new THREE.MeshPhongMaterial({map:earthTex,specular:0x111111,shininess:5});
+globe.add(new THREE.Mesh(geo,mat));
+
+// Atmosphere glow
+const atmGeo=new THREE.SphereGeometry(1.81,64,64);
+const atmMat=new THREE.MeshPhongMaterial({color:0x4488ff,specular:0x000000,shininess:0,transparent:true,opacity:0.08});
+globe.add(new THREE.Mesh(atmGeo,atmMat));
+
+// Lights
+scene.add(new THREE.AmbientLight(0x404060,1.8));
+const sun=new THREE.DirectionalLight(0xffffff,1.5);
+sun.position.set(5,2,5);
+scene.add(sun);
+
+let rotX=0.3,rotY=0,tRx=rotX,tRy=rotY,drag=false,px=0,py=0;
+
+document.addEventListener('mousedown',e=>{drag=true;px=e.clientX;py=e.clientY});
+window.addEventListener('mouseup',()=>drag=false);
+window.addEventListener('mousemove',e=>{
+  if(!drag)return;tRy+=(e.clientX-px)*0.005;tRx+=(e.clientY-py)*0.005;
+  px=e.clientX;py=e.clientY;tRx=Math.max(-1.5,Math.min(1.5,tRx));
+});
+document.addEventListener('touchstart',e=>{
+  if(e.touches.length===1){drag=true;px=e.touches[0].clientX;py=e.touches[0].clientY;}
+},{passive:true});
+window.addEventListener('touchend',()=>drag=false);
+window.addEventListener('touchmove',e=>{
+  if(!drag||e.touches.length!==1)return;
+  tRy+=(e.touches[0].clientX-px)*0.005;tRx+=(e.touches[0].clientY-py)*0.005;
+  px=e.touches[0].clientX;py=e.touches[0].clientY;tRx=Math.max(-1.5,Math.min(1.5,tRx));
+},{passive:true});
+
+window.addEventListener('resize',()=>{
+  const nw=body.clientWidth||440,nh=body.clientHeight||440;
+  renderer.setSize(nw,nh);
+  camera.aspect=nw/Math.max(nh,1);
+  camera.updateProjectionMatrix();
+});
+
+function animate(){
+  requestAnimationFrame(animate);
+  if(!drag)tRy+=0.003;
+  rotX+=(tRx-rotX)*0.08;rotY+=(tRy-rotY)*0.08;
+  globe.rotation.x=rotX;globe.rotation.y=rotY;
+  renderer.render(scene,camera);
+}
+animate();
+</script>
+</body>
+</html>

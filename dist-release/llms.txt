@@ -1,0 +1,29 @@
+# Pastor Jeff — Livingstone
+
+Personal site of Pastor Jeff (Zhong), a Christian pastor in Guangzhou, China, who also works in international trade. Bilingual (English/Chinese).
+
+## Free Church Tools
+8 free browser-based tools for churches and Christians, built and used weekly in his own church. Local-first: data never leaves your device.
+- Prayer List Manager: /en/tools/prayer-list/
+- Sermon Notes: /en/tools/sermon-notes/
+- Bible Study Worksheet: /en/tools/bible-worksheet/
+- Bible Reading Plan Generator: /en/tools/reading-plan/
+- Scripture Memorizer: /en/tools/verse-memorizer/
+- Church Poster Maker: /en/tools/church-poster/
+- Church Season Calendar: /en/tools/church-calendar/
+- Serving Roster: /en/tools/roster/
+- All tools overview: /en/tools/
+
+## Faith Apparel
+Custom Christian apparel with an online designer (upload artwork, add text, live preview): /en/products/ and /en/designer/
+
+## Core Pages
+- Vision: /en/vision/
+- Prayer wall: /en/prayer/
+- Testimonies: /en/testimonies/
+- Courses: /en/courses/
+- Contact: /en/contact/
+
+## Contact
+- Email: pastorjeffinchina@gmail.com
+- WhatsApp: +86 136 0281 2927
